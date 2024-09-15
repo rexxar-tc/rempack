@@ -2,21 +2,24 @@
 // Created by brant on 1/24/24.
 //
 //#define DEBUG_FB
-#include <rmkit.h>
 #include <unordered_set>
 #include <utility>
 #include "rempack.h"
-#include "../ui/widgets.h"
-#include "../ui/debug_widgets.h"
-#include "../ui/rempack_widgets.h"
-#include "../opkg/opkg.h"
-#include "../ui/list_box.h"
-#include "../include/algorithm/boyer_moore.h"
+#include "ui/widgets.h"
+#include "ui/debug_widgets.h"
+#include "ui/rempack_widgets.h"
+#include "opkg/opkg.h"
+#include "ui/list_box.h"
+#include "include/algorithm/boyer_moore.h"
 #include "widget_helpers.h"
 
 using ListItem = widgets::ListBox::ListItem;
 namespace boyer = strings::boyer_moore;
-ui::Scene buildHomeScene(int width, int height);
+
+
+
+
+UI::Scene buildHomeScene(int width, int height);
 
 opkg pkg;
 widgets::ListBox *filterPanel, *packagePanel;

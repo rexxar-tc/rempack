@@ -5,6 +5,9 @@
     "minor": 25,
     "patch": 2
   },
+  "include" : [
+    "extern/rM2-stuff/CMakePresets.json"
+  ],
   "configurePresets": [
     {
       "name": "Debug x86",

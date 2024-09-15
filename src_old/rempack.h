@@ -3,11 +3,10 @@
 //
 
 #pragma once
+#include <UI/StatefulWidget.h>
 
 //#include "defines.h"
 
-class Rempack {
-public:
-    void startApp();
-private:
+class Rempack : rmlib::StatefulWidget<Rempack>{
+
 };

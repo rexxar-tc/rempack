@@ -229,9 +229,9 @@ class EventButton : public ui::Button{
     };
 
 
-    class RoundCornerWidget : public ui::Widget {
+    class RoundCornerWidget : public rmlib::Widget {
     public:
-        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : ui::Widget(x, y, w, h) {
+        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : rmlib::Widget(x, y, w, h) {
             this->style = style;
         };
         RoundCornerStyle style;
@@ -337,14 +337,14 @@ shared_ptr<RoundCornerWidget> border;
     }
 };
 
-   class LabeledRangeInput : public ui::Widget {
+   class LabeledRangeInput : public rmlib::Widget {
     public:
         enum LabelPosition {
             LEFT, TOP
         };
 
         LabeledRangeInput(int x, int y, int w, int h, string text = "", LabelPosition pos = LEFT, int padding = 5)
-                : ui::Widget(x, y, w, h) {
+                : rmlib::Widget(x, y, w, h) {
             if (!text.empty()) {
                 label = make_shared<ui::Text>(x, y, w, (h / 2) - padding, text);
                 children.push_back(label);

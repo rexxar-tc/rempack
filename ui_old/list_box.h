@@ -5,7 +5,11 @@
 #pragma once
 
 #include <unordered_set>
+#include <UI/Text.h>
+
 #include "widgets.h"
+
+using namespace std;
 namespace widgets {
     /*
      * Displays a list of items.
@@ -46,7 +50,7 @@ namespace widgets {
 
             bool _selected = false;
         private:
-            shared_ptr<ui::Text> _widget = nullptr;
+            shared_ptr<rmlib::Text> _widget = nullptr;
         };
 
         PLS_DEFINE_SIGNAL(LISTBOX_EVENT, const shared_ptr<ListItem>);

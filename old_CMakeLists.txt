@@ -1,0 +1,96 @@
+cmake_minimum_required(VERSION 3.21)
+
+#set your project name here. this will be used throughout the build system
+#this is also the name of the compiled binary
+project(rempack)
+
+set(CMAKE_CXX_STANDARD 20)
+
+add_subdirectory(extern/rM2-stuff)
+
+#user@host same as an SSH command
+#host string should be an IP address or a hostname, if configured
+#you can also simply set this variable as an argument passed to CMake: -DREMARKABLE_HOST="192.168.1.102"
+if(NOT REMARKABLE_HOST)
+    set(REMARKABLE_HOST "remarkable")
+endif()
+
+
+#add rmkit.h to our system header search paths
+#include_directories(SYSTEM "${RMKIT_DIR}")
+
+#add /include to search paths for font_embed.h
+include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/assets")
+include_directories("${CMAKE_SOURCE_DIR}/ui")
+include_directories("${CMAKE_SOURCE_DIR}/opkg")
+include_directories("${CMAKE_SOURCE_DIR}")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/extern")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/extern/libs")
+
+
+find_package(ZLIB)
+
+add_executable(${PROJECT_NAME} src/main.cpp
+        src/rempack.cpp
+        assets/icons/icons_embed.h
+        ui/debug_widgets.h
+        opkg/opkg.h
+        opkg/opkg.cpp
+        ui/rempack_widgets.h
+        ui/text_helpers.h
+        ui/list_box.h
+)
+target_compile_options(${PROJECT_NAME}
+        PUBLIC $<$<CONFIG:Debug>:-g -Wall -Wno-unused-variable>
+        PUBLIC $<$<CONFIG:Release>:-O3>
+)
+target_link_options(${PROJECT_NAME}
+        PUBLIC -lz)
+
+#see also: rm-toolchain.cmake
+
+target_link_libraries(${PROJECT_NAME} PUBLIC ZLIB::ZLIB rMlib)
+
+#add_library(rmkit ${RMKIT_FILE})
+#set_target_properties(rmkit PROPERTIES LINKER_LANGUAGE CXX)
+#target_precompile_headers(rmkit PRIVATE ${RMKIT_FILE})
+
+#target_precompile_headers(${PROJECT_NAME} REUSE_FROM rmkit)
+#target_link_libraries(${PROJECT_NAME} PRIVATE rmkit)
+
+
+#below is an unfinished experiment in using rmkit-sim to do local emulation
+#I'll finish it someday
+#to enable local emulation, install resim (link here)
+#if resim is not available in the PATH environment variable, you may specify it here
+#set(RESIM_ALTERNATE_PATH "~/.local/bin/")
+
+#find_program(RESIM_PATH resim
+#        "$ENV{PATH}" "${RESIM_ALTERNATE_PATH}")
+
+#if(NOT RESIM_PATH)
+#    message(WARNING "Resim is not found in any search path. Local emulation disabled!")
+#endif ()
+
+#if(RESIM_PATH)
+##    message(NOTICE "Resim found at ${RESIM_PATH}. Setting up target...")
+#    add_custom_target(Simulate
+#            COMMAND ${RESIM_PATH} ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
+#            VERBATIM)
+#    add_dependencies(Simulate ${PROJECT_NAME})
+##else()
+##    message(NOTICE "Resim path not found, Simulate target disabled!")
+#endif()
+
+
+add_custom_target(docker_release
+        COMMAND docker run -i -v "${CMAKE_SOURCE_DIR}:/mnt/project" --pull missing -w /mnt/project ghcr.io/toltec-dev/toolchain:latest sh docker_build_script.sh
+        VERBATIM)
+
+add_custom_target(run_app
+        COMMAND cd .. && sh run_app.sh ${CMAKE_PROJECT_NAME}
+        VERBATIM)
+#cause run_app to trigger a docker build if it hasn't run yet
+#Clion users may want to change this to (run_app ${CMAKE_PROJECT_NAME}) to not invoke docker
+add_dependencies(run_app ${PROJECT_NAME})

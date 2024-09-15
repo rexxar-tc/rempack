@@ -1,0 +1,3 @@
+[submodule "extern/rM2-stuff"]
+	path = extern/rM2-stuff
+	url = https://github.com/timower/rM2-stuff.git
