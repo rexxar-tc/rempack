@@ -249,7 +249,7 @@ ui::Scene buildHomeScene(int width, int height) {
     packagePanel->events.selected += PLS_DELEGATE(onPackageSelect);
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);
 
-    displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle());
+    displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle(), scene);
 
     displayBox->events.install += PLS_DELEGATE(onInstallClick);
     displayBox->events.uninstall += PLS_DELEGATE(onUninstallClick);

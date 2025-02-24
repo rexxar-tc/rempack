@@ -14,6 +14,108 @@
 
 namespace widgets{
 
+    /*
+    * _________________________________________________
+    * | Window Title                                  |
+    * | _____________________________________________ |
+    * | | Scrolling                                 | |
+    * | | Text                                      | |
+    * | | Contents                                  | |
+    * | ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ |
+    * | [Close]                                       |
+    * ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+    */
+    class TerminalDialog: public widgets::Overlay {
+    public:
+        TerminalDialog(int x, int y, int w, int h, const std::string& title): Overlay(x,y,w,h){
+            this->buttons.clear();
+            this->buttons.emplace_back("Dismiss");
+        }
+        void build_dialog() override {
+            this->create_scene();
+            layout = make_shared<ui::VerticalLayout>(x, y, w, h, this->scene);
+            int dx = padding;
+            int dy = padding;
+            int dw = w - padding - padding;
+            t1 = new ui::Text(dx, dy, dw, utils::line_height(), title);
+            int dht = h - padding - padding - 50 - utils::line_height();
+            buffer_size = dht / (utils::line_height() + padding);
+            layout->pack_start(t1);
+            l1 = new ui::MultiText(dx, dy + padding, dw,  dht, "Running...");
+            layout->pack_start(l1);
+            auto button_bar = new ui::HorizontalLayout(0, 0, this->w, 50, this->scene);
+            layout->pack_end(button_bar);
+            button_bar->y -= 2;
+
+            // layout->reflow();
+
+            this->add_buttons(button_bar);
+            ui::TaskQueue::add_task([this](){this->update_texts();});
+        }
+        void on_reflow() override{
+            t1->on_reflow();
+        }
+        void mark_redraw() override{
+            //layout->refresh();
+            Overlay::mark_redraw();
+        }
+        void stdout_callback(const std::string &s){
+            auto default_fs = ui::Style::DEFAULT.font_size;
+            auto lines = utils::wrap_string(s, w - padding - padding, default_fs);
+            for(const auto &l : lines)
+                push_line(l);
+            update_texts();
+            //mark_redraw();
+        }
+        void set_callback(const std::function<void()> &cb){
+            callback = cb;
+        }
+    private:
+        const int padding = 20;
+        shared_ptr<ui::VerticalLayout> layout;
+        ui::Text *t1 = nullptr;
+        ui::MultiText *l1 = nullptr;
+        std::deque<std::string> consoleBuffer;
+        int buffer_size = 16;
+        std::function<void()> callback;
+
+        void on_button_selected(std::string s) override{
+            callback();
+            widgets::Overlay::on_button_selected(s);
+        }
+
+        void add_buttons_reflow(ui::HorizontalReflow *button_bar) {
+            auto default_fs = ui::Style::DEFAULT.font_size;
+            for (auto b: this->buttons) {
+                auto image = stbtext::get_text_size(b, default_fs);
+
+                button_bar->pack_start(new ui::DialogButton(20, 0, image.w + default_fs, 50, this, b));
+            }
+        }
+
+        void push_line(const std::string &l){
+            consoleBuffer.push_back(l);
+            if(consoleBuffer.size() > buffer_size)
+                consoleBuffer.pop_front();
+        }
+
+
+        void update_texts(){
+            if(!t1 || !l1)
+                return;
+
+
+            std::stringstream ss;
+            for(const auto &l : consoleBuffer)
+                ss << l << std::endl;
+            auto str = ss.str();
+            l1->set_text(str.substr(0, str.size() - 2));
+            l1->mark_redraw();
+            //on_reflow();
+            //Overlay::mark_redraw();
+        }
+    };
+
     class SearchBox : public RoundedTextInput {
     public:
         SearchBox(int x, int y, int w, int h, RoundCornerStyle style, const string text = "") : RoundedTextInput(x, y, w, h, style, text) {
@@ -101,32 +203,17 @@ namespace widgets{
             mark_redraw();
         }
         void refresh_event(void*) {
-            auto dialog = new widgets::Overlay(200, 200, 600, 800);
-            dialog->set_title("Opkg update");
-            auto mt = dynamic_cast<ui::MultiText *>(dialog->contentWidget);
-            mt->set_text("Updating repositories. Please wait...");
-            dialog->buttons.clear();
-            dialog->buttons.push_back("OK");
-            dialog->show();
-            ui::TaskQueue::add_task([dialog, mt]() {
-                stringstream ss = {};
-                auto rc = opkg::UpdateRepos([dialog, mt, &ss](const string &out) {
-                    ss << out << endl;
-                    mt->set_text(ss.str());
-                    dialog->mark_redraw();
-                });
-                ss << endl;
-                if(rc == 0) {
-                    ss << "Update successful" << endl;
-                }
-                else{
-                    ss << "Update error!" << endl;
-                }
-                mt->set_text(ss.str());
-                dialog->mark_redraw();
+            auto td = new TerminalDialog(500,500,800,1100, "opkg update");
+            td->set_callback([this](){this->hide();});
+            td->show();
+            ui::TaskQueue::add_task([=](){
+                auto ret = opkg::UpdateRepos([=](const string s){td->stdout_callback(s);});
+                if (ret == 0)
+                    td->stdout_callback("Done.");
+                else
+                    td->stdout_callback("Error!");
+                std::cout << "opkg update returned with exit code " << ret << std::endl;
             });
-            dialog->events.close+=[=](string s){dialog->hide();};
-            ui::MainLoop::refresh();
         }
         /*
          * [x] Check upgrades
@@ -140,7 +227,7 @@ namespace widgets{
             auto s = ui::make_scene();
             s->add(this);
             mark_redraw();
-            auto v = ui::VerticalLayout(x, y + padding, 500, 800, s);
+            auto v = ui::VerticalLayout(x, y + padding, 500, 800 - (padding * 4), s);
             auto dw = 500 - padding - padding;
             auto dh = 800 - padding - padding;
             auto dx = v.x + padding;
@@ -148,6 +235,9 @@ namespace widgets{
             auto updateBtn = new EventButton(padding,padding,dw,utils::line_height(),"Refresh Repositories");
             updateBtn->events.clicked += PLS_DELEGATE(refresh_event);
             v.pack_start(updateBtn);
+            auto exitBtn = new EventButton(padding, 0-padding-utils::line_height(), dw, utils::line_height(), "Quit");
+            exitBtn->events.clicked += PLS_LAMBDA(auto &ev) { exit(0); };
+            v.pack_end(exitBtn);
             return s;
         }
     };
@@ -340,107 +430,6 @@ namespace widgets{
     };
 
     /*
-    * _________________________________________________
-    * | Window Title                                  |
-    * | _____________________________________________ |
-    * | | Scrolling                                 | |
-    * | | Text                                      | |
-    * | | Contents                                  | |
-    * | ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ |
-    * | [Close]                                       |
-    * ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-    */
-    class TerminalDialog: public widgets::Overlay {
-    public:
-        TerminalDialog(int x, int y, int w, int h, const std::string& title): Overlay(x,y,w,h){
-            this->buttons.clear();
-            this->buttons.emplace_back("Dismiss");
-        }
-        void build_dialog() override {
-            this->create_scene();
-            layout = make_shared<ui::VerticalLayout>(x, y, w, h, this->scene);
-            int dx = padding;
-            int dy = padding;
-            int dw = w - padding - padding;
-            t1 = new ui::Text(dx, dy, dw, utils::line_height(), title);
-            int dht = h - padding - padding - 50 - utils::line_height();
-            buffer_size = dht / (utils::line_height() + padding);
-            layout->pack_start(t1);
-            l1 = new ui::MultiText(dx, dy + padding, dw,  dht, "Running...");
-            layout->pack_start(l1);
-            auto button_bar = new ui::HorizontalLayout(0, 0, this->w, 50, this->scene);
-            layout->pack_end(button_bar);
-            button_bar->y -= 2;
-
-            // layout->reflow();
-
-            this->add_buttons(button_bar);
-            ui::TaskQueue::add_task([this](){this->update_texts();});
-        }
-        void on_reflow() override{
-            t1->on_reflow();
-        }
-        void mark_redraw() override{
-            //layout->refresh();
-            Overlay::mark_redraw();
-        }
-        void stdout_callback(const std::string &s){
-            auto default_fs = ui::Style::DEFAULT.font_size;
-            auto lines = utils::wrap_string(s, w - padding - padding, default_fs);
-            for(const auto &l : lines)
-                push_line(l);
-            update_texts();
-            //mark_redraw();
-        }
-        void set_callback(const std::function<void()> &cb){
-            callback = cb;
-        }
-    private:
-        const int padding = 20;
-        shared_ptr<ui::VerticalLayout> layout;
-        ui::Text *t1 = nullptr;
-        ui::MultiText *l1 = nullptr;
-        std::deque<std::string> consoleBuffer;
-        int buffer_size = 16;
-        std::function<void()> callback;
-
-void on_button_selected(std::string s) override{
-    callback();
-    widgets::Overlay::on_button_selected(s);
-}
-
-        void add_buttons_reflow(ui::HorizontalReflow *button_bar) {
-            auto default_fs = ui::Style::DEFAULT.font_size;
-            for (auto b: this->buttons) {
-                auto image = stbtext::get_text_size(b, default_fs);
-
-                button_bar->pack_start(new ui::DialogButton(20, 0, image.w + default_fs, 50, this, b));
-            }
-        }
-
-        void push_line(const std::string &l){
-            consoleBuffer.push_back(l);
-            if(consoleBuffer.size() > buffer_size)
-                consoleBuffer.pop_front();
-        }
-
-
-        void update_texts(){
-            if(!t1 || !l1)
-                return;
-
-
-            std::stringstream ss;
-            for(const auto &l : consoleBuffer)
-                ss << l << std::endl;
-            auto str = ss.str();
-            l1->set_text(str.substr(0, str.size() - 2));
-            //on_reflow();
-            //Overlay::mark_redraw();
-        }
-    };
-
-    /*
     * _____________________________________________________________________________________
     * | Package info                                                                      |
     * | Package name                                                                      |
@@ -455,7 +444,7 @@ void on_button_selected(std::string s) override{
         int padding = 5;
         int controlHeight = 40;
         int controlWidth = 200;
-        PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style) : RoundCornerWidget(x,y,w,h,style){
+        PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style, shared_ptr<ui::InnerScene> &scene) : RoundCornerWidget(x,y,w,h,style){
             _text = make_shared<ui::MultiText>(x,y,w,h,"");
             _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
             children.push_back(_text);
@@ -465,7 +454,9 @@ void on_button_selected(std::string s) override{
             _previewBtn = make_shared<EventButton>(x,y,200, controlHeight,"Preview");
             _actionCounter = make_shared<EventButton>(x,y,200, controlHeight, "Pending: [+0/-0]");
             children.push_back(_installBtn);
+            scene->add(_installBtn);
             children.push_back(_removeBtn);
+            scene->add(_removeBtn);
             //children.push_back(_downloadBtn);
             //children.push_back(_previewBtn);
             //children.push_back(_actionCounter);
