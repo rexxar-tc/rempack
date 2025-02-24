@@ -52,14 +52,14 @@ int execute(const std::string& cmd, std::string& output) {
     std::array<char, bufsize> buffer{};
 
     stringstream ss;
-    ss << "source ~/.bashrc; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
-#endif
+//    ss << "source ~/.bashrc; ";
+//#if DEBUG
+//    ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
+//#endif
     ss << cmd << " 2>&1 ; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD}:" << preload;
-#endif
+//#if DEBUG
+//    ss << "export LD_PRELOAD=${LD_PRELOAD}:" << preload;
+//#endif
 
     auto pipe = popen(ss.str().c_str(), "r");
     if (!pipe) throw std::runtime_error("popen() failed!");
@@ -77,14 +77,14 @@ int execute(const std::string& cmd, std::string& output) {
 int execute(const std::string& cmd, const function<void (const std::string &)> &callback) {
     const std::string preload = "/opt/lib/librm2fb_client.so.1";
     std::stringstream ss;
-    ss << "source ~/.bashrc; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
-#endif
+//    ss << "source ~/.bashrc; ";
+//#if DEBUG
+//    ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
+//#endif
     ss << cmd << " 2>&1; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD}:" << preload;
-#endif
+//#if DEBUG
+//    ss << "export LD_PRELOAD=${LD_PRELOAD}:" << preload;
+//#endif
     auto pipe = popen(ss.str().c_str(), "r");
     if (!pipe) throw std::runtime_error("popen() failed!");
 
