@@ -110,6 +110,7 @@ namespace widgets{
                 ss << l << std::endl;
             auto str = ss.str();
             l1->set_text(str.substr(0, str.size() - 2));
+            l1->undraw();
             l1->mark_redraw();
             //on_reflow();
             //Overlay::mark_redraw();
