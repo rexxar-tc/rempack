@@ -1,14 +1,11 @@
-# RemPack
+# rempack
 
-RemPack is a package manager for the ReMarkable 2 tablet.
+RemPack is a friendly package manager for the ReMarkable 2 tablet.
 
 This is targeted specifically at the ReMarkable 2, but it will likely compile fine for RM1 and other tablets targeted by rmkit. If you run this on another device, I'd love to hear about it!
 
 The goal is to create a package manager that is as featureful as possible for the RM2.
 
-## Warning!
-
-This project uses a custom fork of rmkit. You'll need to pull down and build that fork, then either copy rmkit.h into the `extern` folder, or make a hard link to it. The changes in my rmkit fork will be upstreamed Eventually(tm).
 
 ### What is this?
 
@@ -33,7 +30,7 @@ The goal is to make the opkg repositories browsable, sortable, and searchable by
 - [x] Stateful repo browsing
 - [x] Aggregate repo browsing
 - [x] Search engine
-- [ ] Filters
+- [x] Filters
 - [ ] What's new
 - [ ] Repo manager
 - [x] Seamless opkg repo update
