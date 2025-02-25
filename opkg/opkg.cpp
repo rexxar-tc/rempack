@@ -56,7 +56,7 @@ int execute(const std::string& cmd, std::string& output) {
     std::array<char, bufsize> buffer{};
 
     stringstream ss;
-    ss << "source ~/.bashrc; ";
+//    ss << "source ~/.bashrc; ";
 #if DEBUG
     ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
 #endif
@@ -85,7 +85,8 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
     const std::string preload = "/opt/lib/libsysfs_preload.so";
 #endif
     std::stringstream ss;
-    ss << "source ~/.bashrc; ";
+    ss << "echo $LD_PRELOAD; ";
+//    ss << "source ~/.bashrc; ";
 #if DEBUG
     ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
 #endif
