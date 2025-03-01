@@ -74,7 +74,7 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
     }
     auto preloadstr = preloadSs.str();
     preloadstr = preloadstr.substr(0,preloadstr.size()-1);
-    setenv("LD_PRELOAD", preloadstr.c_str(), 1);
+    //setenv("LD_PRELOAD", preloadstr.c_str(), 1);
     std::stringstream invocation;
     invocation << "source ~/.bashrc ; ";
     invocation << cmd << " 2>&1";
@@ -99,7 +99,7 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
         }
     }
 
-    setenv("LD_PRELOAD", preloadStr_original.c_str(), 1);
+    //setenv("LD_PRELOAD", preloadStr_original.c_str(), 1);
 
     return pclose(pipe);
 }
