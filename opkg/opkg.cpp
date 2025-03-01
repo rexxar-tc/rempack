@@ -63,7 +63,7 @@ std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so
 int execute(const std::string& cmd, const function<void (const std::string &)> &callback) {
     std::string preloadStr_original = getenv("LD_PRELOAD");
 
-    std::cerr << "PRELOAD: " << preloadStr_original << std::endl;
+    //std::cerr << "PRELOAD: " << preloadStr_original << std::endl;
 
     std::stringstream preloadSs;
     auto lds = split_str(preloadStr_original, ':');
@@ -75,8 +75,11 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
     auto preloadstr = preloadSs.str();
     preloadstr = preloadstr.substr(0,preloadstr.size()-1);
     setenv("LD_PRELOAD", preloadstr.c_str(), 1);
-    auto invocation = "source ~/.bashrc ; " + cmd + " 2>&1";
-    auto pipe = popen(invocation.c_str(), "r");
+    std::stringstream invocation;
+    invocation << "source ~/.bashrc ; ";
+    invocation << cmd << " 2>&1";
+    invocation << "; /opt/lib/opkg/info/doomarkable.postinst configure; echo $?";
+    auto pipe = popen(invocation.str().c_str(), "r");
     if (!pipe) throw std::runtime_error("popen() failed!");
 
     char cline[4096];
