@@ -64,7 +64,7 @@ std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so
 int execute(const std::string& cmd, const function<void (const std::string &)> &callback) {
     std::string preloadStr_original = getenv("LD_PRELOAD");
 
-    std::cout << "PRELOAD: " << preloadStr_original << std::endl;
+    std::cerr << "PRELOAD: " << preloadStr_original << std::endl;
 
     std::stringstream preloadSs;
     auto lds = split_str(preloadStr_original, ' ');
