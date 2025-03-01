@@ -78,8 +78,8 @@ bool packageFilterDelegate(const shared_ptr<ListItem> &item) {
     if(!((_filterOpts->Installed && pk->IsInstalled()) ||
     (_filterOpts->NotInstalled && pk->State == package::NotInstalled)))
         return false;   //yes, I feel bad
-    // if(_filterOpts->Upgradable && !pk->_is_updatable)
-    //    return false;
+     if(_filterOpts->Upgradable && !pk->Upgradable())
+        return false;
     if(!_searchQuery.empty()) {
         boyer::pattern pat;
         boyer::init_pattern(_searchQuery, pat);
@@ -203,7 +203,7 @@ ui::Scene buildHomeScene(int width, int height) {
 
     _filterOpts = make_shared<widgets::FilterOptions>(widgets::FilterOptions{
             .Installed = true,
-            .Upgradable = true,
+            .Upgradable = false,
             .NotInstalled = true,
     });
     for(auto &r : pkg.repositories){

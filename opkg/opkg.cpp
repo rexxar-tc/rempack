@@ -108,7 +108,15 @@ int opkg::Install(const vector<shared_ptr<package>> &targets, const function<voi
     if(OPKG_FORCE_NOACTION)
         ss << " --noaction";
     ss << args;
-    return execute(ss.str(), lineCallback);
+    auto ret = execute(ss.str(), lineCallback);
+
+    //TODO: this isn't quite right, we need to rescan control files
+    //mark targets as installed for UI niceness
+    if(ret == 0){
+        for(const auto &t : targets)
+            t->State = package::Installed;
+    }
+    return ret;
 }
 
 int opkg::Uninstall(const vector<shared_ptr<package>> &targets, const function<void(const string &)> &lineCallback, const std::string& args) {
@@ -119,7 +127,11 @@ int opkg::Uninstall(const vector<shared_ptr<package>> &targets, const function<v
     if(OPKG_FORCE_NOACTION)
         ss << " --noaction";
     ss << args;
-    return execute(ss.str(), lineCallback);
+    auto ret = execute(ss.str(), lineCallback);
+    if(ret == 0){
+        for(const auto &t : targets)
+            t->State = package::NotInstalled;
+    }
 }
 
 int opkg::UpdateRepos(const function<void(const string &)> &lineCallback) {

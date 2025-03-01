@@ -346,13 +346,13 @@ namespace widgets{
             s->add(iTog);
             children.push_back(iTog);
             dy += padding + iTog->h;
-            auto uTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Upgradable");
+            auto uTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Only Upgradable");
             uTog->toggled = options->Upgradable;
             uTog->style.justify = ui::Style::JUSTIFY::LEFT;
             uTog->events.toggled += [this](bool s){options->Upgradable = s; upate_event();};
-            //children.push_back(uTog);
-            //s->add(uTog);
-            //dy += padding + uTog->h;
+            children.push_back(uTog);
+            s->add(uTog);
+            dy += padding + uTog->h;
             auto unTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Not Installed");
             unTog->toggled = options->NotInstalled;
             unTog->style.justify = ui::Style::JUSTIFY::LEFT;
