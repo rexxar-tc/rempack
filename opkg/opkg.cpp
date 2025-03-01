@@ -62,7 +62,7 @@ unordered_set<string> formatExcludeNames{"libc", "libgcc"};
 std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so.1", "/opt/lib/libsysfs_preload.so"};
 
 int execute(const std::string& cmd, const function<void (const std::string &)> &callback) {
-    std::string preloadStr_original = getenv("LD_PRELOAD");
+    //std::string preloadStr_original = getenv("LD_PRELOAD");
 
     //std::cerr << "PRELOAD: " << preloadStr_original << std::endl;
 //
@@ -76,7 +76,7 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
     //auto preloadstr = preloadSs.str();
     //preloadstr = preloadstr.substr(0,preloadstr.size()-1);
     //setenv("LD_PRELOAD", preloadstr.c_str(), 1);
-    setenv("LD_PRELOAD", "", 1);
+    //setenv("LD_PRELOAD", "", 1);
     auto invocation = "source ~/.bashrc ; " + cmd + " 2>&1";
     auto pipe = popen(invocation.c_str(), "r");
     if (!pipe) throw std::runtime_error("popen() failed!");
@@ -88,14 +88,17 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
                 break;
             if(c == '\n'){
                 auto s = std::string(cline);
-                callback(s);
+                if(s.find("LD_PRELOAD") == std::string::npos) //just squelch all LD_PRELOAD errors
+                    callback(s);
+                else
+                    std::cerr << s << std::endl;
                 memset(cline, 0, sizeof(cline));
                 break;
             }
         }
     }
 
-    setenv("LD_PRELOAD", preloadStr_original.c_str(), 1);
+    //setenv("LD_PRELOAD", preloadStr_original.c_str(), 1);
 
     return pclose(pipe);
 }
