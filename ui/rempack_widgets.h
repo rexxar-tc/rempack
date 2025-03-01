@@ -30,6 +30,7 @@ namespace widgets{
         TerminalDialog(int x, int y, int w, int h, const std::string& title): Overlay(x,y,w,h){
             this->buttons.clear();
             this->buttons.emplace_back("Dismiss");
+            this->title = title;
         }
         void build_dialog() override {
             this->create_scene();
@@ -53,13 +54,14 @@ namespace widgets{
             ui::TaskQueue::add_task([this](){this->update_texts();});
         }
         void on_reflow() override{
-            t1->on_reflow();
+            l1->on_reflow();
         }
         void mark_redraw() override{
             //layout->refresh();
             Overlay::mark_redraw();
         }
         void stdout_callback(const std::string &s){
+            std::cout<<s;
             auto default_fs = ui::Style::DEFAULT.font_size;
             auto lines = utils::wrap_string(s, w - padding - padding, default_fs);
             for(const auto &l : lines)
@@ -112,7 +114,7 @@ namespace widgets{
             l1->set_text(str.substr(0, str.size() - 2));
             l1->undraw();
             l1->mark_redraw();
-            //on_reflow();
+            on_reflow();
             //Overlay::mark_redraw();
         }
     };
@@ -573,6 +575,7 @@ namespace widgets{
     public:
         InstallDialog(int x, int y, int w, int h, const std::vector<shared_ptr<package>> &toInstall): Overlay(x,y,w,h){
             packages = toInstall;
+            pinned = true;
         }
         void build_dialog() override {
             this->create_scene();
@@ -668,6 +671,7 @@ namespace widgets{
     public:
         UninstallDialog(int x, int y, int w, int h, const std::vector<shared_ptr<package>> &toInstall): Overlay(x,y,w,h){
             packages = toInstall;
+            pinned = true;
         }
         void build_dialog() override {
             this->create_scene();
@@ -705,6 +709,7 @@ namespace widgets{
         void setCallback(const function<void(bool)>& callback){
             _callback = callback;
         }
+
     private:
         function<void(bool)> _callback;
         const int padding = 20;
@@ -794,7 +799,7 @@ namespace widgets{
             t2->y = cb->y + padding + cb->h;
             t2->set_text(s2.str());
             on_reflow();
-            Overlay::mark_redraw();
+            //Overlay::mark_redraw();
         }
     };
 }

@@ -198,7 +198,7 @@ string opkg::FormatPackage(const shared_ptr<package> &pk) {
         if(pk->Essential)
             ss << "Essential: yes" << endl;
 
-        ss << "Installed size: " << pk->Size << endl;
+        ss << "Installed size: " << utils::stringifySize(pk->Size) << endl;
     }
     else if(pk->State == package::InstallError){
         ss << "Status: Installation error! Placeholder text!" << endl;

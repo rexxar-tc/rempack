@@ -152,14 +152,14 @@ void onInstallClick(void*){
     auto m = new widgets::InstallDialog(500,500,600,800,vector<shared_ptr<package>>{_selected});
     //auto m = new ui::InfoDialog(50,50,200,200);
     //m->set_title("installing your mom");
-    m->setCallback([](bool pass){
-        if(pass){
-            //std::cout << "add install" << std::endl;
-            _menuData->PendingInstall.emplace(_selected->Package);
-        }
-        //std::cout << "pass install" << std::endl;
-        displayBox->set_actions(_menuData->PendingInstall.size(), _menuData->PendingRemove.size());
-    });
+    //m->setCallback([](bool pass){
+    //    if(pass){
+    //        //std::cout << "add install" << std::endl;
+    //        _menuData->PendingInstall.emplace(_selected->Package);
+    //    }
+    //    //std::cout << "pass install" << std::endl;
+    //    displayBox->set_actions(_menuData->PendingInstall.size(), _menuData->PendingRemove.size());
+    //});
     m->show();
 }
 void onUninstallClick(void*){

@@ -32,14 +32,19 @@ namespace widgets {
             ui::MainLoop::hide_overlay(this->scene);
         }
 
-        bool cleared = false;
         void render() override {
-            //border_widget->set_coords(x,y,w,h);
-            //border_widget->render_inside_fill();
-            //ui::Dialog::render();
+            border_widget->set_coords(x, y, w, h);
+            border_widget->render_inside_fill();
+            //for(const auto &child : scene->widgets)
+            //    draw_recurse(child);
+        }
 
-                border_widget->set_coords(x, y, w, h);
-                border_widget->render_inside_fill();
+        void draw_recurse(const shared_ptr<ui::Widget> &w){
+            fb->draw_rect(w->x, w->y, w->w, w->h, BLACK, false);
+            if(w->children.size()){
+                for(const auto &child : w->children)
+                    draw_recurse(child);
+            }
         }
 
         void mark_redraw() override {
