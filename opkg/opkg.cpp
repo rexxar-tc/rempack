@@ -828,34 +828,6 @@ void uninstall_callback(const std::string& line) {
         if (spacePos != string::npos) {
             uninstall_cache.insert(packagePart.substr(0, spacePos));
         }
-        else {
-            // If there's no space, the entire part is the package name
-            uninstall_cache.insert(packagePart);
-        }
-    }
-    else {
-        // Check if the line ends with ", removing."
-        size_t suffixPos = line.find(", removing.");
-        if (suffixPos != string::npos) {
-            // Extract substring up to the suffix
-            string packagePart = line.substr(0, suffixPos);
-            // Split into words and take the last one as the package name
-            vector<string> parts;
-            size_t start = 0;
-            while (start < packagePart.size()) {
-                size_t end = packagePart.find(' ', start);
-                if (end == string::npos) {
-                    end = packagePart.size();
-                }
-                if (end != start) { // Avoid empty tokens
-                    parts.push_back(packagePart.substr(start, end - start));
-                }
-                start = end + 1;
-            }
-            if (!parts.empty()) {
-                uninstall_cache.insert(parts.back());
-            }
-        }
     }
 }
 
