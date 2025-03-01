@@ -78,7 +78,6 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
     std::stringstream invocation;
     invocation << "source ~/.bashrc ; ";
     invocation << cmd << " 2>&1";
-    invocation << "; /opt/lib/opkg/info/doomarkable.postinst configure; echo $?";
     auto pipe = popen(invocation.str().c_str(), "r");
     if (!pipe) throw std::runtime_error("popen() failed!");
 
