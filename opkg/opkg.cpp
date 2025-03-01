@@ -25,6 +25,20 @@
 namespace fs = filesystem;
 using namespace std;
 
+//TODO: this needs to move to utilities
+vector<string> split_str(const string &s, const char delimiter)
+{
+    vector<string> splits;
+    string _split;
+    istringstream ss(s);
+    while (getline(ss, _split, delimiter))
+    {
+        utils::ltrim(_split);
+        splits.push_back(_split);
+    }
+    return splits;
+}
+
 /*
  * Package: toltec-base
  * Description: Metapackage defining the base set of packages in a Toltec install
@@ -45,56 +59,23 @@ const fs::path OPKG_LIB{"/opt/lib/opkg"}; //info(dir) lists(dir(empty?)) status(
 unordered_set<string> formatExcludeNames{"libc", "libgcc"};
 
 //need to remove LD_PRELOAD var set by rm2fb-client:
-//LD_PRELOAD=/opt/lib/librm2fb_client.so.1
-int execute(const std::string& cmd, std::string& output) {
-#if DEBUG
-    const std::string preload = "/opt/lib/librm2fb_client.so.1";
-#else
-    const std::string preload = "/opt/lib/libsysfs_preload.so";
-#endif
-    const int bufsize=128;
-    std::array<char, bufsize> buffer{};
-
-    stringstream ss;
-//    ss << "source ~/.bashrc; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
-#endif
-  ss << cmd << " 2>&1 ; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD}:" << preload;
-#endif
-
-    auto pipe = popen(ss.str().c_str(), "r");
-    if (!pipe) throw std::runtime_error("popen() failed!");
-
-    size_t count;
-    do {
-        if ((count = fread(buffer.data(), 1, bufsize, pipe)) > 0) {
-            output.insert(output.end(), std::begin(buffer), std::next(std::begin(buffer), count));
-        }
-    } while(count > 0);
-
-    return pclose(pipe);
-};
+std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so.1", "/opt/lib/libsysfs_preload.so"};
 
 int execute(const std::string& cmd, const function<void (const std::string &)> &callback) {
-#if DEBUG
-    const std::string preload = "/opt/lib/librm2fb_client.so.1";
-#else
-    const std::string preload = "/opt/lib/libsysfs_preload.so";
-#endif
-    std::stringstream ss;
-    ss << "echo $LD_PRELOAD; ";
-//    ss << "source ~/.bashrc; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD%" << preload << "}; ";
-#endif
-  ss << cmd << " 2>&1; ";
-#if DEBUG
-    ss << "export LD_PRELOAD=${LD_PRELOAD}:" << preload;
-#endif
-    auto pipe = popen(ss.str().c_str(), "r");
+    std::string preloadStr_original = getenv("LD_PRELOAD");
+
+    std::cout << "PRELOAD: " << preloadStr_original << std::endl;
+
+    std::stringstream preloadSs;
+    auto lds = split_str(preloadStr_original, ' ');
+    for(const auto &ld : lds){
+        if(CONTAINS(preload_excludes, ld))
+            continue;
+        preloadSs << ld << ' ';
+    }
+    setenv("LD_PRELOAD", preloadSs.str().c_str(), 1);
+    auto invocation = "source ~/.bashrc ; " + cmd + " 2>&1";
+    auto pipe = popen(invocation.c_str(), "r");
     if (!pipe) throw std::runtime_error("popen() failed!");
 
     char cline[4096];
@@ -110,6 +91,8 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
             }
         }
     }
+
+    setenv("LD_PRELOAD", preloadStr_original.c_str(), 1);
 
     return pclose(pipe);
 }
@@ -315,20 +298,6 @@ string opkg::formatDependencyTree(const shared_ptr<package>& pkg, bool excludeIn
     unordered_set<string> visited;
     recurseDependencyTree(pkg, ss, excludeInstalled, prefix, visited);
     return ss.str();
-}
-
-//TODO: this needs to move to utilities
-vector<string> split_str(const string &s, const char delimiter)
-{
-    vector<string> splits;
-    string _split;
-    istringstream ss(s);
-    while (getline(ss, _split, delimiter))
-    {
-        utils::ltrim(_split);
-        splits.push_back(_split);
-    }
-    return splits;
 }
 
 bool opkg::split_str_and_find(const string& children_str, vector<shared_ptr<package>> &field){
