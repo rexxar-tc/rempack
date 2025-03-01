@@ -59,24 +59,22 @@ const fs::path OPKG_LIB{"/opt/lib/opkg"}; //info(dir) lists(dir(empty?)) status(
 unordered_set<string> formatExcludeNames{"libc", "libgcc"};
 
 //need to remove LD_PRELOAD var set by rm2fb-client:
-std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so.1", "/opt/lib/libsysfs_preload.so"};
-
+std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so", "/opt/lib/librm2fb_client.so.1", "/opt/lib/libsysfs_preload.so"};
 int execute(const std::string& cmd, const function<void (const std::string &)> &callback) {
-    //std::string preloadStr_original = getenv("LD_PRELOAD");
+    std::string preloadStr_original = getenv("LD_PRELOAD");
 
-    //std::cerr << "PRELOAD: " << preloadStr_original << std::endl;
-//
-    //std::stringstream preloadSs;
-    //auto lds = split_str(preloadStr_original, ':');
-    //for(const auto &ld : lds){
-    //    if(CONTAINS(preload_excludes, ld))
-    //        continue;
-    //    preloadSs << ld << ':';
-    //}
-    //auto preloadstr = preloadSs.str();
-    //preloadstr = preloadstr.substr(0,preloadstr.size()-1);
-    //setenv("LD_PRELOAD", preloadstr.c_str(), 1);
-    //setenv("LD_PRELOAD", "", 1);
+    std::cerr << "PRELOAD: " << preloadStr_original << std::endl;
+
+    std::stringstream preloadSs;
+    auto lds = split_str(preloadStr_original, ':');
+    for(const auto &ld : lds){
+        if(CONTAINS(preload_excludes, ld))
+            continue;
+        preloadSs << ld << ':';
+    }
+    auto preloadstr = preloadSs.str();
+    preloadstr = preloadstr.substr(0,preloadstr.size()-1);
+    setenv("LD_PRELOAD", preloadstr.c_str(), 1);
     auto invocation = "source ~/.bashrc ; " + cmd + " 2>&1";
     auto pipe = popen(invocation.c_str(), "r");
     if (!pipe) throw std::runtime_error("popen() failed!");
@@ -98,7 +96,7 @@ int execute(const std::string& cmd, const function<void (const std::string &)> &
         }
     }
 
-    //setenv("LD_PRELOAD", preloadStr_original.c_str(), 1);
+    setenv("LD_PRELOAD", preloadStr_original.c_str(), 1);
 
     return pclose(pipe);
 }
