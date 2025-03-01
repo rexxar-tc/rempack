@@ -179,6 +179,11 @@ namespace widgets{
             ui::MainLoop::refresh();
         }
 
+        void hide() override{
+            ui::MainLoop::hide_overlay(this->scene);
+            ui::MainLoop::refresh();
+        }
+
         void render() override{
             render_inside_fill();
         }
