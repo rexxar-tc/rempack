@@ -131,10 +131,11 @@ int opkg::Uninstall(const vector<shared_ptr<package>> &targets, const function<v
         ss << " --noaction";
     ss << args;
     auto ret = execute(ss.str(), lineCallback);
-    if(ret == 0){
-        for(const auto &t : targets)
-            t->State = package::NotInstalled;
-    }
+    //if(ret == 0){
+    //    for(const auto &t : targets)
+    //        t->State = package::NotInstalled;
+    //}
+    return ret;
 }
 
 int opkg::UpdateRepos(const function<void(const string &)> &lineCallback) {

@@ -681,7 +681,7 @@ namespace widgets{
             l1->selectable = false;
             layout->pack_start(l1);
             cb = new ui::ToggleButton(dx, dy + padding + padding, dw, utils::line_height(), "Auto-remove dependencies");
-            cb->toggled = true;
+            cb->toggled = dependencies;
             cb->events.toggled += [this](bool s){on_autoremove_tick(s);};
             cb->style.justify = ui::Style::JUSTIFY::LEFT;
             layout->pack_start(cb);
@@ -715,7 +715,7 @@ namespace widgets{
         ui::ToggleButton *cb = nullptr;
         bool _accepted = false;
         std::vector<shared_ptr<package>> packages;
-        bool dependencies = true;
+        bool dependencies = false;
 
         void on_button_selected(std::string s) override{
             if(s == "OK") {
@@ -745,15 +745,23 @@ namespace widgets{
 
         vector<shared_ptr<package>> results;
 
-        void run_uninstall(){
-            auto td = new TerminalDialog(500,500,800,1100, "opkg uninstall");
-            td->set_callback([this](){this->_callback(this->_accepted);this->hide();});
+        void run_uninstall() {
+            auto td = new TerminalDialog(500, 500, 800, 1100, "opkg uninstall");
+            td->set_callback([this]() {
+                this->_callback(this->_accepted);
+                this->hide();
+            });
             td->show();
-            auto ret = opkg::Uninstall(packages, [td](const string s){td->stdout_callback(s);}, dependencies ? " --autoremove" : "");
-            if(ret == 0)
+            auto ret = opkg::Uninstall(packages, [td](const string s) { td->stdout_callback(s); }, dependencies ? " --autoremove" : "");
+            if (ret == 0) {
                 td->stdout_callback("Done.");
-            else
+                for (const auto &t: packages)
+                    t->State = package::NotInstalled;
+            }
+
+            else {
                 td->stdout_callback("Error!");
+            }
             std::cout << "opkg uninstall returned with exit code " << ret << std::endl;
         }
 
