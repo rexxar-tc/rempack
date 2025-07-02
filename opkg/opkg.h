@@ -69,12 +69,14 @@ public:
     static int Install(const vector<shared_ptr<package>> &targets, const function<void(const string &)> &lineCallback, const std::string& args = "");
     static int Uninstall(const vector<shared_ptr<package>> &targets, const function<void(const string &)> &lineCallback, const std::string& args = "");
     static int UpdateRepos(const function<void(const string &)> &lineCallback);
+    static string DownloadPackage(const shared_ptr<package>& pkg, const function<void(const string &)> &lineCallback, const string& targetPath = "");
     void LoadSections(vector<string> *categories){ LoadSections(categories,vector<string>()); }
     void LoadSections(vector<string> *categories, vector<string> excludeRepos);
     void LoadPackages(vector<string> *pVector){ LoadPackages(pVector, vector<string>()); }
     void LoadPackages(vector<string> *pVector, vector<string> excludeRepos);
     void InitializeRepositories();
     void link_dependencies();
+    static string getCachedSplashscreen(const shared_ptr<package>& pkg);
     map<string, shared_ptr<package>> packages;
     vector<string> repositories;
     vector<string> sections;

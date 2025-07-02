@@ -58,10 +58,9 @@ include_directories(SYSTEM "${RMKIT_DIR}")
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/assets")
 include_directories("${CMAKE_SOURCE_DIR}/ui")
-include_directories("${CMAKE_SOURCE_DIR}/opkg")
+add_subdirectory("${CMAKE_SOURCE_DIR}/opkg")
 
 
-find_package(ZLIB)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/rempack.cpp
@@ -69,8 +68,7 @@ add_executable(${PROJECT_NAME} src/main.cpp
         #${RMKIT_FILE}
         assets/icons/icons_embed.h
         ui/debug_widgets.h
-        opkg/opkg.h
-        opkg/opkg.cpp
+        #opkg/opkg.h
         ui/rempack_widgets.h
         ui/text_helpers.h
         ui/list_box.h
@@ -79,8 +77,7 @@ target_compile_options(${PROJECT_NAME}
         PUBLIC $<$<CONFIG:Debug>:-g -O0 -Wall -Wno-unused-variable>
         PUBLIC $<$<CONFIG:Release>:-O3>
 )
-target_link_options(${PROJECT_NAME}
-        PUBLIC -lz)
+#target_link_options(${PROJECT_NAME}        PUBLIC -lz)
 #these can also be done as #define statements, but they MUST appear before rmkit.h
 #all these defines are necessary to build successfully
 #they're here for convenience (you can never forget them) and also to ensure
@@ -98,7 +95,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         )
 #see also: rm-toolchain.cmake
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB)
+target_link_libraries(${PROJECT_NAME} PRIVATE opkg)
 
 #add_library(rmkit ${RMKIT_FILE})
 #set_target_properties(rmkit PROPERTIES LINKER_LANGUAGE CXX)

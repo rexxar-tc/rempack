@@ -146,28 +146,11 @@ void markInstall(const shared_ptr<package>& package){
 }
 
 void onInstallClick(void*){
-    //auto str = pkg.formatDependencyTree(_selected, false);
-    //cout << str;
-    //auto m = new widgets::ModalOverlay(20,20,1200,1400,{widgets::ModalOverlay::ModalButton::OK}, str);
     auto m = new widgets::InstallDialog(500,500,600,800,vector<shared_ptr<package>>{_selected});
-    //auto m = new ui::InfoDialog(50,50,200,200);
-    //m->set_title("installing your mom");
-    m->setCallback([](bool pass){
-    //    if(pass){
-    //        //std::cout << "add install" << std::endl;
-    //        _menuData->PendingInstall.emplace(_selected->Package);
-    //    }
-        std::cout << "pass install: " << pass << std::endl;
-    //    displayBox->set_actions(_menuData->PendingInstall.size(), _menuData->PendingRemove.size());
-    });
     m->show();
 }
 void onUninstallClick(void*){
     auto m = new widgets::UninstallDialog(500,500,600,800,vector<shared_ptr<package>>{_selected});
-    m->setCallback([](bool pass){
-       //std::cout << "uninstall pass: " << pass << std::endl;
-        displayBox->set_actions(_menuData->PendingInstall.size(), _menuData->PendingRemove.size());
-    });
     m->show();
 }
 void onDownloadClick(void*){
@@ -180,10 +163,16 @@ void onEnactClick(void*){
 
 }
 
+void dummyline(const string& line){
+    std::cout << line << std::endl;
+}
 
 void setupDebug(){
     //_selected = pkg.packages["splashscreen-suspended-dragon_curve"];
     //onInstallClick(nullptr);
+    auto pk = pkg.packages["splashscreen-suspended-dragon_curve"];
+    auto pt = opkg::DownloadPackage(pk, dummyline);
+    std::cout << pt << std::endl;
 }
 
 

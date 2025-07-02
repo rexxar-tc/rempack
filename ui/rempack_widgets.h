@@ -602,7 +602,7 @@ namespace widgets{
             int dw = w - padding - padding;
             auto t1 = new ui::Text(dx, dy, dw, utils::line_height(), s1.str());
             layout.pack_start(t1);
-            int lh = min((uint)300, ((labels.size() )* (utils::line_height()+5))+10);
+            int lh = min((int)300, (int)((labels.size() )* (utils::line_height()+5))+10);
             auto l1 = new widgets::ListBox(dx, dy+padding, dw, lh, utils::line_height(), scene);
             for (const auto &line: labels) {
                 l1->add(line);
@@ -635,12 +635,17 @@ namespace widgets{
                 _accepted = false;
             }
             widgets::Overlay::on_button_selected(s);
-            _callback(_accepted);
+            if(_callback)
+                _callback(_accepted);
         }
 
         void run_install(){
             auto td = new TerminalDialog(500,500,800,1100, "opkg install");
-            td->set_callback([this](){this->_callback(this->_accepted);this->hide();});
+            td->set_callback([this](){
+                if(this->_callback)
+                    this->_callback(this->_accepted);
+                this->hide();
+            });
             td->show();
             ui::TaskQueue::add_task([=](){
                 auto ret = opkg::Install(packages, [=](const string s) { td->stdout_callback(s); });
@@ -731,7 +736,8 @@ namespace widgets{
             else
                 _accepted = false;
             widgets::Overlay::on_button_selected(s);
-            _callback(_accepted);
+            if(_callback)
+                _callback(_accepted);
         }
 
         void on_autoremove_tick(bool state){
@@ -753,7 +759,8 @@ namespace widgets{
         void run_uninstall() {
             auto td = new TerminalDialog(500, 500, 800, 1100, "opkg uninstall");
             td->set_callback([this]() {
-                this->_callback(this->_accepted);
+                if(this->_callback)
+                    this->_callback(this->_accepted);
                 this->hide();
             });
             td->show();
@@ -785,7 +792,7 @@ namespace widgets{
             t1->set_text(s1.str());
 
             uint totalSize = 0;
-            int lh = min((uint)300, ((results.size() )* (utils::line_height()+5))+10);
+            int lh = min((int)300, (int)((results.size() )* (utils::line_height()+5))+10);
             l1->h = lh;
             l1->clear();
             for (const auto &pk: results) {

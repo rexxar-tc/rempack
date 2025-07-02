@@ -51,4 +51,17 @@ namespace utils{
         ss << std::fixed << std::setprecision(2) << dblBytes << suffix[i];
         return ss.str();
     }
+
+    inline vector<string> split_str(const string &s, const char delimiter)
+    {
+        vector<string> splits;
+        string _split;
+        istringstream ss(s);
+        while (getline(ss, _split, delimiter))
+        {
+            utils::ltrim(_split);
+            splits.push_back(_split);
+        }
+        return splits;
+    }
 }
