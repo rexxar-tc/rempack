@@ -57,7 +57,7 @@ include_directories(SYSTEM "${RMKIT_DIR}")
 #add /include to search paths for font_embed.h
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/assets")
-include_directories("${CMAKE_SOURCE_DIR}/ui")
+add_subdirectory("${CMAKE_SOURCE_DIR}/ui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/opkg")
 
 
@@ -67,11 +67,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         #"$<IF:$<BOOL:${RMKIT_EXTERN}>,${RMKIT_FILE},extern/rmkit.h>"
         #${RMKIT_FILE}
         assets/icons/icons_embed.h
-        ui/debug_widgets.h
-        #opkg/opkg.h
-        ui/rempack_widgets.h
-        ui/text_helpers.h
-        ui/list_box.h
 )
 target_compile_options(${PROJECT_NAME}
         PUBLIC $<$<CONFIG:Debug>:-g -O0 -Wall -Wno-unused-variable>
@@ -93,9 +88,20 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
         )
+target_compile_definitions(widgets PRIVATE
+        #RMKIT_IMPLEMENTATION
+        #STB_IMAGE_IMPLEMENTATION
+        #STB_IMAGE_RESIZE_IMPLEMENTATION
+        #STB_IMAGE_WRITE_IMPLEMENTATION
+        #STB_TRUETYPE_IMPLEMENTATION
+        #when building for native hardware, REMARKABLE must be defined
+        $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
+        #debug builds require an external font file. I've provided one for you in /include
+        $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
+        )
 #see also: rm-toolchain.cmake
 
-target_link_libraries(${PROJECT_NAME} PRIVATE opkg)
+target_link_libraries(${PROJECT_NAME} PRIVATE opkg widgets)
 
 #add_library(rmkit ${RMKIT_FILE})
 #set_target_properties(rmkit PROPERTIES LINKER_LANGUAGE CXX)

@@ -14,6 +14,7 @@
       <config projectName="rempack" targetName="run_app" />
       <config projectName="rempack" targetName="docker_release" />
       <config projectName="rempack" targetName="rempack" />
+      <config projectName="rempack" targetName="widgets" />
       <config projectName="rempack" targetName="opkg" />
     </generated>
   </component>
@@ -28,19 +29,32 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="c++ pain">
-      <change afterPath="$PROJECT_DIR$/opkg/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opkg/cache.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opkg/formatting.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opkg/parser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="refactor opkg, add download function">
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/buttons.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/include/widgets.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/keyboard.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/list_box.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/overlay.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack_widgets.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/widgets.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/font_embed.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/font_embed.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/opkg/opkg.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/opkg.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/opkg/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/opkg/cache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/cache.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/opkg/opkg.h" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/opkg.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/rempack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/rempack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/rempack_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/rempack_widgets.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/widget_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/widget_helpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/debug_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/debug_widgets.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/keyboard.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/keyboard.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/list_box.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/list_box.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/overlay.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/overlay.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/rempack_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/rempack_widgets.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/text_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/text_helpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/widgets.h" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,6 +70,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="CMakeLists.txt" />
+        <option value="Dockerfile" />
       </list>
     </option>
   </component>
@@ -90,7 +105,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CPPToolchains&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
     &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -136,13 +151,14 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ui/include" />
       <recent name="$PROJECT_DIR$/doc" />
     </key>
   </component>
   <component name="RunManager" selected="Remote GDB Server.rempack">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="opkg" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="opkg" CONFIG_NAME="Debug x86">
@@ -151,6 +167,11 @@
       </method>
     </configuration>
     <configuration name="rempack" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="rempack" CONFIG_NAME="Debug x86" RUN_TARGET_PROJECT_NAME="rempack" RUN_TARGET_NAME="rempack">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="widgets" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="widgets" CONFIG_NAME="Debug x86">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -167,6 +188,7 @@
     <list>
       <item itemvalue="CMake Application.rempack" />
       <item itemvalue="CMake Application.opkg" />
+      <item itemvalue="CMake Application.widgets" />
       <item itemvalue="Remote GDB Server.rempack" />
     </list>
   </component>
@@ -194,7 +216,10 @@
       <workItem from="1741105664369" duration="75000" />
       <workItem from="1741482163755" duration="633000" />
       <workItem from="1751411516670" duration="3875000" />
-      <workItem from="1751419102542" duration="3683000" />
+      <workItem from="1751419102542" duration="5358000" />
+      <workItem from="1751470368157" duration="11179000" />
+      <workItem from="1751485170119" duration="447000" />
+      <workItem from="1751500640035" duration="5037000" />
     </task>
     <task id="LOCAL-00001" summary="back again">
       <option name="closed" value="true" />
@@ -260,7 +285,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740812698765</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="refactor opkg, add download function">
+      <option name="closed" value="true" />
+      <created>1751428461840</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1751428461840</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -289,50 +322,26 @@
     <MESSAGE value="working on install dialog" />
     <MESSAGE value="update readme" />
     <MESSAGE value="c++ pain" />
-    <option name="LAST_COMMIT_MESSAGE" value="c++ pain" />
+    <MESSAGE value="refactor opkg, add download function" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor opkg, add download function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/ui/rempack_widgets.h</url>
-          <line>568</line>
+          <url>file://$PROJECT_DIR$/ui/include/rempack_widgets.h</url>
+          <line>273</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/rempack.cpp</url>
-          <line>42</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/ui/text_helpers.h</url>
           <line>44</line>
-          <option name="timeStamp" value="26" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/ui/text_helpers.h</url>
-          <line>38</line>
-          <option name="timeStamp" value="27" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/ui/text_helpers.h</url>
-          <line>47</line>
-          <option name="timeStamp" value="29" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/ui/overlay.h</url>
-          <line>58</line>
-          <option name="timeStamp" value="31" />
+          <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/cmake-build-debug-native-docker/include/rmkit/rmkit.h</url>
           <line>23752</line>
           <option name="timeStamp" value="32" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/ui/rempack_widgets.h</url>
-          <line>64</line>
-          <option name="timeStamp" value="36" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

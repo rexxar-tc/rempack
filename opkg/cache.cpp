@@ -14,6 +14,7 @@
 #include "zlib.h"
 #include "utils.h"
 #include <sstream>
+#include <archive.h>
 
 #define  CONTAINS(x,z) ((x).find(z) != (x).end())
 

@@ -1,100 +1,9 @@
 //
-// Created by brant on 2/13/24.
+// Created by brant on 7/2/25.
 //
-
-#pragma once
-
-#include "widgets.h"
-
+#include "include/keyboard.h"
 namespace widgets {
-    class KeyboardEvent {
-    public:
-        string text;
-
-        //explicit KeyboardEvent(string t) : text(t) {}
-    };
-
-    PLS_DEFINE_SIGNAL(KEYBOARD_EVENT, KeyboardEvent);
-
-    class KeyButton : public ui::Button {
-    public:
-        KeyButton(int x, int y, int w, int h, string t) : ui::Button(x, y, w, h, t) {
-            (void) 0;
-        }
-
-        void before_render() {
-            ui::Button::before_render();
-            mouse_inside = mouse_down && mouse_inside;
-        }
-    };
-
-
-    class Row : public ui::Widget {
-    public:
-        ui::HorizontalLayout *layout = NULL;
-        ui::Scene scene;
-
-        Row(int x, int y, int w, int h, ui::Scene s) : Widget(x, y, w, h) {
-            scene = s;
-            //scene->clear_under = true;
-        }
-
-        void add_key(KeyButton *key) {
-            if (layout == NULL) {
-                //std::cerr << "RENDERING ROW" << ' ' << x << ' ' << y << ' ' << w << ' ' << h << std::endl;
-                layout = new ui::HorizontalLayout(x, y, w, h, scene);
-            }
-            layout->pack_start(key);
-        }
-
-        void render() {
-            (void) 0;
-        }
-    };
-
-    class Keyboard : public ui::Widget {
-        class KEYBOARD_EVENTS {
-        public:
-            KEYBOARD_EVENT changed;
-            KEYBOARD_EVENT done;
-        };
-    private:
-
-        enum KeyLayer{
-            NONE,
-            AlphaLow,
-            AlphaUpper,
-            Numeric,
-            Symbols,
-        };
-        std::map<KeyLayer, ui::Scene> keyLayers;
-        KeyLayer currentLayer = NONE;
-
-    public:
-        bool shifted = false;
-        bool numbers = false;
-        vector<Row *> rows;
-        ui::Scene scene;
-        string text = "";
-        int btn_width;
-        int btn_height;
-
-        ui::Stylesheet BTN_STYLE= ui::Stylesheet().font_size(48).valign_middle().justify_center();
-        ui::Stylesheet INPUT_STYLE= ui::Stylesheet().font_size(64).underline();
-        bool pinOverlay = false;
-
-        KEYBOARD_EVENTS events;
-
-        Keyboard(int x = 0, int y = 0, int w = 0, int h = 0) : Widget(x, y, w, h) {
-            auto [dw, full_h]= fb->get_display_size();
-            h = full_h / 4;
-            this->w = dw;
-            this->h = h;
-            //lower_layout();
-            lazy_init();
-        };
-
-        void lazy_init() {
+        void Keyboard::lazy_init() {
             ui::TaskQueue::add_task([this]() {
                 keyLayers[AlphaLow] = create_layout("qwertyuiop", "asdfghjkl", "zxcvbnm");
                 keyLayers[AlphaUpper] = create_layout("QWERTYUOIP", "ASDFGHJKL", "ZXCVBNM");
@@ -103,39 +12,39 @@ namespace widgets {
             });
         }
 
-        void set_text(string t) {
+        void Keyboard::set_text(string t) {
             text = t;
         };
 
 
-        void lower_layout() {
+        void Keyboard::lower_layout() {
             numbers = false;
             shifted = false;
             set_layout(AlphaLow);
         };
 
-        void upper_layout() {
+        void Keyboard::upper_layout() {
             numbers = false;
             shifted = true;
             set_layout(AlphaUpper);
         };
 
-        void number_layout() {
+        void Keyboard::number_layout() {
             numbers = true;
             shifted = false;
             set_layout(Numeric);
         };
 
-        void symbol_layout() {
+        void Keyboard::symbol_layout() {
             numbers = true;
             shifted = true;
             set_layout(Symbols);
         };
 
-        void set_layout(KeyLayer layer){
-            if(currentLayer != NONE)
+        void Keyboard::set_layout(KeyLayer layer) {
+            if (currentLayer != NONE)
                 ui::MainLoop::hide_overlay(keyLayers[currentLayer]);
-            if(layer != NONE) {
+            if (layer != NONE) {
                 auto s = keyLayers[layer];
                 s->pinned = pinOverlay;
                 ui::MainLoop::show_overlay(s);
@@ -144,8 +53,7 @@ namespace widgets {
             ui::MainLoop::refresh();
         }
 
-
-        ui::Scene create_layout(string row1chars, string row2chars, string row3chars) {
+        ui::Scene Keyboard::create_layout(string row1chars, string row2chars, string row3chars) {
             auto s = ui::make_scene();
             s->add(this);
 
@@ -177,7 +85,8 @@ namespace widgets {
 
             auto shift_key = new KeyButton(0, 0, btn_width, btn_height, "shift");
             shift_key->set_style(BTN_STYLE);
-            shift_key->mouse.click += PLS_LAMBDA(auto &ev) {
+            shift_key->mouse.click += PLS_LAMBDA(auto & ev)
+            {
                 if (!numbers and !shifted) {
                     upper_layout();
                 } else if (!numbers and shifted) {
@@ -196,7 +105,8 @@ namespace widgets {
             backspace_key->set_style(BTN_STYLE);
 
 
-            backspace_key->mouse.click += PLS_LAMBDA(auto &ev) {
+            backspace_key->mouse.click += PLS_LAMBDA(auto & ev)
+            {
                 if (text.size() > 0) {
                     text.pop_back();
                     dirty = 1;
@@ -206,7 +116,8 @@ namespace widgets {
             row3->add_key(backspace_key);
 
             auto kbd = new KeyButton(0, 0, btn_width, btn_height, "kbd");
-            kbd->mouse.click += PLS_LAMBDA(auto &ev) {
+            kbd->mouse.click += PLS_LAMBDA(auto & ev)
+            {
                 if (numbers) {
                     lower_layout();
                 } else {
@@ -215,7 +126,8 @@ namespace widgets {
             };
             auto space_key = new KeyButton(0, 0, btn_width * 8, btn_height, "space");
             space_key->set_style(BTN_STYLE);
-            space_key->mouse.click += PLS_LAMBDA(auto &ev) {
+            space_key->mouse.click += PLS_LAMBDA(auto & ev)
+            {
                 text += " ";
                 dirty = 1;
                 events.changed();
@@ -223,7 +135,8 @@ namespace widgets {
 
             auto enter_key = new KeyButton(0, 0, btn_width, btn_height, "done");
             enter_key->set_style(BTN_STYLE);
-            enter_key->mouse.click += PLS_LAMBDA(auto &ev) {
+            enter_key->mouse.click += PLS_LAMBDA(auto & ev)
+            {
                 hide();
                 ui::MainLoop::refresh();
                 auto kev = KeyboardEvent{text};
@@ -243,11 +156,12 @@ namespace widgets {
         };
 
 
-        KeyButton *make_char_button(char c) {
+        KeyButton *Keyboard::make_char_button(char c) {
             string s(1, c);
             auto key = new KeyButton(0, 0, btn_width, btn_height, s);
             key->set_style(BTN_STYLE);
-            key->mouse.click += PLS_LAMBDA(auto &ev) {
+            key->mouse.click += PLS_LAMBDA(auto & ev)
+            {
                 dirty = 1;
                 if (c == ' ') {
                     return;
@@ -260,18 +174,17 @@ namespace widgets {
             return key;
         };
 
-        KeyButton *make_icon_button(icons::Icon icon, int w) const {
+        KeyButton *Keyboard::make_icon_button(icons::Icon icon, int w) const {
             auto key = new KeyButton(0, 0, btn_width, btn_height, "");
             key->icon = icon;
             return key;
         };
 
-        void render() override {
+        void Keyboard::render() {
             //fb->draw_rect(x, y, w, h, WHITE, true);
         };
 
-        void show() override {
+        void Keyboard::show() {
             lower_layout();
         };
-    };
-}
+    }

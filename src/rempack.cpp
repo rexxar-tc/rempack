@@ -2,20 +2,22 @@
 // Created by brant on 1/24/24.
 //
 //#define DEBUG_FB
+
 #define RMKIT_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <rmkit.h>
+
 #include <unordered_set>
 #include <utility>
 #include "rempack.h"
-#include "../ui/widgets.h"
-#include "../ui/debug_widgets.h"
-#include "../ui/rempack_widgets.h"
+#include "include/widgets.h"
+#include "include/debug_widgets.h"
+#include "include/rempack_widgets.h"
 #include "../opkg/opkg.h"
-#include "../ui/list_box.h"
+#include "include/list_box.h"
 #include "../include/algorithm/boyer_moore.h"
 #include "widget_helpers.h"
 

@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <vector>
 #include <iomanip>
+#include <cstddef>
+#include <cstdint>
+
+using namespace std;
 
 namespace utils{
     inline float sigmoid(float t, float a, float b){

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <stdio.h>
+#include <cstdio>
 #include <memory>
 #include <vector>
 #include <string>
