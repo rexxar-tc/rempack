@@ -158,14 +158,6 @@ namespace widgets{
         }
     };
 
-    struct MenuData{
-        unordered_set<string> PendingInstall;
-        unordered_set<string> PendingRemove;
-        bool Cronch;
-        int FontSize;
-    };
-
-
     class MenuOverlay: RoundCornerWidget{
     public:
         ui::Scene scene;
@@ -248,37 +240,6 @@ namespace widgets{
             v.pack_end(exitBtn);
             return s;
         }
-    };
-
-    class ConfigButton : public RoundImageButton {
-    public:
-        RoundCornerStyle style;
-            MenuData *data;
-        ConfigButton(int x, int y, int w, int h, MenuData *data, RoundCornerStyle style = RoundCornerStyle()) : RoundImageButton(x, y, w, h, ICON(assets::png_menu_png), style) {
-            this->data = data;
-        }
-        void on_overlay_hidden(ui::InnerScene::DialogVisible v){
-            //events.updated(options);
-        }
-
-        void on_mouse_click(input::SynMotionEvent &ev) override {
-            ev.stop_propagation();
-
-            auto ov = new MenuOverlay(x - 500, y + h, 500, 800, data);
-            ov->scene->on_hide += PLS_DELEGATE(on_overlay_hidden);
-            //ov->events.updated += [this, &ov](FilterOptions* o){events.updated(options);};
-            ov->show();
-            ui::MainLoop::refresh();
-        }
-    };
-
-    struct FilterOptions{
-        bool Installed;
-        bool Upgradable;
-        bool NotInstalled;
-        bool SearchDescription;
-        std::map<std::string, bool> Repos;
-        std::map<std::string, bool> Licenses;
     };
 
     class FilterOverlay: RoundCornerWidget{
@@ -406,36 +367,6 @@ namespace widgets{
         }
     };
 
-    class FilterButton:public RoundImageButton{
-    public:
-        RoundCornerStyle style;
-        shared_ptr<FilterOptions> options;
-        FilterButton(int x, int y, int w, int h, shared_ptr<FilterOptions> defaultOptions, RoundCornerStyle style = RoundCornerStyle()) : RoundImageButton(x, y, w, h, ICON(assets::png_filter_png), style) {
-            options = defaultOptions;
-        }
-        PLS_DEFINE_SIGNAL(FILTER_EVENT, FilterOptions);
-
-        class FILTER_EVENTS: public BUTTON_EVENTS {
-        public:
-            FILTER_EVENT updated;
-        };
-
-        FILTER_EVENTS events;
-
-        void on_overlay_hidden(ui::InnerScene::DialogVisible v){
-            //events.updated(options);
-        }
-
-        void on_mouse_click(input::SynMotionEvent &ev) override{
-            ev.stop_propagation();
-
-            auto ov = new FilterOverlay(x+w,y+h,500,800,options);
-            ov->scene->on_hide += [=](auto &d) { on_overlay_hidden(d); };
-            ov->events.updated += [=](FilterOptions &o){events.updated(o);};
-            ov->show();
-            ui::MainLoop::refresh();
-        }
-    };
 
     /*
     * _____________________________________________________________________________________
@@ -800,6 +731,59 @@ namespace widgets{
             t2->set_text(s2.str());
             on_reflow();
             //Overlay::mark_redraw();
+        }
+    };
+
+    class ConfigButton : public RoundImageButton {
+    public:
+        RoundCornerStyle style;
+        MenuData *data;
+        ConfigButton(int x, int y, int w, int h, MenuData *data, RoundCornerStyle style = RoundCornerStyle()) : RoundImageButton(x, y, w, h, ICON(assets::png_menu_png), style) {
+            this->data = data;
+        }
+        void on_overlay_hidden(ui::InnerScene::DialogVisible v){
+            //events.updated(options);
+        }
+
+        void on_mouse_click(input::SynMotionEvent &ev) override{
+            ev.stop_propagation();
+
+            auto ov = new MenuOverlay(x - 500, y + h, 500, 800, data);
+            ov->scene->on_hide += PLS_DELEGATE(on_overlay_hidden);
+            //ov->events.updated += [this, &ov](FilterOptions* o){events.updated(options);};
+            ov->show();
+            ui::MainLoop::refresh();
+        }
+    };
+
+    class FilterButton:public RoundImageButton{
+    public:
+        RoundCornerStyle style;
+        shared_ptr<FilterOptions> options;
+        FilterButton(int x, int y, int w, int h, shared_ptr<FilterOptions> defaultOptions, RoundCornerStyle style = RoundCornerStyle()) : RoundImageButton(x, y, w, h, ICON(assets::png_filter_png), style) {
+            options = defaultOptions;
+        }
+        PLS_DEFINE_SIGNAL(FILTER_EVENT, FilterOptions);
+
+        class FILTER_EVENTS: public BUTTON_EVENTS {
+        public:
+            FILTER_EVENT updated;
+        };
+
+        FILTER_EVENTS events;
+
+        void on_overlay_hidden(ui::InnerScene::DialogVisible v){
+            //events.updated(options);
+        }
+
+        void on_mouse_click(input::SynMotionEvent &ev) override{
+            ev.stop_propagation();
+
+            auto ov = new FilterOverlay(x+w,y+h,500,800,options);
+            ov->scene->on_hide += [=](auto &d) { on_overlay_hidden(d); };
+            ov->events.updated += [=](FilterOptions &o){events.updated(o);};
+            ov->show();
+            ui::MainLoop::refresh();
         }
     };
 }

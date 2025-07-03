@@ -60,6 +60,12 @@ include_directories("${CMAKE_SOURCE_DIR}/assets")
 include_directories("${CMAKE_SOURCE_DIR}/ui")
 include_directories("${CMAKE_SOURCE_DIR}/opkg")
 
+add_library(rmkit_impl STATIC impl/rmkit_impl.cpp)
+set_source_files_properties(
+        impl/rmkit_impl.cpp
+        PROPERTIES COMPILE_FLAGS "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-optimize-sibling-calls"
+)
+set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls")
 
 find_package(ZLIB)
 
@@ -74,6 +80,9 @@ add_executable(${PROJECT_NAME} src/main.cpp
         ui/rempack_widgets.h
         ui/text_helpers.h
         ui/list_box.h
+        ui/buttons.cpp
+        ui/buttons.h
+        ui/overlay.cpp
 )
 target_compile_options(${PROJECT_NAME}
         PUBLIC $<$<CONFIG:Debug>:-g -O0 -Wall -Wno-unused-variable>
@@ -97,8 +106,18 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
         )
 #see also: rm-toolchain.cmake
-
-target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB)
+target_compile_definitions(rmkit_impl PRIVATE
+        #RMKIT_IMPLEMENTATION
+        #STB_IMAGE_IMPLEMENTATION
+        #STB_IMAGE_RESIZE_IMPLEMENTATION
+        #STB_IMAGE_WRITE_IMPLEMENTATION
+        #STB_TRUETYPE_IMPLEMENTATION
+        #when building for native hardware, REMARKABLE must be defined
+        $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
+        #debug builds require an external font file. I've provided one for you in /include
+        $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
+)
+target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB rmkit_impl)
 
 #add_library(rmkit ${RMKIT_FILE})
 #set_target_properties(rmkit PROPERTIES LINKER_LANGUAGE CXX)

@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 #include "widgets.h"
+#include "buttons.h"
 
 namespace widgets {
     /*

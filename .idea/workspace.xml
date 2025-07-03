@@ -12,6 +12,7 @@
   <component name="CMakeRunConfigurationManager">
     <generated>
       <config projectName="rempack" targetName="run_app" />
+      <config projectName="rempack" targetName="rmkit_impl" />
       <config projectName="rempack" targetName="docker_release" />
       <config projectName="rempack" targetName="rempack" />
     </generated>
@@ -28,22 +29,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/ui/text/text_helpers.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/text/text_helpers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/impl/rmkit_impl.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/buttons.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/buttons.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/data.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/overlay.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/opkg/opkg.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/opkg.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/opkg/opkg.h" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/opkg.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rm-toolchain.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/rm-toolchain.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_app.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run_app.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup_debugger.sh" beforeDir="false" afterPath="$PROJECT_DIR$/setup_debugger.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/rempack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/rempack.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/widget_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/widget_helpers.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/list_box.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/list_box.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/rempack_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/rempack_widgets.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/text_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/text_helpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/widgets.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,22 +127,33 @@
     </layout>
   </component>
   <component name="RunManager" selected="Remote GDB Server.rempack">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="rempack" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="rempack" CONFIG_NAME="Debug Native Docker" RUN_TARGET_PROJECT_NAME="rempack" RUN_TARGET_NAME="rempack">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="rmkit_impl" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="rmkit_impl" CONFIG_NAME="Debug x86">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="rempack" type="com.jetbrains.cidr.remote.gdbserver.type" factoryName="com.jetbrains.cidr.remote.gdbserver.factory" nameIsGenerated="true" PROGRAM_PARAMS="--wrapper /opt/bin/rm2fb-client -- :1234 /tmp/CLion/debug/rempack" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="rempack" CONFIG_NAME="Debug x86" version="1" RUN_TARGET_PROJECT_NAME="rempack" RUN_TARGET_NAME="rempack">
-      <custom-gdb-server version="1" gdb-connect="remarkable:1234" executable="" warmup-ms="0" download-type="NONE" sshConfigName="root@remarkable:22 key" uploadFile="/tmp/CLion/debug/rempack" defaultGdbServerArgs=":1234 /tmp/CLion/debug/rempack">
+      <custom-gdb-server version="1" gdb-connect="remarkable:1234" executable="/opt/bin/gdbserver" warmup-ms="0" download-type="ALWAYS" sshConfigName="root@remarkable:22 key" uploadFile="/tmp/CLion/debug/rempack" defaultGdbServerArgs=":1234 /tmp/CLion/debug/rempack">
         <debugger kind="GDB" isBundled="true" />
       </custom-gdb-server>
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
-        <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_debug_remote" />
+        <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_rpk" />
       </method>
     </configuration>
     <list>
       <item itemvalue="CMake Application.rempack" />
+      <item itemvalue="CMake Application.rmkit_impl" />
       <item itemvalue="Remote GDB Server.rempack" />
     </list>
   </component>
@@ -195,12 +204,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/ui/rempack_widgets.h</url>
-          <line>566</line>
+          <line>497</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/rempack.cpp</url>
-          <line>42</line>
+          <line>43</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
