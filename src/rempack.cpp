@@ -3,13 +3,13 @@
 //
 //#define DEBUG_FB
 
+
 #define RMKIT_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <rmkit.h>
-
 #include <unordered_set>
 #include <utility>
 #include "rempack.h"
@@ -20,7 +20,6 @@
 #include "../include/algorithm/boyer_moore.h"
 #include "widget_helpers.h"
 #include "rempack/rempack_widgets.h"
-
 using ListItem = widgets::ListBox::ListItem;
 namespace boyer = strings::boyer_moore;
 ui::Scene buildHomeScene(int width, int height);
@@ -41,11 +40,11 @@ void Rempack::startApp() {
     auto scene = buildHomeScene(fb->width, fb->height);
     ui::MainLoop::set_scene(scene);
 
-    //ui::MainLoop::main();
+    ui::MainLoop::main();
     ui::MainLoop::refresh();
     //ui::MainLoop::redraw();
 
-    setupDebug();
+    //setupDebug();
     while(true){
         ui::MainLoop::main();
         ui::MainLoop::redraw();

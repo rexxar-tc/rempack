@@ -107,7 +107,7 @@ namespace widgets {
         refresh_list();
         int sx = this->x + padding;
         int sy = this->y + padding;
-        for (auto item: _currentView) {
+        for (const auto &item: _currentView) {
             auto wi = item->_widget;
             wi->x = sx;
             wi->y = sy;

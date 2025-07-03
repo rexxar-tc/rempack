@@ -3,9 +3,10 @@
 //
 
 #include "widgets.h"
-#include <rmkit.h>
 #include <cstddef>
 
+#include "rempack/rempack_widgets.h"
+#include "buttons/buttons.h"
 namespace widgets{
     void drawRoundedCorners(int x0, int y0, int ox, int oy, int radius, framebuffer::FB *fb,
                                    float grayfColor, uint stroke, bool gradient,

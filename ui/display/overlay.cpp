@@ -29,7 +29,7 @@ namespace widgets {
 
     void Overlay::draw_recurse(const shared_ptr<ui::Widget> &w) {
         fb->draw_rect(w->x, w->y, w->w, w->h, BLACK, false);
-        if (w->children.size()) {
+        if (!w->children.empty()) {
             for (const auto &child: w->children)
                 draw_recurse(child);
         }

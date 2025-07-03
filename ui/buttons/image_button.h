@@ -11,7 +11,7 @@ namespace widgets{
     //basically a reimplementation of ui::Button with a clickable image instead of text
     class ImageButton : public EventButton {
     public:
-        ImageButton(int x, int y, int w, int h, icons::Icon icon) : EventButton(x, y, w, h, ""){
+        ImageButton(int x, int y, int w, int h, icons::Icon icon) : EventButton(x, y, w, h, "  "){
             pixmap = make_shared<ui::Pixmap>(x, y, w, h, icon);
             pixmap->alpha = WHITE;
             children.push_back(pixmap);

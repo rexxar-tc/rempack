@@ -8,7 +8,7 @@
 namespace widgets {
     class SearchBox : public RoundedTextInput {
     public:
-        SearchBox(int x, int y, int w, int h, RoundCornerStyle style, const string text = "");
+        SearchBox(int x, int y, int w, int h, RoundCornerStyle style, string text = "");
         void on_reflow() override;
         void on_mouse_click(input::SynMotionEvent &ev) override;
     private:

@@ -14,7 +14,6 @@
       <config projectName="rempack" targetName="run_app" />
       <config projectName="rempack" targetName="docker_release" />
       <config projectName="rempack" targetName="rempack" />
-      <config projectName="rempack" targetName="widgets" />
       <config projectName="rempack" targetName="opkg" />
     </generated>
   </component>
@@ -29,7 +28,20 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="further refactor UI classes into a sensible structure" />
+    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="further refactor UI classes into a sensible structure">
+      <change afterPath="$PROJECT_DIR$/impl/rmkit_impl.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup_debugger.sh" beforeDir="false" afterPath="$PROJECT_DIR$/setup_debugger.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/rempack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/rempack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ui/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/buttons/image_button.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/buttons/image_button.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/display/list_box.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/list_box.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/display/overlay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/overlay.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/rempack/search_box.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/rempack/search_box.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/widgets.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/widgets.cpp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -54,6 +66,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 0
@@ -63,27 +78,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "CMake Application.rempack.executor": "Debug",
-    "Remote GDB Server.rempack.executor": "Debug",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "last_opened_file_path": "/home/brant/git/rempack/setup_debugger.sh",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "fileTemplates",
-    "structure.view.defaults.are.configured": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;CMake Application.rempack.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote GDB Server.rempack.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/brant/git/rempack/cmake-build-debug-native-docker/include/rmkit/rmkit.h&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RdControllerToolWindowsLayoutState" isNewUi="false">
     <layout>
       <window_info id="Commit_Guest" show_stripe_button="false" />
@@ -148,13 +164,8 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="widgets" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="widgets" CONFIG_NAME="Debug x86">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="rempack" type="com.jetbrains.cidr.remote.gdbserver.type" factoryName="com.jetbrains.cidr.remote.gdbserver.factory" nameIsGenerated="true" PROGRAM_PARAMS="--wrapper /opt/bin/rm2fb-client -- :1234 /tmp/CLion/debug/rempack" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="rempack" CONFIG_NAME="Debug x86" version="1" RUN_TARGET_PROJECT_NAME="rempack" RUN_TARGET_NAME="rempack">
-      <custom-gdb-server version="1" gdb-connect="remarkable:1234" executable="" warmup-ms="0" download-type="ALWAYS" sshConfigName="root@remarkable:22 key" uploadFile="/tmp/CLion/debug/rempack" defaultGdbServerArgs=":1234 /tmp/CLion/debug/rempack">
+      <custom-gdb-server version="1" gdb-connect="remarkable:1234" executable="/opt/bin/gdbserver" warmup-ms="0" download-type="ALWAYS" sshConfigName="root@remarkable:22 key" uploadFile="/tmp/CLion/debug/rempack" defaultGdbServerArgs=":1234 /tmp/CLion/debug/rempack">
         <debugger kind="GDB" isBundled="true" />
       </custom-gdb-server>
       <method v="2">
@@ -163,9 +174,8 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="CMake Application.rempack" />
       <item itemvalue="CMake Application.opkg" />
-      <item itemvalue="CMake Application.widgets" />
+      <item itemvalue="CMake Application.rempack" />
       <item itemvalue="Remote GDB Server.rempack" />
     </list>
   </component>
@@ -201,6 +211,10 @@
       <workItem from="1751517605893" duration="2738000" />
       <workItem from="1751563613460" duration="618000" />
       <workItem from="1751567240338" duration="3772000" />
+      <workItem from="1751575463477" duration="1000" />
+      <workItem from="1751575532121" duration="151000" />
+      <workItem from="1751575725012" duration="385000" />
+      <workItem from="1751577017736" duration="4946000" />
     </task>
     <task id="LOCAL-00001" summary="back again">
       <option name="closed" value="true" />
@@ -300,6 +314,17 @@
     <isAutomaticCheckingOnLaunch value="false" />
     <isAutomaticFoundErrors value="true" />
     <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+        <option value="GitHub.CommitStatus" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
