@@ -2,7 +2,7 @@
 // Created by brant on 7/2/25.
 //
 
-#include "include/widgets.h"
+#include "widgets.h"
 #include <rmkit.h>
 #include <cstddef>
 
@@ -143,21 +143,6 @@ namespace widgets{
 
 
 
-        void RoundedTextInput::on_reflow(){
-            border->set_coords(x,y,w,h);
-            border->mark_redraw();
-        }
-
-        void RoundedTextInput::render() {
-            //bypass TextInput::render to hide the border
-            ui::Text::render(); // NOLINT(*-parent-virtual-call)
-        }
-
-        void LabeledRangeInput::mark_redraw() {
-            range->mark_redraw();
-            if(label != nullptr)
-                label->mark_redraw();
-        }
 
 
 

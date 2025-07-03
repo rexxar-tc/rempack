@@ -2,7 +2,7 @@
 // Created by brant on 7/2/25.
 //
 
-#include "include/list_box.h"
+#include "list_box.h"
 
 typedef widgets::ListBox::ListItem ListItem;
 namespace widgets {

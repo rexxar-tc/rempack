@@ -29,32 +29,59 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="refactor opkg, add download function">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/buttons.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/include/widgets.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/keyboard.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/list_box.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/overlay.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack_widgets.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/widgets.cpp" afterDir="false" />
+    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="refactor UI classes">
+      <change afterPath="$PROJECT_DIR$/ui/buttons/buttons.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/buttons/event_button.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/buttons/event_button.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/buttons/image_button.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/buttons/image_button.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/input/input.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/input/labeled_range.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/input/labeled_range.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/input/rounded_text_input.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/input/rounded_text_input.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/config_button.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/config_button.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/install_dialog.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/install_dialog.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/rdialog.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/terminal_dialog.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/terminal_dialog.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/uninstall_dialog.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/uninstall_dialog.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/filter_button.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/filter_button.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/filter_options.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/filter_overlay.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/filter_overlay.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/menu_data.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/menu_overlay.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/menu_overlay.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/roverlay.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/package_info_panel.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/package_info_panel.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/rempack_widgets.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/search_box.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/rempack/search_box.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/font_embed.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/font_embed.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/opkg/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/opkg/cache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/cache.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/opkg/opkg.h" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/opkg.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/rempack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/rempack.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/widget_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/widget_helpers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/debug_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/debug_widgets.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/keyboard.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/keyboard.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/list_box.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/list_box.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/overlay.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/overlay.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/rempack_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/rempack_widgets.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/text_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/include/text_helpers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/widgets.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ui/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/buttons.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/include/debug_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/debug/debug_widgets.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/include/keyboard.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/input/keyboard/keyboard.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/include/list_box.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/list_box.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/include/overlay.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/overlay.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/include/rempack_widgets.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/include/text_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/text_helpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/include/widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/widgets.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/keyboard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/input/keyboard/keyboard.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/list_box.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/list_box.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/overlay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/overlay.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/rempack_widgets.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/widgets.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/widgets.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,27 +116,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;CMake Application.rempack.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote GDB Server.rempack.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/brant/git/rempack/setup_debugger.sh&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "CMake Application.rempack.executor": "Debug",
+    "Remote GDB Server.rempack.executor": "Debug",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "last_opened_file_path": "/home/brant/git/rempack/setup_debugger.sh",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "fileTemplates",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RdControllerToolWindowsLayoutState" isNewUi="false">
     <layout>
       <window_info id="Commit_Guest" show_stripe_button="false" />
@@ -151,14 +178,17 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/ui/include" />
-      <recent name="$PROJECT_DIR$/doc" />
+      <recent name="$PROJECT_DIR$/ui/display" />
+      <recent name="$PROJECT_DIR$/ui/debug" />
+      <recent name="$PROJECT_DIR$/ui/rempack" />
+      <recent name="$PROJECT_DIR$/ui/input/keyboard" />
+      <recent name="$PROJECT_DIR$/ui/buttons" />
     </key>
   </component>
   <component name="RunManager" selected="Remote GDB Server.rempack">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="opkg" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="opkg" CONFIG_NAME="Debug x86">
@@ -219,7 +249,11 @@
       <workItem from="1751419102542" duration="5358000" />
       <workItem from="1751470368157" duration="11179000" />
       <workItem from="1751485170119" duration="447000" />
-      <workItem from="1751500640035" duration="5037000" />
+      <workItem from="1751500640035" duration="6837000" />
+      <workItem from="1751512693162" duration="2894000" />
+      <workItem from="1751517605893" duration="2738000" />
+      <workItem from="1751563613460" duration="618000" />
+      <workItem from="1751567240338" duration="3241000" />
     </task>
     <task id="LOCAL-00001" summary="back again">
       <option name="closed" value="true" />
@@ -293,7 +327,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751428461840</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="refactor UI classes">
+      <option name="closed" value="true" />
+      <created>1751506163353</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1751506163353</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -323,16 +365,12 @@
     <MESSAGE value="update readme" />
     <MESSAGE value="c++ pain" />
     <MESSAGE value="refactor opkg, add download function" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor opkg, add download function" />
+    <MESSAGE value="refactor UI classes" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor UI classes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/ui/include/rempack_widgets.h</url>
-          <line>273</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/rempack.cpp</url>
           <line>44</line>

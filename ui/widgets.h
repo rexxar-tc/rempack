@@ -46,49 +46,6 @@ namespace widgets {
                                float grayfendColor = 1,
                                float expA = -20.f, float coefB = 8, float alphaThreshold = 0.9f);
 
-class EventButton : public ui::Button{
-    public:
-    EventButton(int x, int y, int w, int h, string text = "") : Button(x, y, w, h, text){}
-
-    PLS_DEFINE_SIGNAL(BUTTON_EVENT, void*);
-
-    class BUTTON_EVENTS {
-    public:
-        BUTTON_EVENT clicked;
-    };
-
-    BUTTON_EVENTS events;
-    void on_mouse_click(input::SynMotionEvent &ev) override;
-
-    void disable();
-
-    void enable();
-
-    void render() override;
-    protected:
-    bool enabled = true;
-};
-
-//basically a reimplementation of ui::Button with a clickable image instead of text
-    class ImageButton : public EventButton {
-    public:
-        ImageButton(int x, int y, int w, int h, icons::Icon icon) : EventButton(x, y, w, h, ""){
-                pixmap = make_shared<ui::Pixmap>(x, y, w, h, icon);
-                pixmap->alpha = WHITE;
-                children.push_back(pixmap);
-            };
-
-
-        void render() override;
-
-        void on_reflow() override;
-
-        void on_mouse_click(input::SynMotionEvent &ev) override;
-
-
-    private:
-        shared_ptr<ui::Pixmap> pixmap;
-    };
 
     //TODO: style sheets
     struct RoundCornerStyle {
@@ -129,64 +86,5 @@ class EventButton : public ui::Button{
         void render_inside_fill(float gray = 1.f);
     };
 
-    class RoundImageButton : public ImageButton{
-    public:
-
-        shared_ptr<RoundCornerWidget> border;
-        RoundImageButton(int x, int y, int w, int h, icons::Icon icon, RoundCornerStyle style): ImageButton(x,y,w,h,icon){
-            border = make_shared<RoundCornerWidget>(x,y,w,h,style);
-            children.push_back(border);
-        }
-        void on_reflow()override;
-    };
-
-    //same as ui::TextInput except it draws fancy rounded corners
-class RoundedTextInput: public ui::TextInput{
-public:
-RoundCornerStyle style;
-shared_ptr<RoundCornerWidget> border;
-    RoundedTextInput(int x, int y, int w, int h, RoundCornerStyle style, string text = ""): ui::TextInput(x,y,w,h,std::move(text)){
-        //TODO: this is so bad
-        //TODO: style sheets
-        ui::TextInput::style.valign = ui::Style::MIDDLE;
-        ui::TextInput::style.justify = ui::Style::LEFT;
-        this->style = style;
-        border = make_shared<RoundCornerWidget>(x,y,w,h,style);
-        children.push_back(border);
-    }
-
-    void on_reflow()override;
-
-    void render() override;
-};
-
-   class LabeledRangeInput : public ui::Widget {
-    public:
-        enum LabelPosition {
-            LEFT, TOP
-        };
-
-        LabeledRangeInput(int x, int y, int w, int h, string text = "", LabelPosition pos = LEFT, int padding = 5)
-                : ui::Widget(x, y, w, h) {
-            if (!text.empty()) {
-                label = make_shared<ui::Text>(x, y, w, (h / 2) - padding, text);
-                children.push_back(label);
-                y += h / 2;
-                h = h / 2 - padding;
-            }
-            range = make_shared<ui::RangeInput>(x, y, w, h);
-
-            children.push_back(range);
-            w = range->x + range->w - x;
-            h = range->y + range->h - y;
-        }
-
-        void mark_redraw() override;
-
-
-        shared_ptr<ui::RangeInput> range;
-    private:
-        shared_ptr<ui::Text> label = nullptr;
-    };
 
 }

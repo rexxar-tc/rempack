@@ -13,13 +13,13 @@
 #include <unordered_set>
 #include <utility>
 #include "rempack.h"
-#include "include/widgets.h"
-#include "include/debug_widgets.h"
-#include "include/rempack_widgets.h"
+#include "widgets.h"
+#include "debug/debug_widgets.h"
 #include "../opkg/opkg.h"
-#include "include/list_box.h"
+#include "display/list_box.h"
 #include "../include/algorithm/boyer_moore.h"
 #include "widget_helpers.h"
+#include "rempack/rempack_widgets.h"
 
 using ListItem = widgets::ListBox::ListItem;
 namespace boyer = strings::boyer_moore;
@@ -170,11 +170,18 @@ void dummyline(const string& line){
 }
 
 void setupDebug(){
-    //_selected = pkg.packages["splashscreen-suspended-dragon_curve"];
+    shared_ptr<package> pk;
+    for(uint i = 0; i < packagePanel->contents.size(); i++){
+        auto li = packagePanel->contents[i];
+        pk = any_cast<shared_ptr<package>>(li->object);
+        if(pk->Package !=  "splashscreen-suspended-dragon_curve")
+            continue;
+        packagePanel->selectIndex(i);
+    }
+    //_selected = pk;
     //onInstallClick(nullptr);
-    auto pk = pkg.packages["splashscreen-suspended-dragon_curve"];
-    auto pt = opkg::DownloadPackage(pk, dummyline);
-    std::cout << pt << std::endl;
+    //auto pt = opkg::DownloadPackage(pk, dummyline);
+    //std::cout << pt << std::endl;
 }
 
 

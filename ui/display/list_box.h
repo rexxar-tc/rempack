@@ -6,6 +6,8 @@
 
 #include <unordered_set>
 #include "widgets.h"
+#include "buttons/buttons.h"
+#include "input/input.h"
 
 namespace widgets {
     /*
@@ -133,6 +135,7 @@ namespace widgets {
         void render() override;
         //check the Y position relative to top of widget, divide by itemHeight
         void on_mouse_click(input::SynMotionEvent &ev) override;
+        void selectIndex(int index);
 
     protected:
         std::vector<shared_ptr<ListItem>> _currentView;
@@ -159,6 +162,5 @@ namespace widgets {
         //first, filter contents with our predicate and copy to current view
         //second, sort current view
         virtual void refresh_list();
-        void selectIndex(int index);
     };
 }

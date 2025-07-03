@@ -5,6 +5,7 @@
 #pragma once
 
 #include "widgets.h"
+#include "input/input.h"
 
 namespace widgets{
     class GradientGizmo : public ui::Widget {

@@ -6,8 +6,7 @@
 
 #include <rmkit.h>
 #include "../opkg/opkg.h"
-#include "include/rempack_widgets.h"
-#include "include/overlay.h"
+#include "display/overlay.h"
 
 namespace widget_helpers{
         inline void format_deps_recursive(unordered_map<string, uint> &items, const shared_ptr<package> &pkg){
