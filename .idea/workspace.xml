@@ -29,60 +29,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="refactor UI classes">
-      <change afterPath="$PROJECT_DIR$/ui/buttons/buttons.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/buttons/event_button.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/buttons/event_button.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/buttons/image_button.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/buttons/image_button.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/input/input.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/input/labeled_range.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/input/labeled_range.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/input/rounded_text_input.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/input/rounded_text_input.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/config_button.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/config_button.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/install_dialog.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/install_dialog.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/rdialog.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/terminal_dialog.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/terminal_dialog.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/uninstall_dialog.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/dialog/uninstall_dialog.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/filter_button.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/filter_button.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/filter_options.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/filter_overlay.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/filter_overlay.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/menu_data.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/menu_overlay.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/menu_overlay.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/overlay/roverlay.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/package_info_panel.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/package_info_panel.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/rempack_widgets.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/search_box.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/rempack/search_box.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/opkg/cache.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/cache.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/opkg/opkg.h" beforeDir="false" afterPath="$PROJECT_DIR$/opkg/opkg.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/rempack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/rempack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/widget_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/widget_helpers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ui/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/buttons.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/include/debug_widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/debug/debug_widgets.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/include/keyboard.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/input/keyboard/keyboard.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/include/list_box.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/list_box.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/include/overlay.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/overlay.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/include/rempack_widgets.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/include/text_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/text_helpers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/include/widgets.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/widgets.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/keyboard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/input/keyboard/keyboard.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/list_box.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/list_box.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/overlay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/overlay.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/rempack_widgets.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/widgets.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/widgets.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="further refactor UI classes into a sensible structure" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -253,7 +200,7 @@
       <workItem from="1751512693162" duration="2894000" />
       <workItem from="1751517605893" duration="2738000" />
       <workItem from="1751563613460" duration="618000" />
-      <workItem from="1751567240338" duration="3241000" />
+      <workItem from="1751567240338" duration="3772000" />
     </task>
     <task id="LOCAL-00001" summary="back again">
       <option name="closed" value="true" />
@@ -335,7 +282,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751506163353</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="further refactor UI classes into a sensible structure">
+      <option name="closed" value="true" />
+      <created>1751570548135</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1751570548135</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -366,16 +321,12 @@
     <MESSAGE value="c++ pain" />
     <MESSAGE value="refactor opkg, add download function" />
     <MESSAGE value="refactor UI classes" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor UI classes" />
+    <MESSAGE value="further refactor UI classes into a sensible structure" />
+    <option name="LAST_COMMIT_MESSAGE" value="further refactor UI classes into a sensible structure" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/rempack.cpp</url>
-          <line>44</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/cmake-build-debug-native-docker/include/rmkit/rmkit.h</url>
           <line>23752</line>
