@@ -97,7 +97,7 @@ namespace widgets{
 
         void push_line(const std::string &l){
             consoleBuffer.push_back(l);
-            if(consoleBuffer.size() > buffer_size)
+            if((int)consoleBuffer.size() > buffer_size)
                 consoleBuffer.pop_front();
         }
 
@@ -533,7 +533,7 @@ namespace widgets{
             int dw = w - padding - padding;
             auto t1 = new ui::Text(dx, dy, dw, utils::line_height(), s1.str());
             layout.pack_start(t1);
-            int lh = min((uint)300, ((labels.size() )* (utils::line_height()+5))+10);
+            int lh = min((int)300, (int)((labels.size() )* (utils::line_height()+5))+10);
             auto l1 = new widgets::ListBox(dx, dy+padding, dw, lh, utils::line_height(), scene);
             for (const auto &line: labels) {
                 l1->add(line);
@@ -716,7 +716,7 @@ namespace widgets{
             t1->set_text(s1.str());
 
             uint totalSize = 0;
-            int lh = min((uint)300, ((results.size() )* (utils::line_height()+5))+10);
+            int lh = min((int)300, (int)((results.size() )* (utils::line_height()+5))+10);
             l1->h = lh;
             l1->clear();
             for (const auto &pk: results) {

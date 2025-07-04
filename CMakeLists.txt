@@ -19,7 +19,7 @@ set(HASH_FILE "${RMKIT_DIR}/sha256sum.txt")
 set(RMKIT_FILE "${RMKIT_DIR}/rmkit.h")
 
 #use this if you're building against a custom version of rmkit.h
-#set(RMKIT_EXTERN "${CMAKE_SOURCE_DIR}/extern/rmkit.h")
+set(RMKIT_EXTERN "${CMAKE_SOURCE_DIR}/extern/rmkit.h")
 
 if(NOT DEFINED RMKIT_EXTERN)
     #don't hit the server if we already have the file
@@ -61,18 +61,11 @@ include_directories("${CMAKE_SOURCE_DIR}/ui")
 include_directories("${CMAKE_SOURCE_DIR}/opkg")
 
 add_library(rmkit_impl STATIC impl/rmkit_impl.cpp)
-set_source_files_properties(
-        impl/rmkit_impl.cpp
-        PROPERTIES COMPILE_FLAGS "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-optimize-sibling-calls"
-)
-set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls")
-
+add_library(stb_impl STATIC impl/stb_impl.cpp)
 find_package(ZLIB)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/rempack.cpp
-        #"$<IF:$<BOOL:${RMKIT_EXTERN}>,${RMKIT_FILE},extern/rmkit.h>"
-        #${RMKIT_FILE}
         assets/icons/icons_embed.h
         ui/debug_widgets.h
         opkg/opkg.h
@@ -83,40 +76,36 @@ add_executable(${PROJECT_NAME} src/main.cpp
         ui/buttons.cpp
         ui/buttons.h
         ui/overlay.cpp
+        ui/list_box.cpp
 )
+#set(CMAKE_CXX_FLAGS "-fsanitize=address,undefined -L/usr/lib/gcc/x86_64-pc-linux-gnu/14.3.1 -lasan")
 target_compile_options(${PROJECT_NAME}
         PUBLIC $<$<CONFIG:Debug>:-g -O0 -Wall -Wno-unused-variable>
         PUBLIC $<$<CONFIG:Release>:-O3>
 )
-target_link_options(${PROJECT_NAME}
-        PUBLIC -lz)
-#these can also be done as #define statements, but they MUST appear before rmkit.h
-#all these defines are necessary to build successfully
-#they're here for convenience (you can never forget them) and also to ensure
-#they appear early enough in the linking stage
+target_compile_options(rmkit_impl
+        PUBLIC $<$<CONFIG:Debug>:-g -Og -Wall -Wno-unused-variable -fno-omit-frame-pointer -fno-inline>
+        PUBLIC $<$<CONFIG:Release>:-O3>
+)
+target_compile_options(stb_impl
+        PUBLIC $<$<CONFIG:Debug>:-g -Og -Wall -Wno-unused-variable -fno-omit-frame-pointer -fno-inline>
+        PUBLIC $<$<CONFIG:Release>:-O3>
+)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-        #RMKIT_IMPLEMENTATION
-        #STB_IMAGE_IMPLEMENTATION
-        #STB_IMAGE_RESIZE_IMPLEMENTATION
-        #STB_IMAGE_WRITE_IMPLEMENTATION
-        #STB_TRUETYPE_IMPLEMENTATION
         #when building for native hardware, REMARKABLE must be defined
         $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
         #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
         )
-#see also: rm-toolchain.cmake
 target_compile_definitions(rmkit_impl PRIVATE
-        #RMKIT_IMPLEMENTATION
-        #STB_IMAGE_IMPLEMENTATION
-        #STB_IMAGE_RESIZE_IMPLEMENTATION
-        #STB_IMAGE_WRITE_IMPLEMENTATION
-        #STB_TRUETYPE_IMPLEMENTATION
-        #when building for native hardware, REMARKABLE must be defined
         $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
-        #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
 )
+target_compile_definitions(stb_impl PRIVATE
+        $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
+        $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
+)
+target_link_libraries(rmkit_impl PUBLIC stb_impl)
 target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB rmkit_impl)
 
 #add_library(rmkit ${RMKIT_FILE})

@@ -258,7 +258,7 @@ bool existsInChildren(const shared_ptr<package> &pkg, vector<shared_ptr<package>
 }
 
 inline bool hasNextLine(vector<shared_ptr<package>> &set, int offset, bool excludeInstalled, unordered_set<string> &visited){
-    if(offset >= set.size())
+    if(offset >= (int)set.size())
         return false;
     for(auto it = set.begin() + offset; it < set.end(); it++){
         auto dpkg = *it;
@@ -294,7 +294,7 @@ static void recurseDependencyTree(const shared_ptr<package>& pkg, stringstream &
     ss << ")" << endl;
 
     prefix << "|";
-    for(int i = 0; i < pkg->Depends.size(); i++) {
+    for(int i = 0; i < (int)pkg->Depends.size(); i++) {
         if (!hasNextLine(pkg->Depends, i, excludeInstalled, visited)) {
             prefix.seekp(-2, std::ios_base::end);
             prefix << ".:";
@@ -809,7 +809,7 @@ void opkg::InitializeRepositories() {
         }
     }
     printf("Processed %d control files containing %d lines\n", fc, pc);
-    printf("Processed %d packages\n", packages.size());
+    printf("Processed %ld packages\n", packages.size());
 
     link_dependencies();
     update_lists();

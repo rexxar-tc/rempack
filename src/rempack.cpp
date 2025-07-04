@@ -1,12 +1,7 @@
 //
 // Created by brant on 1/24/24.
 //
-//#define DEBUG_FB
-//#define RMKIT_IMPLEMENTATION
-//#define STB_IMAGE_IMPLEMENTATION
-//#define STB_IMAGE_RESIZE_IMPLEMENTATION
-//#define STB_IMAGE_WRITE_IMPLEMENTATION
-//#define STB_TRUETYPE_IMPLEMENTATION
+
 #include <rmkit.h>
 #include <unordered_set>
 #include <utility>
@@ -39,17 +34,16 @@ void Rempack::startApp() {
     fb->clear_screen();
     auto scene = buildHomeScene(fb->width, fb->height);
     ui::MainLoop::set_scene(scene);
-
     //ui::MainLoop::main();
     ui::MainLoop::refresh();
     //ui::MainLoop::redraw();
 
-    setupDebug();
+    //setupDebug();
     while(true){
         ui::MainLoop::main();
         ui::MainLoop::redraw();
         fb->waveform_mode = WAVEFORM_MODE_GC16;
-        ui::MainLoop::read_input();
+        ui::MainLoop::read_input(1000);
     }
 
 }
