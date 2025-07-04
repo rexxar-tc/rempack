@@ -14,6 +14,7 @@
       <config projectName="rempack" targetName="run_app" />
       <config projectName="rempack" targetName="docker_release" />
       <config projectName="rempack" targetName="rempack" />
+      <config projectName="rempack" targetName="widgets" />
       <config projectName="rempack" targetName="opkg" />
     </generated>
   </component>
@@ -29,18 +30,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="da0fb425-1163-48b5-b8ed-5c5a9f0b7674" name="Changes" comment="further refactor UI classes into a sensible structure">
-      <change afterPath="$PROJECT_DIR$/impl/rmkit_impl.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/impl/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup_debugger.sh" beforeDir="false" afterPath="$PROJECT_DIR$/setup_debugger.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/rempack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/rempack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/impl/rmkit_impl.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/impl/rmkit_impl.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ui/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/buttons/image_button.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/buttons/image_button.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/display/list_box.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/list_box.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/display/overlay.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/display/overlay.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/rempack/search_box.h" beforeDir="false" afterPath="$PROJECT_DIR$/ui/rempack/search_box.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/widgets.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ui/widgets.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,8 +49,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="CMakeLists.txt" />
         <option value="Dockerfile" />
+        <option value="CMakeLists.txt" />
       </list>
     </option>
   </component>
@@ -149,9 +143,9 @@
     </key>
   </component>
   <component name="RunManager" selected="Remote GDB Server.rempack">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="opkg" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="opkg" CONFIG_NAME="Debug x86">
@@ -160,6 +154,11 @@
       </method>
     </configuration>
     <configuration name="rempack" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="rempack" CONFIG_NAME="Debug x86" RUN_TARGET_PROJECT_NAME="rempack" RUN_TARGET_NAME="rempack">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="widgets" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="widgets" CONFIG_NAME="Debug x86">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -175,6 +174,7 @@
     </configuration>
     <list>
       <item itemvalue="CMake Application.opkg" />
+      <item itemvalue="CMake Application.widgets" />
       <item itemvalue="CMake Application.rempack" />
       <item itemvalue="Remote GDB Server.rempack" />
     </list>

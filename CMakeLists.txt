@@ -19,7 +19,7 @@ set(HASH_FILE "${RMKIT_DIR}/sha256sum.txt")
 set(RMKIT_FILE "${RMKIT_DIR}/rmkit.h")
 
 #use this if you're building against a custom version of rmkit.h
-#set(RMKIT_EXTERN "${CMAKE_SOURCE_DIR}/extern/rmkit.h")
+set(RMKIT_EXTERN "${CMAKE_SOURCE_DIR}/extern/rmkit.h")
 
 if(NOT DEFINED RMKIT_EXTERN)
     #don't hit the server if we already have the file
@@ -59,6 +59,7 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/assets")
 include_directories("${CMAKE_SOURCE_DIR}/ui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/ui")
+add_subdirectory("${CMAKE_SOURCE_DIR}/impl")
 add_subdirectory("${CMAKE_SOURCE_DIR}/opkg")
 
 add_executable(${PROJECT_NAME} src/main.cpp
@@ -66,35 +67,33 @@ add_executable(${PROJECT_NAME} src/main.cpp
         #"$<IF:$<BOOL:${RMKIT_EXTERN}>,${RMKIT_FILE},extern/rmkit.h>"
         #${RMKIT_FILE}
         assets/icons/icons_embed.h
-        ${UI_SOURCES}
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${UI_INCLUDE_DIRS})
-set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls")
-#target_compile_options(${PROJECT_NAME}
-#        PUBLIC $<$<CONFIG:Debug>:-g -O0 -Wall -Wno-unused-variable>
-#        #PUBLIC $<$<CONFIG:Debug>:-g3 -Og -Wall -Wno-unused-variable -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls>
-#        PUBLIC $<$<CONFIG:Release>:-O3>
-#)
+#set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls")
+target_compile_options(${PROJECT_NAME}
+        PUBLIC $<$<CONFIG:Debug>:-g -O0 -Wall -Wno-unused-variable>
+        #PUBLIC $<$<CONFIG:Debug>:-g3 -Og -Wall -Wno-unused-variable -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls>
+        PUBLIC $<$<CONFIG:Release>:-O3>
+)
 #target_link_options(${PROJECT_NAME}        PUBLIC -lz)
 #these can also be done as #define statements, but they MUST appear before rmkit.h
 #all these defines are necessary to build successfully
 #they're here for convenience (you can never forget them) and also to ensure
 #they appear early enough in the linking stage
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-        #RMKIT_IMPLEMENTATION
-        #STB_IMAGE_IMPLEMENTATION
-        #STB_IMAGE_RESIZE_IMPLEMENTATION
-        #STB_IMAGE_WRITE_IMPLEMENTATION
-        #STB_TRUETYPE_IMPLEMENTATION
         #when building for native hardware, REMARKABLE must be defined
         $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
         #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
         )
-#see also: rm-toolchain.cmake
+target_compile_definitions(widgets PRIVATE
+        #when building for native hardware, REMARKABLE must be defined
+        $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
+        #debug builds require an external font file. I've provided one for you in /include
+        $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
+        )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE opkg)
+target_link_libraries(${PROJECT_NAME} PRIVATE opkg widgets rmkit_impl)
 
 #add_library(rmkit ${RMKIT_FILE})
 #set_target_properties(rmkit PROPERTIES LINKER_LANGUAGE CXX)
