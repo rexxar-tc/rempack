@@ -61,6 +61,15 @@ include_directories("${CMAKE_SOURCE_DIR}/ui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/ui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/impl")
 add_subdirectory("${CMAKE_SOURCE_DIR}/opkg")
+# 1) Force libarchive in-tree, shared‑only
+set(BUILD_SHARED_LIBS      OFF  CACHE INTERNAL "" FORCE)
+set(LIBARCHIVE_BUILD_STATIC ON CACHE INTERNAL "" FORCE)
+set(LIBARCHIVE_BUILD_TESTS OFF CACHE INTERNAL "" FORCE)
+
+# 2) Pull in libarchive (assumes it has a CMake build!)
+add_subdirectory(vendor/libarchive EXCLUDE_FROM_ALL)
+
+target_include_directories(opkg PRIVATE "${CMAKE_SOURCE_DIR}/vendor/libarchive/libarchive")
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/rempack.cpp
@@ -92,8 +101,12 @@ target_compile_definitions(widgets PRIVATE
         #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
         )
-
-target_link_libraries(${PROJECT_NAME} PRIVATE opkg widgets rmkit_impl)
+#set_target_properties(rempack PROPERTIES
+#        INSTALL_RPATH "/opt/lib"
+#        BUILD_WITH_INSTALL_RPATH ON
+#)
+#target_link_options(${PROJECT_NAME} PRIVATE -Wl,-rpath,/opt/lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE opkg widgets rmkit_impl archive_static)
 
 #add_library(rmkit ${RMKIT_FILE})
 #set_target_properties(rmkit PROPERTIES LINKER_LANGUAGE CXX)
