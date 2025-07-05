@@ -10,6 +10,8 @@ namespace widgets {
     public:
         BorderedPixmap(int x, int y, int w, int h, icons::Icon ico, RoundCornerStyle style);
         void on_reflow() override;
+        void show() override;
+        void hide() override;
     private:
         shared_ptr<RoundCornerWidget> border;
     };

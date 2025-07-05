@@ -16,4 +16,13 @@ namespace widgets {
         Rect::on_reflow();
     }
 
+    void BorderedPixmap::show() {
+        border->show();
+        Widget::show();
+    }
+
+    void BorderedPixmap::hide() {
+        border->hide();
+        Widget::hide();
+    }
 } // widgets
