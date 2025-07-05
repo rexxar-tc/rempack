@@ -105,7 +105,7 @@ namespace widgets {
             printf("OPKG ERROR! %d\n", ret);
         }
         stringstream s1;
-        s1 << "Package " << request->Package << " conflicts with " << conflicts.size() << " packages:";
+        s1 << results.size() << " packages conflict with request:";
 
         t1->set_text(s1.str());
 
