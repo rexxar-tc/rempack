@@ -29,11 +29,13 @@ struct PlatformRules {
      * @return a list of packages that conflict, or an empty list if there are no conflicts
      */
     virtual std::vector<shared_ptr<package>> checkSplashConflicts(const opkg& opkg, const shared_ptr<package>& pkg);
+    //virtual bool splashComparator(const std::string& a, const std::string& b);
 };
+
 struct RemarkableRules: public PlatformRules{
 
     void sortPackages(std::vector<std::string> &strings) override;
-
+    //bool splashComparator(const std::string &a, const std::string &b) override;
     std::vector<shared_ptr<package>> checkSplashConflicts(const opkg &opkg, const shared_ptr<package> &pkg) override;
 };
 
@@ -42,4 +44,7 @@ struct RemarkableRules: public PlatformRules{
 //#else
 //    inline PlatformRules rules;
 //#endif
+
+
+
 } // platform

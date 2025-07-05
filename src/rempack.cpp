@@ -165,6 +165,35 @@ void setupDebug(){
     //std::cout << pt << std::endl;
 }
 
+static bool splashscreenComparator(const shared_ptr<ListItem>& a, const shared_ptr<ListItem>& b) {
+    auto isSplashscreen = [](const std::string& s) {
+        return s.rfind("splashscreen-", 0) == 0;
+    };
+
+    auto extractGroupKey = [](const std::string& s) -> std::string {
+        // Assume format: splashscreen-<type>-<xyz>
+        size_t lastDash = s.rfind('-');
+        if (lastDash != std::string::npos) {
+            return s.substr(lastDash + 1);
+        }
+        return s;
+    };
+
+    string astr = a->label;
+    string bstr = b->label;
+    bool aIsSplash = isSplashscreen(astr);
+    bool bIsSplash = isSplashscreen(bstr);
+
+    if (aIsSplash && bIsSplash) {
+        return extractGroupKey(astr) < extractGroupKey(bstr);
+    } else if (aIsSplash) {
+        return "splashscreen" < bstr;
+    } else if (bIsSplash) {
+        return astr < "splashscreen";
+    } else {
+        return astr < bstr;
+    }
+}
 
 //1404x1872 - 157x209mm -- 226dpi
 ui::Scene buildHomeScene(int width, int height) {
@@ -227,6 +256,7 @@ ui::Scene buildHomeScene(int width, int height) {
     }
     packagePanel->events.selected += PLS_DELEGATE(onPackageSelect);
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);
+    packagePanel->sortPredicate = splashscreenComparator;
 
     displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle(), scene);
 

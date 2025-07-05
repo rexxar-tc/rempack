@@ -65,7 +65,7 @@ namespace widgets {
         LISTBOX_EVENTS events;
 
         std::function<bool(const shared_ptr<ListItem> &)> filterPredicate;
-        std::function<bool(const shared_ptr<ListItem> &, shared_ptr<ListItem> &)> sortPredicate;
+        std::function<bool(const shared_ptr<ListItem> &, const shared_ptr<ListItem> &)> sortPredicate;
 
         bool selectable = true; //allow selecting of entries at all
         bool multiSelect = true; //allow selecting more than one entry
