@@ -31,16 +31,34 @@ namespace utils{
             for (std::string &tk: tokens) {
                 auto token = tk;
                 auto v = stbtext::get_text_size(token, fontSize);
-                //TODO: hard wrap long tokens, split URLs on slashes
                 v.w += sw;
-                if(x + v.w < widthLimit)
+                if(x + v.w < widthLimit) {
                     x += v.w;
-                else{
-                    res.emplace_back(ss.str());
-                    ss.str("");
-                    x = v.w;
+                    ss << token << ' ';
                 }
-                ss << token << ' ';
+                else{
+                    //hard wrap long tokens
+                    if(v.w > widthLimit){
+                        int soffset = 0;
+                        for(int i = 1; i <= token.size(); i++){
+                            auto sstr = token.substr(soffset, i - soffset);
+                            auto sv = stbtext::get_text_size(sstr, fontSize);
+                            if(x + sv.w < widthLimit && i < token.size())
+                                continue;
+                            soffset = i;
+                            x = 0;
+                            ss << sstr;
+                            res.emplace_back(ss.str());
+                            ss.str("");
+                        }
+                    }
+                    else {
+                        res.emplace_back(ss.str());
+                        ss.str("");
+                        x = v.w;
+                        ss << token << ' ';
+                    }
+                }
             }
             res.emplace_back(ss.str());
             ss.str("");
