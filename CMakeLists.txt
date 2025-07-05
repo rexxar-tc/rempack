@@ -58,6 +58,7 @@ include_directories(SYSTEM "${RMKIT_DIR}")
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/assets")
 include_directories("${CMAKE_SOURCE_DIR}/ui")
+include_directories("${CMAKE_SOURCE_DIR}/rules")
 add_subdirectory("${CMAKE_SOURCE_DIR}/ui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/impl")
 add_subdirectory("${CMAKE_SOURCE_DIR}/opkg")
@@ -76,6 +77,7 @@ add_executable(${PROJECT_NAME} src/main.cpp
         #"$<IF:$<BOOL:${RMKIT_EXTERN}>,${RMKIT_FILE},extern/rmkit.h>"
         #${RMKIT_FILE}
         assets/icons/icons_embed.h
+        rules/platform_rules.cpp
 )
 
 #set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls")

@@ -16,6 +16,10 @@ add_library(widgets STATIC
         rempack/filter_button.cpp
         rempack/package_info_panel.cpp
         rempack/config_button.cpp
+        display/bordered_image.cpp
+        display/bordered_image.h
+        rempack/dialog/conflict_dialog.cpp
+        rempack/dialog/conflict_dialog.h
 )
 
 include_directories(../opkg)

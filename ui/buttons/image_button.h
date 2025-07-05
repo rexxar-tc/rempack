@@ -11,12 +11,8 @@ namespace widgets{
     //basically a reimplementation of ui::Button with a clickable image instead of text
     class ImageButton : public EventButton {
     public:
-        ImageButton(int x, int y, int w, int h, icons::Icon icon) : EventButton(x, y, w, h, "  "){
-            pixmap = make_shared<ui::Pixmap>(x, y, w, h, icon);
-            pixmap->alpha = WHITE;
-            children.push_back(pixmap);
-        };
-
+        ImageButton(int x, int y, int w, int h, icons::Icon icon);
+        ImageButton(int x, int y, int w, int h, const string& text);
 
         void render() override;
 
@@ -33,10 +29,8 @@ namespace widgets{
     public:
 
         shared_ptr<RoundCornerWidget> border;
-        RoundImageButton(int x, int y, int w, int h, icons::Icon icon, RoundCornerStyle style): ImageButton(x,y,w,h,icon){
-            border = make_shared<RoundCornerWidget>(x,y,w,h,style);
-            children.push_back(border);
-        }
+        RoundImageButton(int x, int y, int w, int h, icons::Icon icon, RoundCornerStyle style);
+        RoundImageButton(int x, int y, int w, int h, const string &text, RoundCornerStyle style);
         void on_reflow()override;
     };
 

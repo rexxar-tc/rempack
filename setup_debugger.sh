@@ -7,6 +7,8 @@ BASE_DIR="/home/root/${APP}"
 RM_USER="root"
 
 ssh ${RM_USER}@${REMARKABLE_HOST} "/opt/bin/launcherctl stop-launcher; killall gdbserver 2>/dev/null; killall ${APP} 2>/dev/null" &
+#ssh ${RM_USER}@${REMARKABLE_HOST} "killall gdbserver 2>/dev/null; killall ${APP} 2>/dev/null"
+exit 0
 #this is probably brittle, I'm sure it's fine
 #scp ${APP_PATH} "${RM_USER}@${REMARKABLE_HOST}:${BASE_DIR}/${APP}"
 #scp ${APP_PATH} "${RM_USER}@${REMARKABLE_HOST}:/tmp/CLion/debug/${APP}"

@@ -70,61 +70,19 @@ namespace widgets {
         bool selectable = true; //allow selecting of entries at all
         bool multiSelect = true; //allow selecting more than one entry
 
-        int pageSize() {
-            auto size = (int)floor(float(h - padding - padding) / float(itemHeight + padding));
-            if(size < (int)_sortedView.size())   //if we have more items than will fit on one page,
-                size--;                          //reserve at least one line of space at the bottom of the view for the nav elements
-            return size;
-        }
+        int pageSize();
 
-        int currentPage() const {
-            return pageOffset + 1;
-        }
+        int currentPage() const;
 
-        int maxPages(){
-            return (int)ceil((float)_sortedView.size() / (float)pageSize());
-        }
+        int maxPages();
 
         //please call mark_redraw() on this widget after editing contents or selections
         vector<shared_ptr<ListItem>> contents;
         std::unordered_set<shared_ptr<ListItem>> selectedItems;
 
-        ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene>& s) : RoundCornerWidget(x, y, w, h, RoundCornerStyle()) {
-            this->itemHeight = itemHeight;
-            _pageLabel = make_shared<ui::Text>(0,0,w,itemHeight,"");
+        ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene>& s);
 
-            _navLL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_left_png));
-            _navL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_left_png));
-            _navR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_right_png));
-            _navRR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_right_png));
-            _navLL->hide();
-            _navL->hide();
-            _navR->hide();
-            _navRR->hide();
-            _pageLabel->hide();
-            children.push_back(_navLL);
-            children.push_back(_navL);
-            children.push_back(_navR);
-            children.push_back(_navRR);
-            children.push_back(_pageLabel);
-            s->add(_navLL);
-            s->add(_navL);
-            s->add(_navR);
-            s->add(_navRR);
-            s->add(_pageLabel);
-
-            _navLL->events.clicked += PLS_DELEGATE(LL_CLICK);
-            _navL->events.clicked += PLS_DELEGATE(L_CLICK);
-            _navR->events.clicked += PLS_DELEGATE(R_CLICK);
-            _navRR->events.clicked += PLS_DELEGATE(RR_CLICK);
-            layout_buttons();
-        }
-
-        ListBox(int x, int y, int w, int h, int itemHeight, const vector<string>& items, ui::Scene& scene): ListBox(x,y,w,h,itemHeight,scene) {
-            for(const auto &s: items){
-                this->add(s);
-            }
-        }
+        ListBox(int x, int y, int w, int h, int itemHeight, const vector<string>& items, ui::Scene& scene);
 
         shared_ptr<ListItem> add(const string& label, const std::any& object = nullptr);
         bool remove(const string& label);
@@ -133,23 +91,24 @@ namespace widgets {
         void on_reflow() override;
         void undraw() override;
         void render() override;
+        bool select(const string& label);
         //check the Y position relative to top of widget, divide by itemHeight
         void on_mouse_click(input::SynMotionEvent &ev) override;
-        void selectIndex(int index);
-
     protected:
+
         std::vector<shared_ptr<ListItem>> _currentView;
         std::vector<shared_ptr<ListItem>> _sortedView;
         shared_ptr<ui::Text> _pageLabel;
         shared_ptr<ImageButton> _navLL, _navL, _navR, _navRR;
-
         void layout_buttons();
+
     private:
         //TODO: style sheets
         int itemHeight;
         int padding = 5;
-
         int pageOffset = 0;
+
+        void selectIndex(int index);
 
         void updateControlStates();
         void updatePageDisplay();

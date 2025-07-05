@@ -46,6 +46,48 @@ namespace widgets {
         mark_redraw();
     }
 
+    bool ListBox::select(const string &label) {
+        std::cout<<"selecting: "<<label<<std::endl;
+        int i = 0;
+        shared_ptr<ListItem> item = nullptr;
+        for (; i < (int) _sortedView.size(); i++) {
+            auto ti = _sortedView[i];
+            if ((ti->label.rfind(label, 0)) == 0) {
+                item = ti;
+                break;
+            }
+        }
+        if(item == nullptr) {
+            std::cerr<<"Package not found: " << label << std::endl;
+            return false;
+        }
+        auto pgnum = i / pageSize();
+        std::cout<<"pgnum: "<<pgnum<<std::endl;
+        pageOffset = pgnum;
+        updatePageDisplay();
+        refresh_list();
+        mark_redraw();
+
+        i = 0;
+        item = nullptr;
+        for (; i < (int) _currentView.size(); i++) {
+            auto ti = _currentView[i];
+            if ((ti->label.rfind(label, 0)) == 0) {
+                item = ti;
+                break;
+            }
+        }
+        if(item == nullptr) {
+            std::cerr<<"Package not found in view: " << label << std::endl;
+            return false;
+        }
+
+        auto idx = i % pageSize();
+        std::cout<<"ps: "<<pageSize()<<" idx: "<<idx <<" i: " <<i<<std::endl;
+        selectIndex(i);
+        return true;
+    }
+
     void ListBox::clear() {
         contents.clear();
         mark_redraw();
@@ -270,5 +312,57 @@ namespace widgets {
             }                                           // V
             events.selected(item);                      // before firing select event
         }
+    }
+
+    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene> &s) : RoundCornerWidget(x, y, w, h, RoundCornerStyle()) {
+        this->itemHeight = itemHeight;
+        _pageLabel = make_shared<ui::Text>(0,0,w,itemHeight,"");
+
+        _navLL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_left_png));
+        _navL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_left_png));
+        _navR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_right_png));
+        _navRR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_right_png));
+        _navLL->hide();
+        _navL->hide();
+        _navR->hide();
+        _navRR->hide();
+        _pageLabel->hide();
+        children.push_back(_navLL);
+        children.push_back(_navL);
+        children.push_back(_navR);
+        children.push_back(_navRR);
+        children.push_back(_pageLabel);
+        s->add(_navLL);
+        s->add(_navL);
+        s->add(_navR);
+        s->add(_navRR);
+        s->add(_pageLabel);
+
+        _navLL->events.clicked += PLS_DELEGATE(LL_CLICK);
+        _navL->events.clicked += PLS_DELEGATE(L_CLICK);
+        _navR->events.clicked += PLS_DELEGATE(R_CLICK);
+        _navRR->events.clicked += PLS_DELEGATE(RR_CLICK);
+        layout_buttons();
+    }
+
+    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const vector<string> &items, ui::Scene &scene) : ListBox(x,y,w,h,itemHeight,scene) {
+        for(const auto &s: items){
+            this->add(s);
+        }
+    }
+
+    int ListBox::pageSize() {
+        auto size = (int)floor(float(h - padding - padding) / float(itemHeight + padding));
+        if(size < (int)_sortedView.size())   //if we have more items than will fit on one page,
+            size--;                          //reserve at least one line of space at the bottom of the view for the nav elements
+        return size;
+    }
+
+    int ListBox::currentPage() const {
+        return pageOffset + 1;
+    }
+
+    int ListBox::maxPages() {
+        return (int)ceil((float)_sortedView.size() / (float)pageSize());
     }
 }

@@ -1,12 +1,27 @@
 //
-// Created by brant on 7/3/25.
+// Created by brant on 7/5/25.
 //
 
-#include "uninstall_dialog.h"
+#include "conflict_dialog.h"
 #include "terminal_dialog.h"
 
 namespace widgets {
-    void UninstallDialog::build_dialog() {
+    ConflictDialog::ConflictDialog(int x, int y, int w, int h, const shared_ptr<package> &requested,
+                                   const vector<shared_ptr<package>> &conflicts) : Overlay(x,y,w,h){
+        this->request = requested;
+        this->conflicts = conflicts;
+    }
+
+    void ConflictDialog::show() {
+        if (!this->scene)
+            build_dialog();
+        visible = true;
+        //mark_redraw();
+        this->scene->pinned = pinned;
+        ui::MainLoop::show_overlay(this->scene, stack);
+    }
+
+    void ConflictDialog::build_dialog() {
         this->create_scene();
         layout = make_shared<ui::VerticalLayout>(x, y, w, h, this->scene);
         int dx = padding;
@@ -17,12 +32,7 @@ namespace widgets {
         l1 = new widgets::ListBox(dx, dy + padding, dw, utils::line_height(), utils::line_height(), scene);
         l1->selectable = false;
         layout->pack_start(l1);
-        cb = new ui::ToggleButton(dx, dy + padding + padding, dw, utils::line_height(), "Auto-remove dependencies");
-        cb->toggled = dependencies;
-        cb->events.toggled += [this](bool s) { on_autoremove_tick(s); };
-        cb->style.justify = ui::Style::JUSTIFY::LEFT;
-        layout->pack_start(cb);
-        t2 = new ui::Text(dx, dy + padding + padding, dw, utils::line_height(), "");
+        t2 = new ui::Text(dx, dy + padding + padding, dw, utils::line_height(), "Do you want to remove these packages?");
         layout->pack_start(t2);
         auto button_bar = new ui::HorizontalLayout(0, 0, this->w, 50, this->scene);
         layout->pack_end(button_bar);
@@ -31,22 +41,22 @@ namespace widgets {
 // layout->reflow();
 
         this->add_buttons(button_bar);
-        ui::TaskQueue::add_task([this]() { this->update_texts(); });
+        this->update_texts();
     }
 
-    void UninstallDialog::on_reflow() {
+    void ConflictDialog::on_reflow() {
         l1->on_reflow();
     }
 
-    void UninstallDialog::mark_redraw() {
+    void ConflictDialog::mark_redraw() {
         layout->refresh();
     }
 
-    void UninstallDialog::setCallback(const function<void(bool)> &callback) {
+    void ConflictDialog::setCallback(const function<void(bool)> &callback) {
         _callback = callback;
     }
 
-    void UninstallDialog::on_button_selected(std::string s) {
+    void ConflictDialog::on_button_selected(std::string s) {
         if (s == "OK") {
             _accepted = true;
             run_uninstall();
@@ -58,12 +68,7 @@ namespace widgets {
             _callback(_accepted);
     }
 
-    void UninstallDialog::on_autoremove_tick(bool state) {
-        dependencies = state;
-        ui::TaskQueue::add_task([this]() { this->update_texts(); });
-    }
-
-    void UninstallDialog::add_buttons_reflow(ui::HorizontalReflow *button_bar) {
+    void ConflictDialog::add_buttons_reflow(ui::HorizontalReflow *button_bar) {
         auto default_fs = ui::Style::DEFAULT.font_size;
         for (auto b: this->buttons) {
             auto image = stbtext::get_text_size(b, default_fs);
@@ -72,7 +77,7 @@ namespace widgets {
         }
     }
 
-    void UninstallDialog::run_uninstall() {
+    void ConflictDialog::run_uninstall() {
         auto td = new TerminalDialog(500, 500, 800, 1100, "opkg uninstall");
         td->set_callback([this]() {
             if (this->_callback)
@@ -80,11 +85,10 @@ namespace widgets {
             this->hide();
         });
         td->show();
-        auto ret = opkg::Uninstall(packages, [td](const string s) { td->stdout_callback(s); },
-                                   dependencies ? " --autoremove" : "");
+        auto ret = opkg::Uninstall(conflicts, [td](const string s) { td->stdout_callback(s); });
         if (ret == 0) {
             td->stdout_callback("Done.");
-            for (const auto &t: packages)
+            for (const auto &t: conflicts)
                 t->State = package::NotInstalled;
         } else {
             td->stdout_callback("Error!");
@@ -92,17 +96,16 @@ namespace widgets {
         std::cout << "opkg uninstall returned with exit code " << ret << std::endl;
     }
 
-    void UninstallDialog::update_texts() {
+    void ConflictDialog::update_texts() {
         if (!t1 || !t2 || !l1)
             return;
         results.clear();
-        auto ret = opkg::Instance->ComputeUninstall(packages, dependencies, &results);
+        auto ret = opkg::Instance->ComputeUninstall(conflicts, false, &results);
         if (ret != 0) {
             printf("OPKG ERROR! %d\n", ret);
         }
         stringstream s1;
-        s1 << "Uninstalling " << packages.size() << " packages and ";
-        s1 << results.size() - packages.size() << " dependencies:";
+        s1 << "Package " << request->Package << " conflicts with " << conflicts.size() << " packages:";
 
         t1->set_text(s1.str());
 
@@ -114,18 +117,31 @@ namespace widgets {
             l1->add(pk->Package);
             totalSize += pk->Size;
         }
-        cb->y = lh + padding + l1->y;
-        cb->mark_redraw();
-        stringstream s2;
-        s2 << "This will free approximately " << utils::stringifySize(totalSize);
-        t2->y = cb->y + padding + cb->h;
-        t2->set_text(s2.str());
+        t2->y = lh + padding + l1->y;
         on_reflow();
         //Overlay::mark_redraw();
     }
 
-    UninstallDialog::UninstallDialog(int x, int y, int w, int h, const vector<shared_ptr<package>> &toInstall) : Overlay(x,y,w,h){
-        packages = toInstall;
-        pinned = true;
-    }
+    class Zyx{
+    public:
+        virtual void foo();
+        virtual void bar();
+    };
+
+    class A: public Zyx{
+    public:
+        void foo() override{
+            bar();
+        }
+        void bar() override{
+            //dostuff
+        }
+    };
+
+    class B: public A{
+    public:
+        void bar() override{
+            //do stuff without calling A::bar
+        }
+    };
 } // widgets

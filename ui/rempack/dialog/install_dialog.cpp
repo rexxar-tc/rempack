@@ -3,18 +3,28 @@
 //
 
 #include "install_dialog.h"
-#include "../../../src/widget_helpers.h"
 #include "terminal_dialog.h"
 #include "display/list_box.h"
 
 namespace widgets{
+    inline void format_deps_recursive(unordered_map<string, uint> &items, const shared_ptr<package> &pkg){
+        if(pkg->IsInstalled())
+            return;
+        string size = pkg->Size == 0 ? "0" : utils::stringifySize(pkg->Size);
+        stringstream ss;
+        ss << pkg->Package << " - " << size;
+        if(!items.emplace(ss.str(), pkg->Size).second)
+            return;
+        for(const auto &dpkg: pkg->Depends)
+            format_deps_recursive(items, dpkg);
+    }
 
     void InstallDialog::build_dialog() {
         this->create_scene();
         int padding = 20;
         unordered_map<string, uint> items;
         for (const auto &pk: packages) {
-            widget_helpers::format_deps_recursive(items, pk);
+            format_deps_recursive(items, pk);
         }
         stringstream s1;
         s1 << "Installing " << packages.size() << " packages and ";

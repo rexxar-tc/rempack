@@ -29,9 +29,31 @@ namespace widgets{
         EventButton::on_mouse_click(ev);
     }
 
+    ImageButton::ImageButton(int x, int y, int w, int h, icons::Icon icon) : EventButton(x, y, w, h, ""){
+        pixmap = make_shared<ui::Pixmap>(x, y, w, h, icon);
+        pixmap->alpha = WHITE;
+        children.push_back(pixmap);
+    }
+
+    ImageButton::ImageButton(int x, int y, int w, int h, const string &text) : EventButton(x, y, w, h, ""){
+        pixmap = make_shared<ui::Pixmap>(x, y, w, h, icons::Icon {});
+        pixmap->alpha = WHITE;
+        children.push_back(pixmap);
+    }
+
     void RoundImageButton::on_reflow() {
         border->set_coords(x, y, w, h);
         border->mark_redraw();
         ImageButton::on_reflow();
+    }
+
+    RoundImageButton::RoundImageButton(int x, int y, int w, int h, icons::Icon icon, RoundCornerStyle style) : ImageButton(x,y,w,h,icon){
+        border = make_shared<RoundCornerWidget>(x,y,w,h,style);
+        children.push_back(border);
+    }
+
+    RoundImageButton::RoundImageButton(int x, int y, int w, int h, const string &text, RoundCornerStyle style) : ImageButton(x,y,w,h,text){
+        border = make_shared<RoundCornerWidget>(x,y,w,h,style);
+        children.push_back(border);
     }
 }

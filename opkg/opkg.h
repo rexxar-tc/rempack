@@ -78,6 +78,7 @@ public:
     void InitializeRepositories();
     void link_dependencies();
     static vector<uint8_t> getCachedSplashscreen(const shared_ptr<package>& pkg);
+    static bool isPackageCached(const shared_ptr<package>& pkg);
     map<string, shared_ptr<package>> packages;
     vector<string> repositories;
     vector<string> sections;

@@ -12,8 +12,8 @@
 #include "../opkg/opkg.h"
 #include "display/list_box.h"
 #include "../include/algorithm/boyer_moore.h"
-#include "widget_helpers.h"
 #include "rempack/rempack_widgets.h"
+#include "platform_rules.h"
 using ListItem = widgets::ListBox::ListItem;
 namespace boyer = strings::boyer_moore;
 ui::Scene buildHomeScene(int width, int height);
@@ -38,7 +38,7 @@ void Rempack::startApp() {
     ui::MainLoop::refresh();
     //ui::MainLoop::redraw();
 
-    //setupDebug();
+    setupDebug();
     while(true){
         ui::MainLoop::main();
         ui::MainLoop::redraw();
@@ -112,19 +112,13 @@ void onPackageSelect(shared_ptr<ListItem> item) {
     auto pk = any_cast<shared_ptr<package>>(item->object);
     //printf("Package selected: %s\n", pk->Package.c_str());
     _selected = pk;
-    displayBox->set_states(pk->IsInstalled());
-    displayBox->undraw();
-    displayBox->set_text(opkg::FormatPackage(pk));
-    displayBox->mark_redraw();
+    displayBox->display_package(pk);
 }
 void onPackageDeselect(shared_ptr<ListItem> item) {
     auto pk = any_cast<shared_ptr<package>>(item->object);
     //printf("Package deselected: %s\n", pk->Package.c_str());
     _selected = nullptr;
-    displayBox->set_states(false);
-    displayBox->undraw();
-    displayBox->set_text("");
-    displayBox->mark_redraw();
+    displayBox->display_package(nullptr);
 }
 void onFiltersChanged(widgets::FilterOptions &options){
     //_filterOpts = options;
@@ -132,45 +126,39 @@ void onFiltersChanged(widgets::FilterOptions &options){
     packagePanel->mark_redraw();
 }
 
-void markInstall(const shared_ptr<package>& package){
-    if(package->IsInstalled())
-        return;
-    if(_menuData->PendingInstall.emplace(package->Package).second)
-        for(auto const &spk: package->Depends)
-            markInstall(spk);
-}
-
 void onInstallClick(void*){
     auto m = new widgets::InstallDialog(500,500,600,800,vector<shared_ptr<package>>{_selected});
+
+    m->setCallback([](bool b){displayBox->display_package(_selected);});
+    if(_selected->Package.rfind("splashscreen") == 0) {
+        auto conf = platform::rules.checkSplashConflicts(pkg, _selected);
+        if (!conf.empty()) {
+            for (const auto &c: conf) {
+                std::cout << "CONFLICT: " << c->Package << std::endl;
+            }
+            auto cd = new widgets::ConflictDialog(500, 500, 600, 800, _selected, conf);
+            cd->setCallback([m](bool accept) {
+                if (accept)
+                    m->show();
+                return;
+            });
+            cd->show();
+            return;
+        }
+    }
     m->show();
-}
+ }
 void onUninstallClick(void*){
     auto m = new widgets::UninstallDialog(500,500,600,800,vector<shared_ptr<package>>{_selected});
+    m->setCallback([](bool b){displayBox->display_package(_selected);});
     m->show();
 }
-void onDownloadClick(void*){
-
-}
 void onPreviewClick(void*){
-
-}
-void onEnactClick(void*){
-
-}
-
-void dummyline(const string& line){
-    std::cout << line << std::endl;
+    displayBox->set_image(_selected);
 }
 
 void setupDebug(){
-    shared_ptr<package> pk;
-    for(uint i = 0; i < packagePanel->contents.size(); i++){
-        auto li = packagePanel->contents[i];
-        pk = any_cast<shared_ptr<package>>(li->object);
-        if(pk->Package !=  "splashscreen-suspended-dragon_curve")
-            continue;
-        packagePanel->selectIndex(i);
-    }
+    packagePanel->select("splashscreen-poweroff-sacks_spiral");
     //_selected = pk;
     //onInstallClick(nullptr);
     //auto pt = opkg::DownloadPackage(pk, dummyline);
@@ -227,7 +215,7 @@ ui::Scene buildHomeScene(int width, int height) {
     packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 30, scene);
     std::vector<std::string> packages;
     pkg.LoadPackages(&packages);
-    std::sort(packages.begin(), packages.end());
+    platform::rules.sortPackages(packages);
     packagePanel->multiSelect = false;
     packagePanel->filterPredicate = packageFilterDelegate;
     for (const auto &[n, pk]: pkg.packages) {
@@ -244,9 +232,7 @@ ui::Scene buildHomeScene(int width, int height) {
 
     displayBox->events.install += PLS_DELEGATE(onInstallClick);
     displayBox->events.uninstall += PLS_DELEGATE(onUninstallClick);
-    displayBox->events.download += PLS_DELEGATE(onDownloadClick);
     displayBox->events.preview += PLS_DELEGATE(onPreviewClick);
-    displayBox->events.enact += PLS_DELEGATE(onEnactClick);
 
     layout->pack_start(searchPane);
     layout->pack_start(applicationPane);

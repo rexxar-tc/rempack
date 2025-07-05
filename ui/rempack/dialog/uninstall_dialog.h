@@ -25,10 +25,7 @@ namespace widgets {
     */
     class UninstallDialog: public widgets::Overlay {
     public:
-        UninstallDialog(int x, int y, int w, int h, const std::vector<shared_ptr<package>> &toInstall): Overlay(x,y,w,h){
-            packages = toInstall;
-            pinned = true;
-        }
+        UninstallDialog(int x, int y, int w, int h, const std::vector<shared_ptr<package>> &toInstall);
         void build_dialog() override;
         void on_reflow() override;
         void mark_redraw() override;
