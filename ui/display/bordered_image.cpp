@@ -73,4 +73,14 @@ namespace widgets {
         //fb->update_mode = UPDATE_MODE_FULL;
         mark_redraw();
     }
+
+    void BorderedPixmap::setAspectWidth(int imageX, int imageY) {
+        auto aspect = (float)imageX / (float)imageY;
+        int dw = (int)std::floor((float)this->h * aspect);
+        if(dw == this->w)
+            return;
+
+        int xo = this->w - dw;
+        set_coords(this->x - xo, this->y, this->h, dw);
+    }
 } // widgets

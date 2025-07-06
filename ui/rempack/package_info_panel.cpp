@@ -36,14 +36,23 @@ namespace widgets {
             ui::TaskQueue::add_task([=]() {
                 vector<uint8_t> data;
                 data = opkg::getCachedSplashscreen(package);
+                int ix, iy, comp;
+                bool decoded = stbi_info_from_memory(data.data(), data.size(), &ix, &iy, &comp);
                 auto ic = images.emplace(package->Package,
                                          ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->w,
                                                         _image->h));
-                widgets::Dispatcher::add_task([=]() { _image->setImage(ic.first->second); });
+                widgets::Dispatcher::add_task([=]() {
+                    if(decoded)
+                        _image->setAspectWidth(ix, iy);
+                    _image->setImage(ic.first->second);
+                });
 
             });
-        } else
-            widgets::Dispatcher::add_task([=]() { _image->setImage(it->second); });
+        } else {
+            auto ico = it->second;
+            _image->setAspectWidth(ico.width, ico.height);
+            _image->setImage(ico);
+        }
     }
 
     void PackageInfoPanel::display_package(const shared_ptr<package> &package) {

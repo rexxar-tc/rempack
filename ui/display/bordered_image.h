@@ -14,6 +14,7 @@ namespace widgets {
         void hide() override;
         void mark_redraw() override;
         void clearImage();
+        void setAspectWidth(int imageX, int imageY);
         void setImage(icons::Icon icon);
         void setImage(ui::CachedIcon icon);
         void setImage(icons::Icon icon, int w, int h);
