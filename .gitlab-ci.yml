@@ -24,6 +24,8 @@ stages:          # List of stages for jobs, and their order of execution
 build:       # This job runs in the build stage, which runs first.
   stage: build
   tags: ["remarkable"]
+  before_script:
+    - git submodule update --init --recursive
   script:
     - echo "Building..."
     - cmake -S . -B output --preset "Release Native" -U RMKIT_EXTERN
