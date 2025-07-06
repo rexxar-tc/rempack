@@ -17,20 +17,7 @@
 namespace fs = filesystem;
 using namespace std;
 
-using ByteBuffer = std::vector<uint8_t>;
-
-/**
- *  Extract the first regular file whose path begins with `dirPrefix`.
- *  @param tarGzBuffer  – raw bytes of data.tar.gz already in memory
- *  @param dirPrefix    – e.g. "opt/share/remarkable/splashscreens/"
- *                        (with or without leading "./", with or without trailing '/')
- *  @param outPath      – optional; receives the full path of the file we extracted
- *  @return             – decompressed file data; empty vector if not found / on error
- */
-ByteBuffer extractFirstFileByPrefix(const ByteBuffer& tarGzBuffer,
-                                    std::string dirPrefix,
-                                    std::string* outPath = nullptr)
-{
+vector<uint8_t> extractImage(const std::string& ipkPath, std::string dirPrefix) {
     // Normalise the prefix (strip leading "./" and ensure trailing '/')
     auto stripDotSlash = [](const std::string& s) -> std::string {
         return (s.rfind("./", 0) == 0) ? s.substr(2) : s;
@@ -40,77 +27,76 @@ ByteBuffer extractFirstFileByPrefix(const ByteBuffer& tarGzBuffer,
         dirPrefix.push_back('/');
 
     struct archive* a = archive_read_new();
-    archive_read_support_filter_gzip(a);
-    archive_read_support_format_tar(a);
+    archive_read_support_filter_gzip(a);   // gzip compression
+    archive_read_support_format_tar(a);    // tar format
 
-    if (archive_read_open_memory(a, tarGzBuffer.data(), tarGzBuffer.size()) != ARCHIVE_OK) {
-        std::cerr << "archive_read_open_memory: " << archive_error_string(a) << '\n';
+    if (archive_read_open_filename(a, ipkPath.c_str(), 10240) != ARCHIVE_OK) {
+        std::cerr << "Failed to open archive: " << archive_error_string(a) << "\n";
         archive_read_free(a);
         return {};
     }
 
-    ByteBuffer result;
-    struct archive_entry* entry;
-    while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
-        std::string path = archive_entry_pathname(entry) ?: "";
-        path = stripDotSlash(path);
-
-        // Only care about regular files under the desired prefix
-        if (archive_entry_filetype(entry) == AE_IFREG &&
-            path.rfind(dirPrefix, 0) == 0)              // prefix match
-        {
-            size_t size = static_cast<size_t>(archive_entry_size(entry));
-            result.resize(size);
-            la_ssize_t n = archive_read_data(a, result.data(), size);
-            if (n < 0) {
-                std::cerr << "archive_read_data: " << archive_error_string(a) << '\n';
-                result.clear();
-            } else if (outPath) {
-                *outPath = path;
-            }
-            break; // found the first one – stop
-        } else {
-            archive_read_data_skip(a);
-        }
-    }
-
-    archive_read_close(a);
-    archive_read_free(a);
-    return result; // empty if not found
-}
-
-std::unordered_map<std::string, ByteBuffer> extractIpkToMemory(const std::string& tarGzPath) {
-    std::unordered_map<std::string, ByteBuffer> files;
-
-    struct archive* a = archive_read_new();
-    archive_read_support_filter_gzip(a);   // gzip compression
-    archive_read_support_format_tar(a);    // tar format
-
-    if (archive_read_open_filename(a, tarGzPath.c_str(), 10240) != ARCHIVE_OK) {
-        std::cerr << "Failed to open archive: " << archive_error_string(a) << "\n";
-        archive_read_free(a);
-        return files;
-    }
-
-    struct archive_entry* entry;
+    archive_entry* entry;
     while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
         std::string path = archive_entry_pathname(entry);
+        if(path.find("data.tar.gz") == string::npos) {
+            archive_read_data_skip(a);
+            continue;
+        }
         size_t size = archive_entry_size(entry);
 
-        ByteBuffer buffer(size);
+        vector<uint8_t> buffer(size);
         la_ssize_t read = archive_read_data(a, buffer.data(), size);
         if (read < 0) {
             std::cerr << "Error reading file " << path << ": " << archive_error_string(a) << "\n";
         } else {
-            //std::cout << "Found file: " << path << " (" << size << " bytes)\n";
-            files[path] = std::move(buffer);
+
+            struct archive* ab = archive_read_new();
+            archive_read_support_filter_gzip(ab);
+            archive_read_support_format_tar(ab);
+
+            if (archive_read_open_memory(ab, buffer.data(), buffer.size()) != ARCHIVE_OK) {
+                std::cerr << "archive_read_open_memory: " << archive_error_string(ab) << '\n';
+                archive_read_close(ab);
+                archive_read_free(ab);
+                return {};
+            }
+
+            vector<uint8_t> result;
+            struct archive_entry* innerEntry;
+            while (archive_read_next_header(ab, &innerEntry) == ARCHIVE_OK) {
+                std::string innerPath = archive_entry_pathname(innerEntry) ?: "";
+                innerPath = stripDotSlash(innerPath);
+
+                // Only care about regular files under the desired prefix
+                if (archive_entry_filetype(innerEntry) == AE_IFREG &&
+                    innerPath.rfind(dirPrefix, 0) == 0)              // prefix match
+                {
+                    auto innerSize = static_cast<size_t>(archive_entry_size(innerEntry));
+                    result.resize(innerSize);
+                    la_ssize_t n = archive_read_data(ab, result.data(), innerSize);
+                    if (n < 0) {
+                        std::cerr << "archive_read_data: " << archive_error_string(ab) << '\n';
+                        result.clear();
+                    }
+                    break; // found the first one – stop
+                } else {
+                    archive_read_data_skip(ab);
+                }
+            }
+
+            archive_read_close(ab);
+            archive_read_free(ab);
+            archive_read_close(a);
+            archive_read_free(a);
+            return result; // empty if not found
         }
     }
 
     archive_read_close(a);
     archive_read_free(a);
 
-    return files;
+    return {};
 }
 
 static string get_cached_path(const string& basename = "rempack"){
@@ -127,9 +113,7 @@ vector<uint8_t> opkg::getCachedSplashscreen(const shared_ptr<package>& pkg) {
     if(!fs::exists(path))
       path = DownloadPackage(pkg, nullptr, get_cached_path());
 
-    auto files = extractIpkToMemory(path);
-    auto file = files["./data.tar.gz"];
-    return extractFirstFileByPrefix(file, "opt/share/remarkable/splashscreens/");
+    return extractImage(path, "opt/share/remarkable/splashscreens/");
 }
 
 bool opkg::isPackageCached(const shared_ptr<package> &pkg) {
