@@ -22,6 +22,8 @@ ui::Scene buildHomeScene(int width, int height);
 opkg pkg;
 widgets::ListBox *filterPanel, *packagePanel;
 widgets::PackageInfoPanel *displayBox;
+shared_ptr<framebuffer::FB> fb;
+
 widgets::MenuData *_menuData;
 
 void setupDebug();
@@ -29,9 +31,8 @@ void setupDebug();
 void Rempack::startApp() {
     std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
-    shared_ptr<framebuffer::FB> fb;
+
     fb = framebuffer::get();
-    fb->clear_screen();
     auto scene = buildHomeScene(fb->width, fb->height);
     ui::MainLoop::set_scene(scene);
 
@@ -163,6 +164,13 @@ void onPreviewClick(void*){
 }
 
 void setupDebug(){
+    fb->draw_rect(0,0,fb->width, fb->height, BLACK);
+    fb->update_mode = UPDATE_MODE_FULL;
+    fb->dirty = true;
+    fb->redraw_screen();
+    fb->clear_screen();
+    fb->redraw_screen();
+    fb->update_mode = UPDATE_MODE_PARTIAL;
     packagePanel->select("splashscreen-poweroff-sacks_spiral");
     //_selected = pk;
     //onInstallClick(nullptr);
@@ -249,7 +257,7 @@ ui::Scene buildHomeScene(int width, int height) {
     packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 30, scene);
     std::vector<std::string> packages;
     pkg.LoadPackages(&packages);
-    platform::rules.sortPackages(packages);
+    std::sort(packages.begin(), packages.end());
     packagePanel->multiSelect = false;
     packagePanel->filterPredicate = packageFilterDelegate;
     for (const auto &[n, pk]: pkg.packages) {

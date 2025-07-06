@@ -10,7 +10,6 @@
 #include <cstring>
 #include <archive.h>
 #include <archive_entry.h>
-#include <unordered_map>
 
 #define  CONTAINS(x,z) ((x).find(z) != (x).end())
 

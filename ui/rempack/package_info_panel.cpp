@@ -24,7 +24,9 @@ namespace widgets {
     }
 
     void PackageInfoPanel::layout_image() {
-
+        int dw = (_image->x - _text->x) - padding;
+        _text->set_coords(_text->x, _text->y, dw, _text->h);
+        _text->on_reflow();
     }
 
     void PackageInfoPanel::set_image(const shared_ptr<package>& package) {
@@ -45,13 +47,14 @@ namespace widgets {
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
+                    layout_image();
                 });
-
             });
         } else {
             auto ico = it->second;
             _image->setAspectWidth(ico.width, ico.height);
             _image->setImage(ico);
+            layout_image();
         }
     }
 
