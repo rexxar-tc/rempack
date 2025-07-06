@@ -3,6 +3,7 @@
 //
 
 #include "terminal_dialog.h"
+#include "dispatcher.h"
 
 namespace widgets {
     void TerminalDialog::build_dialog() {
@@ -37,12 +38,15 @@ namespace widgets {
     }
 
     void TerminalDialog::stdout_callback(const std::string &s) {
-        std::cout << s;
-        auto default_fs = ui::Style::DEFAULT.font_size;
-        auto lines = utils::wrap_string(s, w - padding - padding, default_fs);
-        for (const auto &l: lines)
-            push_line(l);
-        update_texts();
+        //std::cout << s;
+        ui::TaskQueue::add_task([=]() {
+            auto lines = utils::wrap_string(s, w - padding - padding, ui::Style::DEFAULT.font_size);
+            widgets::Dispatcher::add_task([=]() {
+                for (const auto &l: lines)
+                    push_line(l);
+                update_texts();
+            });
+        });
         //mark_redraw();
     }
 
