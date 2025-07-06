@@ -4,6 +4,10 @@
 
 #pragma once
 
+#ifndef NDEBUG
+//#define WIDGET_DEBUG
+#endif
+
 #include <list>
 #include <utility>
 #include "icons/icons_embed.h"
@@ -13,6 +17,15 @@
 #include "text_helpers.h"
 
 namespace widgets {
+    constexpr remarkable_color toRColor(uint8_t r, uint8_t g, uint8_t b)
+    {
+        uint16_t r5 = (r * 31 + 127) / 255;  // Scale 0–255 to 0–31
+        uint16_t g6 = (g * 63 + 127) / 255;  // Scale 0–255 to 0–63
+        uint16_t b5 = (b * 31 + 127) / 255;  // Scale 0–255 to 0–31
+
+        return (r5 << 11) | (g6 << 5) | b5;
+    }
+
     /*
      * ╭----╮
      * |    |
@@ -76,14 +89,18 @@ namespace widgets {
     class RoundCornerWidget : public ui::Widget {
     public:
         RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : ui::Widget(x, y, w, h){};
-        RoundCornerStyle style;
-            uint16_t undraw_color = WHITE;
+
+        void render() override;
 
         void undraw() override;
 
         void render_border() override;
 
         void render_inside_fill(float gray = 1.f);
+        RoundCornerStyle style;
+    protected:
+        virtual void debugRender();
+        uint16_t undraw_color = WHITE;
     };
 
 

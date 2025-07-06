@@ -142,9 +142,16 @@ namespace widgets{
         }
 
 
+    void RoundCornerWidget::render() {
+        Widget::render();
+#ifdef WIDGET_DEBUG
+        this->debugRender();
+#endif
+    }
 
-
-
+    void RoundCornerWidget::debugRender() {
+        fb->draw_rect(this->x, this->y, this->w, this->h, toRColor(255,0,0), false);
+    }
 
 
 }

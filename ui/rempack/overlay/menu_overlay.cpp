@@ -8,6 +8,11 @@
 #include "opkg.h"
 
 namespace widgets {
+    MenuOverlay::MenuOverlay(int x, int y, int w, int h, MenuData *currentData) : RoundCornerWidget(x,y,w,h,RoundCornerStyle()) {
+        data = currentData;
+        scene = make_overlay();
+    }
+
     void MenuOverlay::show() {
         //this->scene->pinned = true;
         ui::MainLoop::show_overlay(this->scene, true);
@@ -19,8 +24,17 @@ namespace widgets {
         ui::MainLoop::refresh();
     }
 
+    void MenuOverlay::debugRender() {
+        for(const auto &c : scene->widgets){
+            if(c.get() != this)
+                fb->draw_rect(c->x, c->y, c->w, c->h, toRColor(0,0,255), false);
+        }
+        //RoundCornerWidget::debugRender();
+    }
+
     void MenuOverlay::render() {
         render_inside_fill();
+        RoundCornerWidget::render();
     }
 
     void MenuOverlay::mark_redraw() {

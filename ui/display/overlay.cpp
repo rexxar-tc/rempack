@@ -25,6 +25,9 @@ namespace widgets {
         border_widget->render_inside_fill();
 //for(const auto &child : scene->widgets)
 //    draw_recurse(child);
+#ifdef WIDGET_DEBUG
+        debugRender();
+#endif
     }
 
     void Overlay::draw_recurse(const shared_ptr<ui::Widget> &w) {
@@ -46,5 +49,12 @@ namespace widgets {
     void Overlay::on_button_selected(std::string s) {
         ui::Dialog::on_button_selected(s);
         this->hide();
+    }
+
+    void Overlay::debugRender() {
+        fb->draw_rect(x, y, w, h, toRColor(0,255,255), false);
+        for(const auto &c : children){
+            fb->draw_rect(c->x, c->y, c->w, c->h, toRColor(0,0,255), false);
+        }
     }
 }

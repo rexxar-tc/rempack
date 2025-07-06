@@ -9,7 +9,7 @@
 namespace widgets {
     class EventButton : public ui::Button {
     public:
-        EventButton(int x, int y, int w, int h, string text = "") : Button(x, y, w, h, text) {}
+        EventButton(int x, int y, int w, int h, string text = "");
 
         PLS_DEFINE_SIGNAL(BUTTON_EVENT,
         void*);
@@ -31,5 +31,6 @@ namespace widgets {
 
     protected:
         bool enabled = true;
+        virtual void debugRender();
     };
 }

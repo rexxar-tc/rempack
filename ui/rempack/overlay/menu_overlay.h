@@ -10,10 +10,7 @@ namespace widgets {
     public:
         ui::Scene scene;
         MenuData *data;
-        MenuOverlay(int x, int y, int w, int h, MenuData *currentData): RoundCornerWidget(x,y,w,h,RoundCornerStyle()) {
-            data = currentData;
-            scene = make_overlay();
-        }
+        MenuOverlay(int x, int y, int w, int h, MenuData *currentData);
 
         void show() override;
         void hide() override;
@@ -40,6 +37,8 @@ namespace widgets {
          * Font Size [10[^v]]
          */
         ui::Scene make_overlay();
+    protected:
+        void debugRender() override;
     };
 
 } // widgets

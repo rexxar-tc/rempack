@@ -144,6 +144,14 @@ namespace widgets {
         RoundCornerWidget::undraw();
     }
 
+    void ListBox::debugRender() {
+        fb->draw_rect(x, y, w, h, toRColor(0,255,0),false);
+        for(const auto &it : _currentView){
+            auto w = it->_widget;
+            fb->draw_rect(w->x, w->y, w->w, w->h, toRColor(255,0,0), false);
+        }
+    }
+
     void ListBox::render() {
         undraw();
         refresh_list();
@@ -165,6 +173,7 @@ namespace widgets {
             wi->render();
             sy += itemHeight + padding;
         }
+        RoundCornerWidget::render();
     }
 
 //check the Y position relative to top of widget, divide by itemHeight

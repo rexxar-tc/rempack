@@ -25,6 +25,8 @@ namespace widgets {
         void draw_recurse(const shared_ptr<ui::Widget> &w);
         void mark_redraw() override;
         void on_button_selected(std::string s) override;
+    protected:
+        virtual void debugRender();
     };
 
 

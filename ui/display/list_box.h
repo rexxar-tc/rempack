@@ -101,6 +101,7 @@ namespace widgets {
         shared_ptr<ui::Text> _pageLabel;
         shared_ptr<ImageButton> _navLL, _navL, _navR, _navRR;
         void layout_buttons();
+        void debugRender() override;
 
     private:
         //TODO: style sheets
