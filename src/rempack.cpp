@@ -28,10 +28,24 @@ widgets::MenuData *_menuData;
 
 void setupDebug();
 
+void setupStyle(){
+    setenv("RMKIT_DEFAULT_FONT", "/usr/share/fonts/ttf/ebgaramond/EBGaramond-VariableFont_wght.ttf", 0);
+    ui::Style::DEFAULT = {
+            .font_size = 40,
+            .line_height = 1.0,
+            .underline = false,
+            .justify = ui::Style::CENTER,
+            .valign = ui::Style::VALIGN::MIDDLE,
+            .border_top = false,
+            .border_left = false,
+            .border_bottom = false,
+            .border_right = false
+    };
+}
 void Rempack::startApp() {
     std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
-
+    setupStyle();
     fb = framebuffer::get();
     auto scene = buildHomeScene(fb->width, fb->height);
     ui::MainLoop::set_scene(scene);
@@ -243,7 +257,7 @@ ui::Scene buildHomeScene(int width, int height) {
     /* Applications */
     //full-width horizontal stack underneath the search pane. give it half the remaining height
     auto applicationPane = new ui::HorizontalReflow(0, 0, layout->w, (layout->h - searchPane->h - padding)/2, scene);
-    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 30, scene);
+    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, scene);
     std::vector<std::string> sections;
     pkg.LoadSections(&sections);
     std::sort(sections.begin(), sections.end());
@@ -254,7 +268,7 @@ ui::Scene buildHomeScene(int width, int height) {
     filterPanel->events.selected += PLS_DELEGATE(onFilterAdded);
     filterPanel->events.deselected += PLS_DELEGATE(onFilterRemoved);
 
-    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 30, scene);
+    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 45, scene);
     std::vector<std::string> packages;
     pkg.LoadPackages(&packages);
     std::sort(packages.begin(), packages.end());
