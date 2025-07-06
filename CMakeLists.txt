@@ -62,12 +62,11 @@ include_directories("${CMAKE_SOURCE_DIR}/rules")
 add_subdirectory("${CMAKE_SOURCE_DIR}/ui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/impl")
 add_subdirectory("${CMAKE_SOURCE_DIR}/opkg")
-# 1) Force libarchive in-tree, shared‑only
+#Force libarchive in-tree, shared‑only
 set(BUILD_SHARED_LIBS      OFF  CACHE INTERNAL "" FORCE)
 set(LIBARCHIVE_BUILD_STATIC ON CACHE INTERNAL "" FORCE)
 set(LIBARCHIVE_BUILD_TESTS OFF CACHE INTERNAL "" FORCE)
 
-# 2) Pull in libarchive (assumes it has a CMake build!)
 add_subdirectory(vendor/libarchive EXCLUDE_FROM_ALL)
 
 target_include_directories(opkg PRIVATE "${CMAKE_SOURCE_DIR}/vendor/libarchive/libarchive")
@@ -80,17 +79,11 @@ add_executable(${PROJECT_NAME} src/main.cpp
         rules/platform_rules.cpp
 )
 
-#set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Og -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls")
 target_compile_options(${PROJECT_NAME}
         PUBLIC $<$<CONFIG:Debug>:-g -O0 -Wall -Wno-unused-variable>
-        #PUBLIC $<$<CONFIG:Debug>:-g3 -Og -Wall -Wno-unused-variable -fno-omit-frame-pointer -fno-inline -fno-inline-functions-called-once -fno-optimize-sibling-calls>
         PUBLIC $<$<CONFIG:Release>:-O3>
 )
-#target_link_options(${PROJECT_NAME}        PUBLIC -lz)
-#these can also be done as #define statements, but they MUST appear before rmkit.h
-#all these defines are necessary to build successfully
-#they're here for convenience (you can never forget them) and also to ensure
-#they appear early enough in the linking stage
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         #when building for native hardware, REMARKABLE must be defined
         $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
@@ -103,20 +96,7 @@ target_compile_definitions(widgets PRIVATE
         #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
         )
-#set_target_properties(rempack PROPERTIES
-#        INSTALL_RPATH "/opt/lib"
-#        BUILD_WITH_INSTALL_RPATH ON
-#)
-#target_link_options(${PROJECT_NAME} PRIVATE -Wl,-rpath,/opt/lib)
 target_link_libraries(${PROJECT_NAME} PRIVATE opkg widgets rmkit_impl archive_static)
-
-#add_library(rmkit ${RMKIT_FILE})
-#set_target_properties(rmkit PROPERTIES LINKER_LANGUAGE CXX)
-#target_precompile_headers(rmkit PRIVATE ${RMKIT_FILE})
-
-#target_precompile_headers(${PROJECT_NAME} REUSE_FROM rmkit)
-#target_link_libraries(${PROJECT_NAME} PRIVATE rmkit)
-
 
 #below is an unfinished experiment in using rmkit-sim to do local emulation
 #I'll finish it someday

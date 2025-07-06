@@ -14,6 +14,7 @@
 #include "../include/algorithm/boyer_moore.h"
 #include "rempack/rempack_widgets.h"
 #include "platform_rules.h"
+#include "dispatcher.h"
 using ListItem = widgets::ListBox::ListItem;
 namespace boyer = strings::boyer_moore;
 ui::Scene buildHomeScene(int width, int height);
@@ -26,7 +27,7 @@ widgets::MenuData *_menuData;
 void setupDebug();
 
 void Rempack::startApp() {
-    //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
     shared_ptr<framebuffer::FB> fb;
     fb = framebuffer::get();
@@ -40,9 +41,11 @@ void Rempack::startApp() {
 
     setupDebug();
     while(true){
+        widgets::Dispatcher::run_tasks();
         ui::MainLoop::main();
         ui::MainLoop::redraw();
-        fb->waveform_mode = WAVEFORM_MODE_GC16;
+        //fb->waveform_mode = WAVEFORM_MODE_GC16;
+        //fb->update_mode = UPDATE_MODE_PARTIAL;
         ui::MainLoop::read_input();
     }
 
@@ -112,6 +115,8 @@ void onPackageSelect(shared_ptr<ListItem> item) {
     auto pk = any_cast<shared_ptr<package>>(item->object);
     //printf("Package selected: %s\n", pk->Package.c_str());
     _selected = pk;
+    ///hack
+   // packagePanel->mark_redraw();
     displayBox->display_package(pk);
 }
 void onPackageDeselect(shared_ptr<ListItem> item) {

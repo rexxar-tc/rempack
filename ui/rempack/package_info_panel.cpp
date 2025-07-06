@@ -3,9 +3,13 @@
 //
 
 #include "package_info_panel.h"
+#include "dispatcher.h"
 
 namespace widgets {
     const float rm_aspect = 0.75;
+    const icons::Icon syncIcon = ICON(assets::png_cloud_download_png);
+    map<string, ui::CachedIcon> images {};
+
     void PackageInfoPanel::on_reflow() {
         _text->set_coords(x + padding, y + padding, w - (2 * padding), h - (2 * padding) - controlHeight);
         _text->mark_redraw();
@@ -24,25 +28,35 @@ namespace widgets {
     }
 
     void PackageInfoPanel::set_image(const shared_ptr<package>& package) {
-        ui::TaskQueue::add_task([this, package]() {
-            auto data = opkg::getCachedSplashscreen(package);
-            auto ic = ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->w, _image->h);
-            _image->icon = ic;
-            _image->on_reflow();
-            _image->mark_redraw();
-            _previewBtn->disable();
-        });
+        _previewBtn->disable();
+        _image->show();
+        auto it = images.find(package->Package);
+        if (it == images.end()) {
+            _image->setImage(syncIcon, 100, 100);
+            ui::TaskQueue::add_task([=]() {
+                vector<uint8_t> data;
+                data = opkg::getCachedSplashscreen(package);
+                auto ic = images.emplace(package->Package,
+                                         ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->w,
+                                                        _image->h));
+                widgets::Dispatcher::add_task([=]() { _image->setImage(ic.first->second); });
+
+            });
+        } else
+            widgets::Dispatcher::add_task([=]() { _image->setImage(it->second); });
     }
 
     void PackageInfoPanel::display_package(const shared_ptr<package> &package) {
         if(package == nullptr){
             set_states(false);
+            _image->clearImage();
+            _image->hide();
             set_text("");
             undraw();
             mark_redraw();
             return;
         }
-        _image->icon = ui::CachedIcon(nullptr, 0);
+        _image->clearImage();
         bool splash = package->Section.rfind("splashscreens") != std::string::npos;
         set_states(package->IsInstalled(), splash);
         set_text(opkg::FormatPackage(package));
@@ -66,7 +80,6 @@ namespace widgets {
         if (canPreview) {
             _previewBtn->enable();
             _previewBtn->show();
-            _image->show();
         }
         else {
             _previewBtn->disable();
