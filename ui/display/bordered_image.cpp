@@ -3,11 +3,19 @@
 //
 
 #include "bordered_image.h"
+#include "debug/debug_widgets.h"
 
 namespace widgets {
     BorderedPixmap::BorderedPixmap(int x, int y, int w, int h, icons::Icon ico, RoundCornerStyle style) : widgets::RoundCornerWidget(x, y, w, h, style){
         image = make_shared<ui::Pixmap>(x,y,w,h,ico);
         children.push_back(image);
+    }
+
+    void BorderedPixmap::before_render() {
+        if(shadow != nullptr){
+            shadow->render_border();
+        }
+        Widget::before_render();
     }
 
     void BorderedPixmap::mark_redraw() {
@@ -82,5 +90,11 @@ namespace widgets {
 
         int xo = this->w - dw;
         set_coords(this->x - xo, this->y, this->h, dw);
+    }
+
+    shared_ptr<widgets::RoundCornerWidget> BorderedPixmap::dropShadow(int offsetX, int offsetY, RoundCornerStyle shadowStyle) {
+        shadow = make_shared<widgets::RoundCornerWidget>(x + offsetX, x + offsetY, w, h, shadowStyle);
+        shadow->mark_redraw();
+        return shadow;
     }
 } // widgets

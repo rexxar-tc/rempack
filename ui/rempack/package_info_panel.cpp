@@ -4,11 +4,21 @@
 
 #include "package_info_panel.h"
 #include "dispatcher.h"
+#include "debug/debug_widgets.h"
 
 namespace widgets {
     const float rm_aspect = 0.75;
     const icons::Icon syncIcon = ICON(assets::png_cloud_download_png);
     map<string, ui::CachedIcon> images {};
+
+    void PackageInfoPanel::debugEditor(){
+        auto shadow = _image->dropShadow(10,10,widgets::RoundCornerStyle());
+        auto ed = make_shared<widgets::RoundCornerEditor>(_text->x, _text->y, _text->w, _text->h, shadow, scene);
+        scene->add(ed);
+        children.push_back(ed);
+        _text->hide();
+        mark_redraw();
+    }
 
     void PackageInfoPanel::on_reflow() {
         _text->set_coords(x + padding, y + padding, w - (2 * padding), h - (2 * padding) - controlHeight);
@@ -111,7 +121,7 @@ namespace widgets {
         dx += controlWidth + padding;
         _previewBtn->set_coords(dx, dy, controlWidth, controlHeight);
 
-        _image->set_coords(w - dw + padding + padding, y + (padding * 2), dw, dh);
+        _image->set_coords(w - dw + (padding * 3), y + (padding * 8), dw, dh);
 
         _installBtn->on_reflow();
         _removeBtn->on_reflow();
@@ -125,6 +135,7 @@ namespace widgets {
 
     PackageInfoPanel::PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style,
                                        shared_ptr<ui::InnerScene> &scene) : RoundCornerWidget(x,y,w,h,style){
+        this->scene = scene;
         _text = make_shared<ui::MultiText>(x,y,w,h,"");
         _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
         children.push_back(_text);

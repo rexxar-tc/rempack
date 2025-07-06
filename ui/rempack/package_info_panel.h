@@ -46,8 +46,9 @@ namespace widgets {
         shared_ptr<EventButton> _installBtn, _removeBtn, _previewBtn;
         shared_ptr<BorderedPixmap> _image;
 
+        shared_ptr<ui::InnerScene> scene;
         void layout_buttons();
-
+        void debugEditor();
         void set_text(string text);
         void set_states(bool installed, bool canPreview = false);
         void layout_image();

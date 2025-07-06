@@ -42,7 +42,7 @@ namespace widgets{
 
     class RoundCornerEditor : public ui::Widget {
     public:
-        RoundCornerEditor(int x, int y, int w, int h, RoundedTextInput *target) : ui::Widget(x,y,w,h) {
+        RoundCornerEditor(int x, int y, int w, int h, const shared_ptr<RoundCornerWidget>& target, const shared_ptr<ui::InnerScene>& scene) : ui::Widget(x,y,w,h) {
             this->target = target;
             this->style= target->style;
             int padding = 20;
@@ -78,18 +78,21 @@ namespace widgets{
             inputA->range->set_value(style.expA);
             inputA->range->events.done += PLS_DELEGATE(this->updateSliderA);
             children.push_back(inputA);
+            scene->add(inputA->range);
             inputB = make_shared<LabeledRangeInput>(x, y, w, lineHeight, "Coef");
             y += lineHeight + padding;
             inputB->range->set_range(0, 20);
             inputB->range->set_value(style.expB);
             inputB->range->events.done += PLS_DELEGATE(this->updateSliderB);
             children.push_back(inputB);
+            scene->add(inputB->range);
             inputT = make_shared<LabeledRangeInput>(x, y, w, lineHeight, "THICC");
             y += lineHeight + padding;
             inputT->range->set_range(0, 50);
             inputT->range->set_value(style.borderThickness);
             inputT->range->events.done += PLS_DELEGATE(this->updateSliderT);
             children.push_back(inputT);
+            scene->add(inputT->range);
         }
 
         void update_values() {
@@ -101,7 +104,7 @@ namespace widgets{
         }
 
     private:
-        RoundedTextInput *target;
+        shared_ptr<RoundCornerWidget> target;
         RoundCornerStyle style;
         std::vector<shared_ptr<GradientGizmo>> gradients;
         shared_ptr<LabeledRangeInput> inputA, inputB, inputT, inputS, inputEnd;
@@ -110,6 +113,7 @@ namespace widgets{
         void updateSliderA(float p) {
             target->style.expA = inputA->range->get_value();
             update_values();
+            target->undraw();
             target->mark_redraw();
         }
 
