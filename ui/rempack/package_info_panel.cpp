@@ -9,6 +9,7 @@ namespace widgets {
     const float rm_aspect = 0.75;
     const icons::Icon syncIcon = ICON(assets::png_cloud_download_png);
     map<string, ui::CachedIcon> images {};
+    shared_ptr<package> selectedPackage;
 
     void PackageInfoPanel::on_reflow() {
         layout_image();
@@ -54,6 +55,8 @@ namespace widgets {
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
+                    layout_image();
+                    _text->set_text(opkg::FormatPackage(selectedPackage));
                 });
             });
         } else {
@@ -61,10 +64,13 @@ namespace widgets {
             _image->setAspectWidth(ico.width, ico.height);
             _image->setImage(ico);
             layout_image();
+            if(selectedPackage != nullptr)
+                _text->set_text(opkg::FormatPackage(selectedPackage));
         }
     }
 
     void PackageInfoPanel::display_package(const shared_ptr<package> &package) {
+        selectedPackage = package;
         if(package == nullptr){
             set_states(false);
             _image->hide();
