@@ -9,6 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include "opkg.h"
+#include "display/list_box.h"
 
 namespace platform {
 
@@ -20,7 +21,8 @@ struct PlatformRules {
      * Sorts packages such that 'splashscreen-<type>-xyz' are grouped together
      * @param strings
      */
-    virtual void sortPackages(std::vector<std::string>& strings);
+    static bool splashscreenComparator(const shared_ptr<widgets::ListBox::ListItem>& a, const shared_ptr<widgets::ListBox::ListItem>& b);
+
 
     /**
      * Checks for conflicts between a splashscreen package and currently installed packages
@@ -34,7 +36,6 @@ struct PlatformRules {
 
 struct RemarkableRules: public PlatformRules{
 
-    void sortPackages(std::vector<std::string> &strings) override;
     //bool splashComparator(const std::string &a, const std::string &b) override;
     std::vector<shared_ptr<package>> checkSplashConflicts(const opkg &opkg, const shared_ptr<package> &pkg) override;
 };

@@ -138,6 +138,10 @@ void onPackageDeselect(shared_ptr<ListItem> item) {
 }
 void onFiltersChanged(widgets::FilterOptions &options){
     //_filterOpts = options;
+    if(options.groupSplash)
+        packagePanel->sortPredicate = platform::RemarkableRules::splashscreenComparator;
+    else
+        packagePanel->sortPredicate = nullptr;
     filterPanel->mark_redraw();
     packagePanel->mark_redraw();
 }
@@ -177,49 +181,21 @@ void setupDebug(){
 #ifndef NDEBUG
     std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
-#endif
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
     fb->update_mode = UPDATE_MODE_FULL;
+    fb->waveform_mode = WAVEFORM_MODE_DU;
     fb->dirty = true;
     fb->redraw_screen();
     fb->clear_screen();
     fb->redraw_screen();
     fb->update_mode = UPDATE_MODE_PARTIAL;
+    fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
     packagePanel->select("splashscreen-poweroff-sacks_spiral");
     //_selected = pk;
     //onInstallClick(nullptr);
     //auto pt = opkg::DownloadPackage(pk, dummyline);
     //std::cout << pt << std::endl;
-}
-
-static bool splashscreenComparator(const shared_ptr<ListItem>& a, const shared_ptr<ListItem>& b) {
-    auto isSplashscreen = [](const std::string& s) {
-        return s.rfind("splashscreen-", 0) == 0;
-    };
-
-    auto extractGroupKey = [](const std::string& s) -> std::string {
-        // Assume format: splashscreen-<type>-<xyz>
-        size_t lastDash = s.rfind('-');
-        if (lastDash != std::string::npos) {
-            return s.substr(lastDash + 1);
-        }
-        return s;
-    };
-
-    string astr = a->label;
-    string bstr = b->label;
-    bool aIsSplash = isSplashscreen(astr);
-    bool bIsSplash = isSplashscreen(bstr);
-
-    if (aIsSplash && bIsSplash) {
-        return extractGroupKey(astr) < extractGroupKey(bstr);
-    } else if (aIsSplash) {
-        return "splashscreen" < bstr;
-    } else if (bIsSplash) {
-        return astr < "splashscreen";
-    } else {
-        return astr < bstr;
-    }
+#endif
 }
 
 //1404x1872 - 157x209mm -- 226dpi
@@ -279,7 +255,7 @@ ui::Scene buildHomeScene(int width, int height) {
         string displayName = pk->Package;
         displayName.append(" -- ").append(pk->Description);
         displayName.erase(std::remove(displayName.begin(), displayName.end(), '\n'), displayName.end());
-        packagePanel->add(displayName, pk);
+        packagePanel->add(displayName, displayName, pk);
     }
     packagePanel->events.selected += PLS_DELEGATE(onPackageSelect);
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);

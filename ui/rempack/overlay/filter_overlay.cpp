@@ -75,6 +75,16 @@ namespace widgets{
         children.push_back(descTog);
         s->add(descTog);
         dy += padding + descTog->h;
+        auto groupTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Group Splashscreens");
+        groupTog->toggled = options->groupSplash;
+        groupTog->style.justify = ui::Style::JUSTIFY::LEFT;
+        groupTog->events.toggled += [this](bool s){
+            options->groupSplash = s;
+            upate_event();
+        };
+        children.push_back(groupTog);
+        s->add(groupTog);
+        dy += padding + groupTog->h;
         if (!options->Repos.empty()) {
             //TODO: set height of the list based on number of entries
             _repoList = make_shared<ListBox>(dx, dy, dw, 200, 25, s);

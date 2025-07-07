@@ -25,12 +25,12 @@ namespace widgets {
     void PackageInfoPanel::layout_image() {
         if(_image->visible) {
             int dw = (_image->x - _text->x) - (padding * 4);
-            _text->undraw();
             _text->set_coords(x+padding,y+padding, dw, _text->h);
         }
         else{
             _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
         }
+        _text->undraw();
         _text->mark_redraw();
         mark_redraw();
     }

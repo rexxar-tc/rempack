@@ -12,6 +12,7 @@ namespace widgets{
         bool Upgradable;
         bool NotInstalled;
         bool SearchDescription;
+        bool groupSplash;
         std::map<std::string, bool> Repos;
         std::map<std::string, bool> Licenses;
     };

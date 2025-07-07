@@ -4,16 +4,14 @@
 
 #include "platform_rules.h"
 
-namespace platform {
-    void PlatformRules::sortPackages(vector<std::string> &strings) {
-        std::sort(strings.begin(), strings.end());
-    }
 
+
+namespace platform {
     std::vector<shared_ptr<package>> PlatformRules::checkSplashConflicts(const opkg &opkg, const shared_ptr<package> &pkg) {
         return {};
     }
 
-    bool splashComparator(const std::string& a, const std::string& b) {
+    bool PlatformRules::splashscreenComparator(const shared_ptr<widgets::ListBox::ListItem> &a, const shared_ptr<widgets::ListBox::ListItem> &b) {
         auto isSplashscreen = [](const std::string& s) {
             return s.rfind("splashscreen-", 0) == 0;
         };
@@ -27,22 +25,20 @@ namespace platform {
             return s;
         };
 
-        bool aIsSplash = isSplashscreen(a);
-        bool bIsSplash = isSplashscreen(b);
+        string astr = a->key;
+        string bstr = b->key;
+        bool aIsSplash = isSplashscreen(astr);
+        bool bIsSplash = isSplashscreen(bstr);
 
         if (aIsSplash && bIsSplash) {
-            return extractGroupKey(a) < extractGroupKey(b);
+            return extractGroupKey(astr) < extractGroupKey(bstr);
         } else if (aIsSplash) {
-            return "splashscreen" < b;
+            return "splashscreen" < bstr;
         } else if (bIsSplash) {
-            return a < "splashscreen";
+            return astr < "splashscreen";
         } else {
-            return a < b;
+            return astr < bstr;
         }
-    }
-
-    void RemarkableRules::sortPackages(vector<std::string> &strings) {
-        std::sort(strings.begin(), strings.end(), splashComparator);
     }
 
     bool hasSameSplashscreenPrefix(const std::string& a, const std::string& b) {

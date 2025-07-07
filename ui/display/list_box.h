@@ -5,6 +5,7 @@
 #pragma once
 
 #include <unordered_set>
+#include <utility>
 #include "widgets.h"
 #include "buttons/buttons.h"
 #include "input/input.h"
@@ -37,11 +38,11 @@ namespace widgets {
         struct ListItem {
             friend class ListBox;
 
-            explicit ListItem(string label) : label(std::move(label)) {};          //label
-            explicit ListItem(string label, std::any object) : label(std::move(label)), object(std::move(object)) {};
+            explicit ListItem(const string& label) : label(label), key(label) {};          //label
+            explicit ListItem(const string& label, std::any  object) : label(label), object(std::move(object)), key(label) {};
             string label;                //the text displayed in the listbox. May only be one line.
             std::any object;             //an optional pointer to any data you want to keep a reference to
-
+            string key;                  //optional sanitized string for sorting (defaults to value in label)
             //all items must be unique. This sucks, but we'll implement it if someone needs it
             inline bool operator==(const ListItem &other) const {
                 return this->label == other.label;
@@ -85,6 +86,7 @@ namespace widgets {
         ListBox(int x, int y, int w, int h, int itemHeight, const vector<string>& items, ui::Scene& scene);
 
         shared_ptr<ListItem> add(const string& label, const std::any& object = nullptr);
+        shared_ptr<ListItem> add(const string& label, const string& key, const std::any& object = nullptr);
         bool remove(const string& label);
         void removeAt(int index);
         void clear();

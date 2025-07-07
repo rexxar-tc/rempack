@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "widgets.h"
 #include "filter_options.h"
 #include "display/list_box.h"
@@ -14,7 +16,7 @@ namespace widgets {
         ui::Scene scene;
         shared_ptr<FilterOptions> options;
         FilterOverlay(int x, int y, int w, int h, shared_ptr<FilterOptions> currentOptions): RoundCornerWidget(x,y,w,h,RoundCornerStyle()) {
-            options = currentOptions;
+            options = std::move(currentOptions);
             scene = make_overlay();
         }
 

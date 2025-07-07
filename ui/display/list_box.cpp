@@ -19,6 +19,12 @@ namespace widgets {
         return item;
     }
 
+    shared_ptr<ListItem> ListBox::add(const string &label, const string &key, const any &object) {
+        auto it = add(label, object);
+        it->key = key;
+        return it;
+    }
+
     bool ListBox::remove(const string &label) {
         int i = 0;
         shared_ptr<ListItem> item = nullptr;
@@ -286,7 +292,9 @@ namespace widgets {
         if (sortPredicate)
             std::sort(_sortedView.begin(), _sortedView.end(), sortPredicate);
         else
-            std::sort(_sortedView.begin(), _sortedView.end());
+            std::sort(_sortedView.begin(), _sortedView.end(), [](auto a, auto b){
+                return a->key < b->key;
+            });
 
         unordered_set<shared_ptr<ListItem>> keeps {};
         if(!selectedItems.empty()) {
