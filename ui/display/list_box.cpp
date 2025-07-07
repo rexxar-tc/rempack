@@ -327,6 +327,8 @@ namespace widgets {
                 }
             }
         }
+        if(pageOffset >= maxPages())
+            pageOffset = 0;
         auto offset = pageOffset * pageSize();
         auto count = std::min((int) pageSize(), (int) _sortedView.size() - offset);
         _currentView.clear();
