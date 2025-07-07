@@ -135,7 +135,7 @@ void onPackageSelect(shared_ptr<ListItem> item) {
     displayBox->display_package(pk);
 }
 void onPackageDeselect(shared_ptr<ListItem> item) {
-    auto pk = any_cast<shared_ptr<package>>(item->object);
+    //auto pk = any_cast<shared_ptr<package>>(item->object);
     //printf("Package deselected: %s\n", pk->Package.c_str());
     _selected = nullptr;
     displayBox->display_package(nullptr);

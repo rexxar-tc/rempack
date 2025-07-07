@@ -61,7 +61,7 @@ namespace widgets {
             std::cerr<<"Package not found: " << label << std::endl;
             return false;
         }
-        auto pgnum = i / pageSize();
+        auto pgnum = (int)std::floor(i / (float)pageSize());
         std::cout<<"pgnum: "<<pgnum<<std::endl;
         pageOffset = pgnum;
         updatePageDisplay();
@@ -273,8 +273,11 @@ namespace widgets {
 //first, filter contents with our predicate and copy to current view
 //second, sort current view
     void ListBox::refresh_list() {
+        auto startCount = _sortedView.size();
         _sortedView.clear();
         for (auto &item: contents) {
+            if(item == nullptr)
+                continue;   
             if (!filterPredicate || filterPredicate(item)) {
                 _sortedView.push_back(item);
             }
@@ -285,9 +288,49 @@ namespace widgets {
         else
             std::sort(_sortedView.begin(), _sortedView.end());
 
+        unordered_set<shared_ptr<ListItem>> keeps {};
+        if(!selectedItems.empty()) {
+            int j = 0;
+            int i = -1;
+            for (const auto &sl: _sortedView) {
+                if (sl == nullptr)
+                    continue;
+                if (CONTAINS(selectedItems, sl)) {
+                    keeps.emplace(sl);
+                    if(i < 0)
+                        i = j;
+                }
+                j++;
+            }
+
+            if (!keeps.empty()) {
+                for (const auto &s: selectedItems) {
+                    if (CONTAINS(keeps, s))
+                        continue;
+                    selectedItems.erase(s);
+                    s->_selected = false;
+                    events.deselected(s);
+                }
+                if (selectedItems.empty())
+                    pageOffset = 0;
+                else if(startCount != _sortedView.size()){
+                    pageOffset = (int)std::floor((float)i / (float)pageSize());
+                }
+            }else{
+                if (!selectedItems.empty()) {
+                    pageOffset = 0;
+                    for(const auto& k: selectedItems) {
+                        k->_selected = false;
+                        events.deselected(k);
+                    }
+                    selectedItems.clear();
+                }
+            }
+        }
         auto offset = pageOffset * pageSize();
         auto count = std::min((int) pageSize(), (int) _sortedView.size() - offset);
         _currentView.clear();
+
         for (int i = offset; i < offset + count; i++) {
             _currentView.push_back(_sortedView[i]);
         }
