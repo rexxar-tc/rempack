@@ -48,9 +48,11 @@ namespace widgets {
 
         void layout_buttons();
 
-        void set_text(string text);
+        void set_text(const string& text);
         void set_states(bool installed, bool canPreview = false);
         void layout_image();
+    protected:
+        void debugRender() override;
     };
 
 } // widgets

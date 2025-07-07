@@ -43,8 +43,6 @@ void setupStyle(){
     };
 }
 void Rempack::startApp() {
-    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
-    //sleep(10);
     setupStyle();
     fb = framebuffer::get();
     auto scene = buildHomeScene(fb->width, fb->height);
@@ -128,10 +126,8 @@ void onFilterRemoved(shared_ptr<ListItem> item) {
 }
 void onPackageSelect(shared_ptr<ListItem> item) {
     auto pk = any_cast<shared_ptr<package>>(item->object);
-    //printf("Package selected: %s\n", pk->Package.c_str());
+    printf("Package selected: %s\n", pk->Package.c_str());
     _selected = pk;
-    ///hack
-   // packagePanel->mark_redraw();
     displayBox->display_package(pk);
 }
 void onPackageDeselect(shared_ptr<ListItem> item) {
@@ -178,6 +174,10 @@ void onPreviewClick(void*){
 }
 
 void setupDebug(){
+#ifndef NDEBUG
+    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    //sleep(10);
+#endif
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
     fb->update_mode = UPDATE_MODE_FULL;
     fb->dirty = true;
@@ -283,7 +283,7 @@ ui::Scene buildHomeScene(int width, int height) {
     }
     packagePanel->events.selected += PLS_DELEGATE(onPackageSelect);
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);
-    packagePanel->sortPredicate = splashscreenComparator;
+    //packagePanel->sortPredicate = splashscreenComparator;
 
     displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle(), scene);
 

@@ -11,22 +11,28 @@ namespace widgets {
     map<string, ui::CachedIcon> images {};
 
     void PackageInfoPanel::on_reflow() {
-        _text->set_coords(x + padding, y + padding, w - (2 * padding), h - (2 * padding) - controlHeight);
-        _text->mark_redraw();
+        layout_image();
         layout_buttons();
     }
 
-    void PackageInfoPanel::set_text(string text) {
+    void PackageInfoPanel::set_text(const string& text) {
         _text->undraw();
-        _text->text = std::move(text);
+        _text->text = text;
         _text->mark_redraw();
         this->mark_redraw();
     }
 
     void PackageInfoPanel::layout_image() {
-        int dw = (_image->x - _text->x) - padding;
-        _text->set_coords(_text->x, _text->y, dw, _text->h);
-        _text->on_reflow();
+        if(_image->visible) {
+            int dw = (_image->x - _text->x) - (padding * 4);
+            _text->undraw();
+            _text->set_coords(x+padding,y+padding, dw, _text->h);
+        }
+        else{
+            _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
+        }
+        _text->mark_redraw();
+        mark_redraw();
     }
 
     void PackageInfoPanel::set_image(const shared_ptr<package>& package) {
@@ -35,6 +41,7 @@ namespace widgets {
         auto it = images.find(package->Package);
         if (it == images.end()) {
             _image->setImage(syncIcon, 100, 100);
+            layout_image();
             ui::TaskQueue::add_task([=]() {
                 vector<uint8_t> data;
                 data = opkg::getCachedSplashscreen(package);
@@ -47,7 +54,6 @@ namespace widgets {
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
-                    layout_image();
                 });
             });
         } else {
@@ -61,14 +67,14 @@ namespace widgets {
     void PackageInfoPanel::display_package(const shared_ptr<package> &package) {
         if(package == nullptr){
             set_states(false);
-            _image->clearImage();
             _image->hide();
-            set_text("");
+            _text->hide();
             undraw();
             mark_redraw();
             return;
         }
-        _image->clearImage();
+        _text->show();
+        _text->mark_redraw();
         bool splash = package->Section.rfind("splashscreens") != std::string::npos;
         set_states(package->IsInstalled(), splash);
         set_text(opkg::FormatPackage(package));
@@ -144,5 +150,10 @@ namespace widgets {
         _removeBtn->events.clicked += [this](void*){events.uninstall();};
         _previewBtn->events.clicked += [this](void*){events.preview();};
         layout_buttons();
+    }
+
+    void PackageInfoPanel::debugRender() {
+        fb->draw_rect(_text->x, _text->y, _text->w, _text->h, toRColor(0,255,255), false);
+        RoundCornerWidget::debugRender();
     }
 } // widgets
