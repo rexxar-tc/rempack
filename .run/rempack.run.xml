@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="rempack" type="com.jetbrains.cidr.remote.gdbserver.type" factoryName="com.jetbrains.cidr.remote.gdbserver.factory" nameIsGenerated="true" PROGRAM_PARAMS="--wrapper /opt/bin/rm2fb-client -- :1234 /tmp/CLion/debug/rempack" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="rempack" TARGET_NAME="rempack" CONFIG_NAME="Debug x86" version="1" RUN_TARGET_PROJECT_NAME="rempack" RUN_TARGET_NAME="rempack">
+    <custom-gdb-server version="1" gdb-connect="remarkable:1234" executable="/opt/bin/gdbserver" warmup-ms="0" download-type="ALWAYS" sshConfigName="root@remarkable:22 key" uploadFile="/tmp/CLion/debug/rempack" defaultGdbServerArgs=":1234 /tmp/CLion/debug/rempack">
+      <debugger kind="GDB" isBundled="true" />
+    </custom-gdb-server>
+    <method v="2">
+      <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_rpk" />
+    </method>
+  </configuration>
+</component>
