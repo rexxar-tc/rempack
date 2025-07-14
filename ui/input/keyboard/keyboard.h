@@ -79,7 +79,7 @@ namespace widgets {
         void number_layout();
         void symbol_layout();
         void set_layout(KeyLayer layer);
-        ui::Scene create_layout(string row1chars, string row2chars, string row3chars);
+        ui::Scene create_layout(const string& row1chars, const string& row2chars, const string& row3chars);
         KeyButton *make_char_button(char c);
         KeyButton *make_icon_button(icons::Icon icon, int w) const;
 

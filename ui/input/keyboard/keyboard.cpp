@@ -54,7 +54,7 @@ namespace widgets {
             //ui::MainLoop::refresh();
         }
 
-        ui::Scene Keyboard::create_layout(string row1chars, string row2chars, string row3chars) {
+        ui::Scene Keyboard::create_layout(const string& row1chars, const string& row2chars, const string& row3chars) {
             auto s = ui::make_scene();
             s->add(this);
 
@@ -90,9 +90,9 @@ namespace widgets {
             {
                 if (!numbers and !shifted) {
                     upper_layout();
-                } else if (!numbers and shifted) {
+                } else if (!numbers) {
                     lower_layout();
-                } else if (numbers and !shifted) {
+                } else if (!shifted) {
                     symbol_layout();
                 } else {
                     number_layout();
