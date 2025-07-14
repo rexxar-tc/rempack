@@ -14,6 +14,7 @@ namespace widgets {
 
         void Keyboard::set_text(string t) {
             text = t;
+            //events.changed(t);
         };
 
 
@@ -50,7 +51,7 @@ namespace widgets {
                 ui::MainLoop::show_overlay(s);
             }
             currentLayer = layer;
-            ui::MainLoop::refresh();
+            //ui::MainLoop::refresh();
         }
 
         ui::Scene Keyboard::create_layout(string row1chars, string row2chars, string row3chars) {
@@ -138,7 +139,7 @@ namespace widgets {
             enter_key->mouse.click += PLS_LAMBDA(auto & ev)
             {
                 hide();
-                ui::MainLoop::refresh();
+                //ui::MainLoop::refresh();
                 auto kev = KeyboardEvent{text};
                 events.changed(kev);
 
@@ -187,4 +188,8 @@ namespace widgets {
         void Keyboard::show() {
             lower_layout();
         };
+
+    void Keyboard::undraw() {
+        Widget::undraw();
     }
+}

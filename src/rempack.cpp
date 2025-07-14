@@ -20,6 +20,8 @@ namespace boyer = strings::boyer_moore;
 ui::Scene buildHomeScene(int width, int height);
 
 opkg pkg;
+
+widgets::SearchBox *searchBox;
 widgets::ListBox *filterPanel, *packagePanel;
 widgets::PackageInfoPanel *displayBox;
 shared_ptr<framebuffer::FB> fb;
@@ -57,7 +59,7 @@ void Rempack::startApp() {
         widgets::Dispatcher::run_tasks();
         ui::MainLoop::main();
         ui::MainLoop::redraw();
-        //fb->waveform_mode = WAVEFORM_MODE_GC16;
+        fb->waveform_mode = WAVEFORM_MODE_GC16;
         //fb->update_mode = UPDATE_MODE_PARTIAL;
         ui::MainLoop::read_input();
     }
@@ -179,7 +181,7 @@ void onPreviewClick(void*){
 
 void setupDebug(){
 #ifndef NDEBUG
-    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
     fb->update_mode = UPDATE_MODE_FULL;
@@ -190,7 +192,13 @@ void setupDebug(){
     fb->redraw_screen();
     fb->update_mode = UPDATE_MODE_PARTIAL;
     //fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
-    packagePanel->select("splashscreen-poweroff-sacks_spiral");
+    //packagePanel->select("splashscreen-poweroff-sacks_spiral");
+    auto ev = input::SynMotionEvent();
+        ev.x = searchBox->x;
+        ev.y = searchBox->y;
+        ev.left = 1;
+
+    searchBox->on_mouse_click(ev);
     //_selected = pk;
     //onInstallClick(nullptr);
     //auto pt = opkg::DownloadPackage(pk, dummyline);
@@ -224,7 +232,8 @@ ui::Scene buildHomeScene(int width, int height) {
     filterButton->events.updated += onFiltersChanged;
     _menuData = new widgets::MenuData;
     auto settingButton = new widgets::ConfigButton(padding*2, 0, 60, 60, _menuData);
-    auto searchBox = new widgets::SearchBox(padding, 0, layout->w - 120 - padding*2, 60, widgets::RoundCornerStyle());
+    searchBox = new widgets::SearchBox(padding, 0, layout->w - 120 - padding * 2, 60, widgets::RoundCornerStyle());
+    searchBox->events.updated += PLS_DELEGATE(searchQueryUpdate);
     searchBox->events.done += PLS_DELEGATE(searchQueryUpdate);
     searchPane->pack_start(filterButton);
     searchPane->pack_start(searchBox);

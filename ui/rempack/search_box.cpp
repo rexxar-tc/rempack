@@ -22,6 +22,7 @@ namespace widgets {
         set_text(_keyboard->text + '_');
         //redraw the button we just erased
         pixmap->mark_redraw();
+        events.updated(_keyboard->text);
     }
 
     void SearchBox::onDone(KeyboardEvent ev) {

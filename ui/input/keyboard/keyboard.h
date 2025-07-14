@@ -22,9 +22,19 @@ namespace widgets {
             (void) 0;
         }
 
-        void before_render() {
+        void on_mouse_down(input::SynMotionEvent &ev) override{
+            ev.stop_propagation();
+            mark_redraw();
+            fb->waveform_mode = WAVEFORM_MODE_DU;
+        }
+
+        void before_render() override{
             ui::Button::before_render();
             mouse_inside = mouse_down && mouse_inside;
+        }
+
+        void render_border() override{
+            fb->draw_rect(x, y, w, h, GRAY, false);
         }
     };
 
@@ -44,10 +54,6 @@ namespace widgets {
                 layout = new ui::HorizontalLayout(x, y, w, h, scene);
             }
             layout->pack_start(key);
-        }
-
-        void render() {
-            (void) 0;
         }
     };
 
@@ -103,7 +109,7 @@ namespace widgets {
 
 
         void render() override;
-
+        void undraw() override;
         void show() override;
     };
 }
