@@ -81,13 +81,15 @@ std::string _searchQuery = "";
 
 bool packageFilterDelegate(const shared_ptr<ListItem> &item) {
     auto pk = any_cast<shared_ptr<package>>(item->object);
-    bool visible = false;
+
     if (!_filters.empty() && _filters.find(pk->Section) == _filters.end())
         return false;
-    if(!_filterOpts->Licenses.empty() && !_filterOpts->Licenses.find(pk->License)->second)
-        return false;
-    if(!_filterOpts->Repos.empty() && !_filterOpts->Repos.find(pk->Repo)->second)
-        return false;
+    if(!_filterOpts->SearchHidden || _searchQuery.empty()) {
+        if (!_filterOpts->Licenses.empty() && !_filterOpts->Licenses.find(pk->License)->second)
+            return false;
+        if (!_filterOpts->Repos.empty() && !_filterOpts->Repos.find(pk->Repo)->second)
+            return false;
+    }
     if(!((_filterOpts->Installed && pk->IsInstalled()) ||
     (_filterOpts->NotInstalled && pk->State == package::NotInstalled)))
         return false;   //yes, I feel bad
@@ -110,21 +112,52 @@ bool packageFilterDelegate(const shared_ptr<ListItem> &item) {
 void searchQueryUpdate(string s){
     _searchQuery = std::move(s);
     packagePanel->mark_redraw();
+    packagePanel->refresh_list();
+    filterPanel->mark_redraw();
 }
-bool sectionFilterDelegate(const shared_ptr<ListItem> &item){
-    for(auto &[r,s]: _filterOpts->Repos){
-        if(s && CONTAINS(pkg.sections_by_repo[item->label], r))
-            return true;
+
+//filter for Section filter listbox
+static bool sectionFilterDelegate(const shared_ptr<ListItem> &item){
+    //always show selected items
+    if(item->_selected)
+        return true;
+    //if we're searching, we need to show only sections for packages in the filtered set
+    if(!_searchQuery.empty()){
+        for (const auto &it: packagePanel->sortedItems()) {
+            auto pk = any_cast<shared_ptr<package>>(it->object);
+            if (pk != nullptr && item->label == pk->Section) {
+                return true;
+            }
+        }
+        //no other rules apply while searching
+        return false;
     }
+    //if not searching, apply normal rules
+    if(packagePanel->selectedItems.empty()) {
+        for (auto &[r, s]: _filterOpts->Repos) {
+            if (s && CONTAINS(pkg.sections_by_repo[item->label], r))
+                return true;
+        }
+    }
+    //TODO
+    //show all sections matching search query
+    //when package panel is re-filtered with section filters,
+    //other sections vanish
+    //we're filtering sections after the package list is filtered with the selected sections
+    //so we only ever see the selected sections
     return false;
 }
 void onFilterAdded(shared_ptr<ListItem> item) {
     _filters.emplace(item->label);
     packagePanel->mark_redraw();
+    //packagePanel->refresh_list();
+    //filterPanel->mark_redraw();
 }
 void onFilterRemoved(shared_ptr<ListItem> item) {
     _filters.erase(item->label);
     packagePanel->mark_redraw();
+    //packagePanel->refresh_list();
+    //filterPanel->mark_redraw();
 }
 void onPackageSelect(shared_ptr<ListItem> item) {
     auto pk = any_cast<shared_ptr<package>>(item->object);
@@ -181,7 +214,7 @@ void onPreviewClick(void*){
 
 void setupDebug(){
 #ifndef NDEBUG
-    //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
     fb->update_mode = UPDATE_MODE_FULL;
@@ -224,6 +257,9 @@ ui::Scene buildHomeScene(int width, int height) {
             .Installed = true,
             .Upgradable = false,
             .NotInstalled = true,
+            .SearchDescription = true,
+            .SearchHidden = true,
+            .groupSplash = false,
     });
     for(auto &r : pkg.repositories){
         _filterOpts->Repos.emplace(r, r != "entware");   //hide entware by default, there's so many openwrt packages it drowns out toltec

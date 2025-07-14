@@ -66,7 +66,7 @@ namespace widgets{
         children.push_back(unTog);
         dy += padding + unTog->h;
         auto descTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Search Descriptions");
-        descTog->toggled = options->NotInstalled;
+        descTog->toggled = options->SearchDescription;
         descTog->style.justify = ui::Style::JUSTIFY::LEFT;
         descTog->events.toggled += [this](bool s) {
             options->SearchDescription = s;
@@ -75,6 +75,16 @@ namespace widgets{
         children.push_back(descTog);
         s->add(descTog);
         dy += padding + descTog->h;
+        auto reopTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Search Hidden Repos");
+        reopTog->toggled = options->SearchHidden;
+        reopTog->style.justify = ui::Style::JUSTIFY::LEFT;
+        reopTog->events.toggled += [this](bool s) {
+            options->SearchHidden = s;
+            upate_event();
+        };
+        children.push_back(reopTog);
+        s->add(reopTog);
+        dy += padding + reopTog->h;
         auto groupTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Group Splashscreens");
         groupTog->toggled = options->groupSplash;
         groupTog->style.justify = ui::Style::JUSTIFY::LEFT;

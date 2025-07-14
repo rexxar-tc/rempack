@@ -34,7 +34,9 @@ namespace widgets {
         //TODO: style sheets
         pixmap = make_shared<ui::Pixmap>(x + w - h, y, h, h, ICON(assets::png_search_png));
         children.push_back(pixmap);
-        _keyboard = new Keyboard();
+        auto dx = fb->height - 400;
+        auto dw = fb->width;
+        _keyboard = new Keyboard(dx, 0, dw, 400);
         _keyboard->events.changed += PLS_DELEGATE(onChange);
         _keyboard->events.done += PLS_DELEGATE(onDone);
 

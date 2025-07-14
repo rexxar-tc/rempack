@@ -96,6 +96,10 @@ namespace widgets {
         bool select(const string& label);
         //check the Y position relative to top of widget, divide by itemHeight
         void on_mouse_click(input::SynMotionEvent &ev) override;
+        std::vector<shared_ptr<ListItem>> sortedItems() {return _sortedView; }
+        //first, filter contents with our predicate and copy to current view
+        //second, sort current view
+        virtual void refresh_list();
     protected:
 
         std::vector<shared_ptr<ListItem>> _currentView;
@@ -121,8 +125,5 @@ namespace widgets {
         void RR_CLICK(void* v);
         void trim_texts();
 
-        //first, filter contents with our predicate and copy to current view
-        //second, sort current view
-        virtual void refresh_list();
     };
 }
