@@ -7,6 +7,8 @@ This is targeted specifically at the ReMarkable 2, but it will likely compile fi
 
 <img src="doc/2025-02-24T140203.777.png" width= 500></img>
 
+GitHub is a public mirror for this project. Development happens on my personal [GitLab](https://gitlab.onionstorm.net/rolenthedeep/rempack) server.
+
 ### What is this?
 
 This is a package manager heavily inspired by [Octopi](https://github.com/aarnt/octopi), the inarguable and undisputed best package manager available for Arch linux. It allows you to search, browse, and install packages from the [Toltec]() and [Entware]() repositories, which is the standard for ReMarkable tablets as well as similar devices.
