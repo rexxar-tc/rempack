@@ -183,13 +183,13 @@ void setupDebug(){
     //sleep(10);
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
     fb->update_mode = UPDATE_MODE_FULL;
-    fb->waveform_mode = WAVEFORM_MODE_DU;
+    //fb->waveform_mode = WAVEFORM_MODE_DU;
     fb->dirty = true;
     fb->redraw_screen();
     fb->clear_screen();
     fb->redraw_screen();
     fb->update_mode = UPDATE_MODE_PARTIAL;
-    fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
+    //fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
     packagePanel->select("splashscreen-poweroff-sacks_spiral");
     //_selected = pk;
     //onInstallClick(nullptr);

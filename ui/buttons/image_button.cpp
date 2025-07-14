@@ -5,9 +5,9 @@
 #include "image_button.h"
 namespace widgets{
     void ImageButton::render() {
+        pixmap->render();
         EventButton::render();
         //fb->waveform_mode = WAVEFORM_MODE_GC16;
-        pixmap->render();
     }
 
     void ImageButton::on_reflow() {
