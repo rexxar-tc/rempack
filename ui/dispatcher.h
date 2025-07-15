@@ -15,7 +15,7 @@ namespace widgets {
         static std::deque<std::function<void()>> tasks;
         static std::mutex taskLock;
     public:
-        static void add_task(std::function<void()> t);
+        static void add_task(const std::function<void()>& t);
         static void run_tasks();
     };
 } // widgets

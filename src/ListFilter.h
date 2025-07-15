@@ -16,7 +16,7 @@
 class ListFilter {
 public:
     ListFilter(widgets::ListBox *filterPanel, widgets::ListBox *packagePanel);
-    void updateLists(const shared_ptr<widgets::FilterOptions>& options, const std::string& query = "");
+    void updateLists(const shared_ptr<widgets::FilterOptions>& options, const std::string& query);
 private:
     widgets::ListBox *filterPanel;
     widgets::ListBox *packagePanel;

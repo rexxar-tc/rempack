@@ -8,7 +8,7 @@
 namespace widgets {
     std::deque<std::function<void()>> Dispatcher::tasks;
     std::mutex Dispatcher::taskLock;
-    void Dispatcher::add_task(std::function<void()> t) {
+    void Dispatcher::add_task(const std::function<void()>& t) {
         std::lock_guard<std::mutex> lock(taskLock);
         tasks.push_back(t);
     }

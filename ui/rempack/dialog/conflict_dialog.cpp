@@ -85,7 +85,7 @@ namespace widgets {
             this->hide();
         });
         td->show();
-        auto ret = opkg::Uninstall(conflicts, [td](const string s) { td->stdout_callback(s); });
+        auto ret = opkg::Uninstall(conflicts, [td](const string& s) { td->stdout_callback(s); });
         if (ret == 0) {
             td->stdout_callback("Done.");
             for (const auto &t: conflicts)
@@ -121,27 +121,4 @@ namespace widgets {
         on_reflow();
         //Overlay::mark_redraw();
     }
-
-    class Zyx{
-    public:
-        virtual void foo();
-        virtual void bar();
-    };
-
-    class A: public Zyx{
-    public:
-        void foo() override{
-            bar();
-        }
-        void bar() override{
-            //dostuff
-        }
-    };
-
-    class B: public A{
-    public:
-        void bar() override{
-            //do stuff without calling A::bar
-        }
-    };
 } // widgets

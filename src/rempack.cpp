@@ -26,6 +26,7 @@ widgets::ListBox *filterPanel, *packagePanel;
 widgets::PackageInfoPanel *displayBox;
 shared_ptr<framebuffer::FB> fb;
 widgets::MenuData *menuData;
+std::string currentQuery;
 
 ListFilter *filterMgr;
 void setupDebug();
@@ -59,7 +60,7 @@ void Rempack::startApp() {
     //ui::MainLoop::redraw();
 
     setupDebug();
-    filterMgr->updateLists(filterOpts);
+    filterMgr->updateLists(filterOpts, "");
     while(true){
         widgets::Dispatcher::run_tasks();
         ui::MainLoop::main();
@@ -72,23 +73,24 @@ void Rempack::startApp() {
 }
 
 void searchQueryUpdate(string s){
-    filterMgr->updateLists(filterOpts, s);
+    currentQuery = std::move(s);
+    filterMgr->updateLists(filterOpts, currentQuery);
 }
-void onFilterAdded(shared_ptr<ListItem> item) {
+void onFilterAdded(shared_ptr<ListItem> item) { // NOLINT(*-unnecessary-value-param)
     filterOpts->Sections.emplace(item->label);
-    filterMgr->updateLists(filterOpts);
+    filterMgr->updateLists(filterOpts, currentQuery);
 }
-void onFilterRemoved(shared_ptr<ListItem> item) {
+void onFilterRemoved(shared_ptr<ListItem> item) { // NOLINT(*-unnecessary-value-param)
     filterOpts->Sections.erase(item->label);
-    filterMgr->updateLists(filterOpts);
+    filterMgr->updateLists(filterOpts, currentQuery);
 }
-void onPackageSelect(shared_ptr<ListItem> item) {
+void onPackageSelect(shared_ptr<ListItem> item) { // NOLINT(*-unnecessary-value-param)
     auto pk = any_cast<shared_ptr<package>>(item->object);
     std::cout << "Package selected: " << pk->Package << "\n";
     selected = pk;
     displayBox->display_package(pk);
 }
-void onPackageDeselect(shared_ptr<ListItem> item) {
+void onPackageDeselect([[maybe_unused]] shared_ptr<ListItem> item) {
     //auto pk = any_cast<shared_ptr<package>>(item->object);
     //printf("Package deselected: %s\n", pk->Package.c_str());
     selected = nullptr;
@@ -221,7 +223,7 @@ ui::Scene buildHomeScene(int width, int height) {
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);
 
     filterMgr = new ListFilter(filterPanel, packagePanel);
-    filterMgr->updateLists(filterOpts);
+    filterMgr->updateLists(filterOpts, "");
 
     displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle(), scene);
 
