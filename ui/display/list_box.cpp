@@ -36,6 +36,8 @@ namespace widgets {
             }
         }
         if (item != nullptr) {
+            item->_selected = false;
+            selectedItems.erase(item);
             contents.erase(contents.begin() + i);
             events.removed(item);
             mark_redraw();
@@ -47,6 +49,7 @@ namespace widgets {
     void ListBox::removeAt(int index) {
         auto item = contents[index];
         auto w = item->_widget;
+        selectedItems.erase(item);
         contents.erase(contents.begin() + index);
         events.removed(item);
         mark_redraw();
@@ -96,6 +99,7 @@ namespace widgets {
 
     void ListBox::clear() {
         contents.clear();
+        selectedItems.clear();
         mark_redraw();
     }
 
