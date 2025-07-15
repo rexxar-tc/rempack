@@ -21,7 +21,6 @@ void ListFilter::updateLists(const shared_ptr<widgets::FilterOptions>& options, 
     auto start = std::chrono::steady_clock::now();
     if (!query.empty()) {
         querySet.clear();
-        sections.clear();
         boyer::pattern pat;
         boyer::init_pattern(query, pat);
         for (const auto &it : pkCache) {
@@ -34,17 +33,23 @@ void ListFilter::updateLists(const shared_ptr<widgets::FilterOptions>& options, 
                 if (indexes.empty())
                     continue;
             }
-            querySections.emplace(pk->Section);
+            if(!pk->Section.empty())
+                querySections.emplace(pk->Section);
             querySet.push_back(it);
         }
     } else {
-        if (querySet.size() != pkCache.size()) {
-            querySet = pkCache;
-            //sections = opkg::Instance->sections;
+        querySet.clear();
+        for(const auto &mpk : pkCache){
+            auto pk = any_cast<shared_ptr<package>>(mpk->object);
+            if (!options->Repos.empty() && !options->Repos.find(pk->Repo)->second)
+                continue;
+            querySet.push_back(mpk);
+            if(!pk->Section.empty())
+                querySections.emplace(pk->Section);
         }
     }
 
-    querySections.erase("");
+    //querySections.erase("");
     vector<shared_ptr<ListItem>> filterSet;
     filterSet.reserve(querySet.size());
 
@@ -70,27 +75,24 @@ void ListFilter::updateLists(const shared_ptr<widgets::FilterOptions>& options, 
     packagePanel->contents = std::move(filterSet);
     packagePanel->mark_redraw();
 
-    unordered_set<string> erases;
-    unordered_set<string> current;
-    for(const auto &sec : filterPanel->contents){
-        current.emplace(sec->label);
-        if(sec->_selected)
-            continue;
-        if(CONTAINS(querySections, sec->label))
-            continue;
-        if(CONTAINS(options->Sections, sec->label))
-            continue;
-        erases.emplace(sec->label);
-    }
+    /*
+     * Filter panel cases:
+     * no query, no filters - all sections
+     * no query, section filters - all sections
+     * query, no filters - sections matching query
+     * query, filters - sections matching query
+     *
+     * doing the algebra, this simplifies down to always use the query set
+     * the query set will contain all packages from unhidden repos
+     * when there is no query
+     *
+     * I hope
+     */
 
-    for(const auto &er : erases){
-        filterPanel->remove(er);
-    }
-
-    for(const auto &nsc : sections){
-        if(!CONTAINS(current, nsc->label)){
-            filterPanel->contents.push_back(nsc);
-        }
+    filterPanel->contents.clear();
+    for(const auto &qsec : sections){
+        if(CONTAINS(querySections, qsec->label))
+            filterPanel->contents.push_back(qsec);
     }
     filterPanel->mark_redraw();
 
