@@ -169,14 +169,9 @@ namespace widgets {
                     return;
                 }
 
-                //ui::TaskQueue::add_task([=]() {
-                    //text.push_back(c);
-                    text += c;
-                   // mark_redraw();
-                    auto kev = KeyboardEvent{text};
-                    events.changed(kev);
-                    //std::cerr << "key pressed:" << ' ' << c << std::endl;
-                //});
+                text += c;
+                auto kev = KeyboardEvent{text};
+                events.changed(kev);
             };
             return key;
         };

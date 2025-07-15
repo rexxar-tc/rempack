@@ -13,6 +13,7 @@ namespace widgets {
         class TEXTBOX_EVENTS: public TEXTINPUT_EVENTS {
         public:
             TEXTBOX_EVENT updated;
+            TEXTBOX_EVENT open;
         };
 
         TEXTBOX_EVENTS events;

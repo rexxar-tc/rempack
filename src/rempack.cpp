@@ -70,6 +70,16 @@ void Rempack::startApp() {
 
 }
 
+void searchQueryOpen(string s){
+    if(selected != nullptr){
+        selected = nullptr;
+        for(const auto &p : packagePanel->selectedItems)
+            p->_selected = false;
+        packagePanel->selectedItems.clear();
+        packagePanel->mark_redraw();
+        displayBox->display_package(nullptr);
+    }
+}
 void searchQueryUpdate(string s){
     currentQuery = std::move(s);
     filterMgr->updateLists(filterOpts, currentQuery);
@@ -198,6 +208,7 @@ ui::Scene buildHomeScene(int width, int height) {
     auto settingButton = new widgets::ConfigButton(padding*2, 0, 60, 60, menuData);
     searchBox = new widgets::SearchBox(padding, 0, layout->w - 120 - padding * 2, 60, widgets::RoundCornerStyle());
     searchBox->events.updated += PLS_DELEGATE(searchQueryUpdate);
+    searchBox->events.open += PLS_DELEGATE(searchQueryOpen);
     searchBox->events.done += PLS_DELEGATE(searchQueryUpdate);
     searchPane->pack_start(filterButton);
     searchPane->pack_start(searchBox);

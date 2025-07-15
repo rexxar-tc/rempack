@@ -13,6 +13,7 @@ namespace widgets {
 
     void SearchBox::on_mouse_click(input::SynMotionEvent &ev) {
         ev.stop_propagation();
+        events.open();
         _keyboard->show();
     }
 
