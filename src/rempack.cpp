@@ -14,6 +14,7 @@
 #include "rempack/rempack_widgets.h"
 #include "platform_rules.h"
 #include "dispatcher.h"
+#include "ListFilter.h"
 using ListItem = widgets::ListBox::ListItem;
 
 ui::Scene buildHomeScene(int width, int height);
@@ -58,6 +59,7 @@ void Rempack::startApp() {
     //ui::MainLoop::redraw();
 
     setupDebug();
+    filterMgr->updateLists(filterOpts);
     while(true){
         widgets::Dispatcher::run_tasks();
         ui::MainLoop::main();
@@ -132,19 +134,23 @@ void onPreviewClick(void*){
     displayBox->set_image(selected);
 }
 
-void setupDebug(){
-#ifndef NDEBUG
-    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
-    //sleep(10);
+void initScreen(){
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
     fb->update_mode = UPDATE_MODE_FULL;
-    //fb->waveform_mode = WAVEFORM_MODE_DU;
+    fb->waveform_mode = WAVEFORM_MODE_DU;
     fb->dirty = true;
     fb->redraw_screen();
     fb->clear_screen();
     fb->redraw_screen();
     fb->update_mode = UPDATE_MODE_PARTIAL;
-    //fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
+    fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
+}
+
+void setupDebug(){
+#ifndef NDEBUG
+    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    //sleep(10);
+
     //packagePanel->select("splashscreen-poweroff-sacks_spiral");
     auto ev = input::SynMotionEvent();
         ev.x = searchBox->x;
@@ -163,6 +169,8 @@ void setupDebug(){
 ui::Scene buildHomeScene(int width, int height) {
     int padding = 20;
     auto scene = ui::make_scene();
+
+    initScreen();
 
     //vertical stack that takes up the whole screen
     auto layout = new ui::VerticalReflow(padding, padding, width - padding*2, height - padding*2, scene);
