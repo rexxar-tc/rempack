@@ -8,6 +8,7 @@
 
 class Rempack {
 public:
-    void startApp();
+    [[noreturn]] void startApp();
 private:
+
 };
