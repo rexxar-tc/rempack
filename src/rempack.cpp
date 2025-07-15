@@ -13,7 +13,6 @@
 #include "display/list_box.h"
 #include "rempack/rempack_widgets.h"
 #include "platform_rules.h"
-#include "dispatcher.h"
 #include "ListFilter.h"
 using ListItem = widgets::ListBox::ListItem;
 
@@ -62,7 +61,6 @@ void Rempack::startApp() {
     setupDebug();
     filterMgr->updateLists(filterOpts, "");
     while(true){
-        widgets::Dispatcher::run_tasks();
         ui::MainLoop::main();
         ui::MainLoop::redraw();
         fb->waveform_mode = WAVEFORM_MODE_GC16;
@@ -138,14 +136,14 @@ void onPreviewClick(void*){
 
 void initScreen(){
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
-    fb->update_mode = UPDATE_MODE_FULL;
-    fb->waveform_mode = WAVEFORM_MODE_DU;
+    //fb->update_mode = UPDATE_MODE_FULL;
+    //fb->waveform_mode = WAVEFORM_MODE_A2;
     fb->dirty = true;
     fb->redraw_screen();
     fb->clear_screen();
-    fb->redraw_screen();
-    fb->update_mode = UPDATE_MODE_PARTIAL;
-    fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
+    //fb->redraw_screen();
+    //fb->update_mode = UPDATE_MODE_PARTIAL;
+    //fb->waveform_mode = WAVEFORM_MODE_GC16;
 }
 
 void setupDebug(){

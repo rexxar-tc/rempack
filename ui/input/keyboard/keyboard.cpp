@@ -86,7 +86,7 @@ namespace widgets {
 
             auto shift_key = new KeyButton(0, 0, btn_width, btn_height, "shift");
             shift_key->set_style(BTN_STYLE);
-            shift_key->mouse.click += PLS_LAMBDA(auto & ev)
+            shift_key->mouse.click += [=](auto & ev)
             {
                 if (!numbers and !shifted) {
                     upper_layout();
@@ -108,16 +108,17 @@ namespace widgets {
 
             backspace_key->mouse.click += PLS_LAMBDA(auto & ev)
             {
-                if (text.size() > 0) {
+                if (!text.empty()) {
                     text.pop_back();
                     dirty = 1;
-                    events.changed();
+                    auto kev = KeyboardEvent{text};
+                    events.changed(kev);
                 }
             };
             row3->add_key(backspace_key);
 
             auto kbd = new KeyButton(0, 0, btn_width, btn_height, "kbd");
-            kbd->mouse.click += PLS_LAMBDA(auto & ev)
+            kbd->mouse.click += [=](auto & ev)
             {
                 if (numbers) {
                     lower_layout();
@@ -127,21 +128,22 @@ namespace widgets {
             };
             auto space_key = new KeyButton(0, 0, btn_width * 8, btn_height, "space");
             space_key->set_style(BTN_STYLE);
-            space_key->mouse.click += PLS_LAMBDA(auto & ev)
+            space_key->mouse.click += [=](auto & ev)
             {
                 text += " ";
                 dirty = 1;
-                events.changed();
+                auto kev = KeyboardEvent{text};
+                events.changed(kev);
             };
 
             auto enter_key = new KeyButton(0, 0, btn_width, btn_height, "done");
             enter_key->set_style(BTN_STYLE);
-            enter_key->mouse.click += PLS_LAMBDA(auto & ev)
+            enter_key->mouse.click += [=](auto & ev)
             {
                 hide();
                 //ui::MainLoop::refresh();
                 auto kev = KeyboardEvent{text};
-                events.changed(kev);
+                //events.changed(kev);
 
                 if (ui::MainLoop::hide_overlay(s) == nullptr) {
                     std::cerr << "No keyboard overlay to hide" << std::endl;
@@ -161,16 +163,20 @@ namespace widgets {
             string s(1, c);
             auto key = new KeyButton(0, 0, btn_width, btn_height, s);
             key->set_style(BTN_STYLE);
-            key->mouse.click += PLS_LAMBDA(auto & ev)
-            {
-                dirty = 1;
+            key->mouse.up += PLS_LAMBDA(auto &ev) {
+                mark_redraw();
                 if (c == ' ') {
                     return;
                 }
 
-                text.push_back(c);
-                events.changed();
-                //std::cerr << "key pressed:" << ' ' << c << std::endl;
+                //ui::TaskQueue::add_task([=]() {
+                    //text.push_back(c);
+                    text += c;
+                   // mark_redraw();
+                    auto kev = KeyboardEvent{text};
+                    events.changed(kev);
+                    //std::cerr << "key pressed:" << ' ' << c << std::endl;
+                //});
             };
             return key;
         };

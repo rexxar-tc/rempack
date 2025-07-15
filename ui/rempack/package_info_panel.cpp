@@ -3,7 +3,6 @@
 //
 
 #include "package_info_panel.h"
-#include "dispatcher.h"
 
 namespace widgets {
     const float rm_aspect = 0.75;
@@ -51,7 +50,7 @@ namespace widgets {
                 auto ic = images.emplace(package->Package,
                                          ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->w,
                                                         _image->h));
-                widgets::Dispatcher::add_task([=]() {
+                ui::TaskQueue::add_task([=]() {
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);

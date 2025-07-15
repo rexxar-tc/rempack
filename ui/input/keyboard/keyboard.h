@@ -25,7 +25,7 @@ namespace widgets {
         void on_mouse_down(input::SynMotionEvent &ev) override{
             ev.stop_propagation();
             mark_redraw();
-            fb->waveform_mode = WAVEFORM_MODE_DU;
+            fb->waveform_mode = WAVEFORM_MODE_A2;
         }
 
         void before_render() override{

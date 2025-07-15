@@ -19,10 +19,15 @@ namespace widgets {
     void SearchBox::onChange(KeyboardEvent ev) {
         //need to do a full undraw in case characters were removed
         RoundedTextInput::undraw();
-        set_text(_keyboard->text + '_');
+        set_text(ev.text + '_');
         //redraw the button we just erased
         pixmap->mark_redraw();
-        events.updated(_keyboard->text);
+        mark_redraw();
+        auto ltext = ev.text;
+        ui::TaskQueue::add_task([=]() {
+            auto lltext = ltext;
+            this->events.updated(lltext);
+        });
     }
 
     void SearchBox::onDone(KeyboardEvent ev) {

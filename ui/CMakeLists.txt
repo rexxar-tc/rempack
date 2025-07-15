@@ -20,8 +20,6 @@ add_library(widgets STATIC
         display/bordered_image.h
         rempack/dialog/conflict_dialog.cpp
         rempack/dialog/conflict_dialog.h
-        dispatcher.cpp
-        dispatcher.h
 )
 
 include_directories(../opkg)
