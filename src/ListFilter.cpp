@@ -27,7 +27,7 @@ void ListFilter::updateLists(const shared_ptr<widgets::FilterOptions>& options, 
             auto pk = any_cast<shared_ptr<package>>(it->object);
             std::vector<size_t> indexes = boyer::search(pk->Package, pat);
             if (indexes.empty()) {
-                if (!options->SearchDescription)
+                if (!options->SearchDescription || query.length() <= 3)
                     continue;
                 indexes = boyer::search(pk->Description, pat);
                 if (indexes.empty())
