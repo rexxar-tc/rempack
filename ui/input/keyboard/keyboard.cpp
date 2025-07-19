@@ -117,7 +117,7 @@ namespace widgets {
             };
             row3->add_key(backspace_key);
 
-            auto kbd = new KeyButton(0, 0, btn_width, btn_height, "kbd");
+            auto kbd = new KeyButton(0, 0, btn_width, btn_height, "abc|123");
             kbd->mouse.click += [=](auto & ev)
             {
                 if (numbers) {
@@ -192,5 +192,41 @@ namespace widgets {
 
     void Keyboard::undraw() {
         Widget::undraw();
+    }
+
+    void KeyButton::on_mouse_down(input::SynMotionEvent &ev) {
+        ev.stop_propagation();
+        mark_redraw();
+        fb->waveform_mode = WAVEFORM_MODE_A2;
+    }
+
+    void KeyButton::before_render() {
+        ui::Button::before_render();
+        mouse_inside = mouse_down && mouse_inside;
+    }
+
+    void KeyButton::render() {
+        if (this->mouse_down) {
+            //fb->waveform_mode = WAVEFORM_MODE_A2;
+            fb->draw_rect(this->x, this->y, this->w, this->h, BLACK, true);
+        } else {
+            fb->draw_rect(this->x, this->y, this->w, this->h, color::GRAY_14, true);
+            if (this->iconWidget != nullptr) {
+                this->iconWidget->render();
+            }
+
+            this->textWidget->render();
+        }
+    }
+
+    void KeyButton::render_border() {
+        fb->draw_rect(x, y, w, h, GRAY, false);
+    }
+
+    void Row::add_key(KeyButton *key) {
+        if (layout == nullptr) {
+            layout = new ui::HorizontalLayout(x, y, w, h, scene);
+        }
+        layout->pack_start(key);
     }
 }

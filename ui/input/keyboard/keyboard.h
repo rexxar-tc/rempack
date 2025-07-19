@@ -22,20 +22,11 @@ namespace widgets {
             (void) 0;
         }
 
-        void on_mouse_down(input::SynMotionEvent &ev) override{
-            ev.stop_propagation();
-            mark_redraw();
-            fb->waveform_mode = WAVEFORM_MODE_A2;
-        }
+        void on_mouse_down(input::SynMotionEvent &ev) override;
 
-        void before_render() override{
-            ui::Button::before_render();
-            mouse_inside = mouse_down && mouse_inside;
-        }
-
-        void render_border() override{
-            fb->draw_rect(x, y, w, h, GRAY, false);
-        }
+        void before_render() override;
+        void render() override;
+        void render_border() override;
     };
 
     class Row : public ui::Widget {
@@ -48,13 +39,7 @@ namespace widgets {
             //scene->clear_under = true;
         }
 
-        void add_key(KeyButton *key) {
-            if (layout == NULL) {
-                //std::cerr << "RENDERING ROW" << ' ' << x << ' ' << y << ' ' << w << ' ' << h << std::endl;
-                layout = new ui::HorizontalLayout(x, y, w, h, scene);
-            }
-            layout->pack_start(key);
-        }
+        void add_key(KeyButton *key);
     };
 
     class Keyboard : public ui::Widget {
