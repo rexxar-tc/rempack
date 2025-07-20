@@ -182,9 +182,6 @@ namespace widgets {
             return key;
         };
 
-        void Keyboard::render() {
-            //fb->draw_rect(x, y, w, h, WHITE, true);
-        };
 
         void Keyboard::show() {
             lower_layout();
@@ -220,7 +217,7 @@ namespace widgets {
     }
 
     void KeyButton::render_border() {
-        fb->draw_rect(x, y, w, h, GRAY, false);
+        fb->draw_rect(x, y, w, h, color::GRAY_10, false);
     }
 
     void Row::add_key(KeyButton *key) {

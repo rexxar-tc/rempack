@@ -5,6 +5,7 @@
 #pragma once
 
 #include "widgets.h"
+#include "buttons/event_button.h"
 
 namespace widgets {
     class KeyboardEvent {
@@ -16,9 +17,9 @@ namespace widgets {
 
     PLS_DEFINE_SIGNAL(KEYBOARD_EVENT, KeyboardEvent);
 
-    class KeyButton : public ui::Button {
+    class KeyButton : public EventButton {
     public:
-        KeyButton(int x, int y, int w, int h, string t) : ui::Button(x, y, w, h, t) {
+        KeyButton(int x, int y, int w, int h, string t) : EventButton(x, y, w, h, t) {
             (void) 0;
         }
 
@@ -42,7 +43,7 @@ namespace widgets {
         void add_key(KeyButton *key);
     };
 
-    class Keyboard : public ui::Widget {
+    class Keyboard : public DebuggableWidget {
         class KEYBOARD_EVENTS {
         public:
             KEYBOARD_EVENT changed;
@@ -73,7 +74,7 @@ namespace widgets {
         bool numbers = false;
         vector<Row *> rows;
         ui::Scene scene;
-        string text = "";
+        string text;
         int btn_width;
         int btn_height;
 
@@ -83,7 +84,7 @@ namespace widgets {
 
         KEYBOARD_EVENTS events;
 
-        Keyboard(int x = 0, int y = 0, int w = 0, int h = 0) : Widget(x, y, w, h) {
+        Keyboard(int x = 0, int y = 0, int w = 0, int h = 0) : DebuggableWidget(x, y, w, h) {
             auto [dw, full_h] = fb->get_display_size();
             h = full_h / 4;
             this->w = dw;
@@ -93,7 +94,6 @@ namespace widgets {
         }
 
 
-        void render() override;
         void undraw() override;
         void show() override;
     };
