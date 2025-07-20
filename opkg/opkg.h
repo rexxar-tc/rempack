@@ -88,10 +88,14 @@ public:
     static string formatDependencyTree(const shared_ptr<package>& pkg, bool excludeInstalled);
     int ComputeUninstall(const vector<shared_ptr<package>>& targets, bool includeDependencies, vector<shared_ptr<package>> *out_result);
 private:
-    bool parse_line(shared_ptr<package> &ptr, const char *line, bool update, bool upstream);
+    static bool parse_line(shared_ptr<package> &ptr, const map<string, shared_ptr<package>> &packages, const char *line, bool update, bool upstream, bool &parsing_desc, bool &parsing_conf);
     bool split_str_and_find(const string& children_str, vector<shared_ptr<package>> &field);
     void update_states();
     void update_lists();
+
+    bool
+    parse_line(shared_ptr<package> &ptr, const vector<shared_ptr<package>> &packages, const char *line, bool update,
+               bool upstream);
 };
 
 

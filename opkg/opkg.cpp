@@ -267,6 +267,8 @@ void opkg::InitializeRepositories() {
     int pc = 0;
     char cbuf[4096]{};
     auto pk = make_shared<package>();
+        bool parsing_desc = false;
+        bool parsing_conf = false;
     for (const auto &f: fs::directory_iterator(OPKG_DB)) {
         //printf("extracting archive %s\n", f.path().c_str());
         auto gzf = gzopen(f.path().c_str(), "rb");
@@ -275,7 +277,9 @@ void opkg::InitializeRepositories() {
         //gzgets reads one line out of a gzipped file
         while (gzgets(gzf, cbuf, sizeof(cbuf)) != nullptr) {
             count++;
-            if (!parse_line(pk, cbuf, false, true)) {     //if parse_line returns false, we're done parsing this package
+            if (!parse_line(pk, packages, cbuf, false, true, parsing_desc, parsing_conf)) {     //if parse_line returns false, we're done parsing this package
+                parsing_desc = false;
+                parsing_conf = false;
                 if (pk->Package.empty())
                     continue;
 
@@ -301,15 +305,22 @@ void opkg::InitializeRepositories() {
     if(!statusfile.is_open())
         printf("fail opening status file %s\n", statuspath.c_str());
 
+    parsing_desc = false;
+    parsing_conf = false;
     pc = 0;
     for(string line; getline(statusfile, line);){
-        parse_line(pk, line.c_str(), true, false);     //no need to do any logic here;
+        if(!parse_line(pk, packages, line.c_str(), true, false, parsing_desc, parsing_conf)){
+            parsing_desc = false;
+            parsing_conf = false;
+        }
         pc++;                                   //parse_line will take care of updating extant packages
     }
     statusfile.close();
 
     printf("parsed %d status lines\n", pc);
 
+    parsing_desc = false;
+    parsing_conf = false;
     pc = 0;
     auto infopath = OPKG_LIB;
     infopath += "/info";
@@ -332,7 +343,10 @@ void opkg::InitializeRepositories() {
             pk = pit->second;
             for (string line; getline(cfile, line);) {
                 pc++;
-                parse_line(pk, line.c_str(), false, false);    //no need to update extant, we know what package this is from the filename
+                if(!parse_line(pk, packages, line.c_str(), false, false, parsing_desc, parsing_conf)) {    //no need to update extant, we know what package this is from the filename
+                    parsing_desc = false;
+                    parsing_conf = false;
+                }
             }
         }
     }
