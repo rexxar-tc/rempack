@@ -34,6 +34,7 @@ shared_ptr<widgets::FilterOptions> filterOpts;
 
 void setupStyle(){
     setenv("RMKIT_DEFAULT_FONT", "/usr/share/fonts/ttf/ebgaramond/EBGaramond-VariableFont_wght.ttf", 0);
+    stbtext::GRAYSCALE = true;
     ui::Style::DEFAULT = {
             .font_size = 40,
             .line_height = 1.0,

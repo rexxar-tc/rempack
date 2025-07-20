@@ -5,7 +5,7 @@
 #include "image_button.h"
 namespace widgets{
     void ImageButton::render() {
-        pixmap->render();
+        //pixmap->render();
         EventButton::render();
         //fb->waveform_mode = WAVEFORM_MODE_GC16;
     }
@@ -31,13 +31,13 @@ namespace widgets{
 
     ImageButton::ImageButton(int x, int y, int w, int h, icons::Icon icon) : EventButton(x, y, w, h, ""){
         pixmap = make_shared<ui::Pixmap>(x, y, w, h, icon);
-        pixmap->alpha = WHITE;
+        pixmap->alpha = 0xFF;
         children.push_back(pixmap);
     }
 
     ImageButton::ImageButton(int x, int y, int w, int h, const string &text) : EventButton(x, y, w, h, ""){
         pixmap = make_shared<ui::Pixmap>(x, y, w, h, icons::Icon {});
-        pixmap->alpha = WHITE;
+        pixmap->alpha = 0xFF;
         children.push_back(pixmap);
     }
 

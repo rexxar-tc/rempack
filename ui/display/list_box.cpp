@@ -178,11 +178,12 @@ namespace widgets {
 //TODO: style sheets
 //item is selected, draw an effect
 //I can't be bothered to make this configurable right now
-                fb->draw_rect(wi->x, wi->y, wi->w, wi->h, color::GRAY_9, true);
+                fb->draw_rect(wi->x, wi->y, wi->w, wi->h, color::GRAY_12, true);
             }
             wi->render();
             sy += itemHeight + padding;
         }
+        fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
         RoundCornerWidget::render();
     }
 
