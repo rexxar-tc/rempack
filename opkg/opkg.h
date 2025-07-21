@@ -75,11 +75,12 @@ public:
     void LoadSections(vector<string> *categories, vector<string> excludeRepos);
     void LoadPackages(vector<string> *pVector){ LoadPackages(pVector, vector<string>()); }
     void LoadPackages(vector<string> *pVector, vector<string> excludeRepos);
-    void InitializeRepositories();
+    void InitializeRepositories(const std::function<void()> &callback);
     void link_dependencies();
     static vector<uint8_t> getCachedSplashscreen(const shared_ptr<package>& pkg);
     static bool isPackageCached(const shared_ptr<package>& pkg);
     map<string, shared_ptr<package>> packages;
+    map<string, map<string, shared_ptr<package>>> packages_by_repo;
     vector<string> repositories;
     vector<string> sections;
     map<string,unordered_set<string>> sections_by_repo;
@@ -87,15 +88,15 @@ public:
     static string FormatPackage(const shared_ptr<package>& package);
     static string formatDependencyTree(const shared_ptr<package>& pkg, bool excludeInstalled);
     int ComputeUninstall(const vector<shared_ptr<package>>& targets, bool includeDependencies, vector<shared_ptr<package>> *out_result);
+
+    static bool parse_line(shared_ptr<package> &ptr, const map<string, shared_ptr<package>> &packages, const char *line, bool update, bool upstream, bool &parsing_desc, bool &parsing_conf, string &lastline);
+
 private:
-    static bool parse_line(shared_ptr<package> &ptr, const map<string, shared_ptr<package>> &packages, const char *line, bool update, bool upstream, bool &parsing_desc, bool &parsing_conf);
     bool split_str_and_find(const string& children_str, vector<shared_ptr<package>> &field);
     void update_states();
     void update_lists();
+    void init_repos_internal();
 
-    bool
-    parse_line(shared_ptr<package> &ptr, const vector<shared_ptr<package>> &packages, const char *line, bool update,
-               bool upstream);
 };
 
 

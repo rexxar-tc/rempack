@@ -50,6 +50,9 @@ void setupStyle(){
 
 [[noreturn]]
 void Rempack::startApp() {
+#ifndef NDEBUG
+    raise(SIGINT);
+#endif
     setupStyle();
     fb = framebuffer::get();
     auto scene = buildHomeScene(fb->width, fb->height);
@@ -60,7 +63,6 @@ void Rempack::startApp() {
     //ui::MainLoop::redraw();
 
     setupDebug();
-    filterMgr->updateLists(filterOpts, "");
     while(true){
         ui::MainLoop::main();
         ui::MainLoop::redraw();
@@ -159,7 +161,7 @@ void initScreen(){
 
 void setupDebug(){
 #ifndef NDEBUG
-    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+//    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
 
     //packagePanel->select("splashscreen-poweroff-sacks_spiral");
@@ -183,15 +185,6 @@ ui::Scene buildHomeScene(int width, int height) {
 
     initScreen();
 
-    //vertical stack that takes up the whole screen
-    auto layout = new ui::VerticalReflow(padding, padding, width - padding*2, height - padding*2, scene);
-
-    opkg::Instance = &pkg;
-    pkg.InitializeRepositories();
-    /* Search + menus */
-    //short full-width pane containing search and menus
-    auto searchPane = new ui::HorizontalReflow(0, 0, layout->w, 80, scene);
-
     filterOpts = make_shared<widgets::FilterOptions>(widgets::FilterOptions{
             .Installed = true,
             .Upgradable = false,
@@ -200,9 +193,16 @@ ui::Scene buildHomeScene(int width, int height) {
             .SearchHidden = true,
             .groupSplash = false,
     });
-    for(auto &r : pkg.repositories){
-        filterOpts->Repos.emplace(r, r != "entware");   //hide entware by default, there's so many openwrt packages it drowns out toltec
-    }
+
+    //vertical stack that takes up the whole screen
+    auto layout = new ui::VerticalReflow(padding, padding, width - padding*2, height - padding*2, scene);
+
+    opkg::Instance = &pkg;
+    /* Search + menus */
+    //short full-width pane containing search and menus
+    auto searchPane = new ui::HorizontalReflow(0, 0, layout->w, 80, scene);
+
+
     auto filterButton = new widgets::FilterButton(0,0,60,60, filterOpts);
     filterButton->events.updated += onFiltersChanged;
     menuData = new widgets::MenuData;
@@ -219,10 +219,6 @@ ui::Scene buildHomeScene(int width, int height) {
     //full-width horizontal stack underneath the search pane. give it half the remaining height
     auto applicationPane = new ui::HorizontalReflow(0, 0, layout->w, (layout->h - searchPane->h - padding)/2, scene);
     filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, scene);
-    std::vector<std::string> sections;
-    pkg.LoadSections(&sections);
-    for (const auto &s: sections)
-        filterPanel->add(s);
 
     filterPanel->events.selected += PLS_DELEGATE(onFilterAdded);
     filterPanel->events.deselected += PLS_DELEGATE(onFilterRemoved);
@@ -233,8 +229,16 @@ ui::Scene buildHomeScene(int width, int height) {
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);
 
     filterMgr = new ListFilter(filterPanel, packagePanel);
-    filterMgr->updateLists(filterOpts, "");
-
+    pkg.InitializeRepositories([=](){
+        ui::IdleQueue::add_task([=]() {
+            for(auto &r : pkg.repositories){
+                filterOpts->Repos.emplace(r, r != "entware");   //hide entware by default, there's so many openwrt packages it drowns out toltec
+            }
+            filterMgr->loadLists(pkg);
+            filterMgr->updateLists(filterOpts, "");
+        });
+        ui::TaskQueue::wakeup(); //wake main thread
+    });
     displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle(), scene);
 
     displayBox->events.install += PLS_DELEGATE(onInstallClick);

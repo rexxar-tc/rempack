@@ -104,7 +104,12 @@ void ListFilter::updateLists(const shared_ptr<widgets::FilterOptions>& options, 
 
 ListFilter::ListFilter(widgets::ListBox *filterPan, widgets::ListBox *packagePan) :
         filterPanel(filterPan), packagePanel(packagePan){
-    for (const auto &[n, pk]: opkg::Instance->packages) {
+}
+
+void ListFilter::loadLists(opkg &opkg) {
+    pkCache.clear();
+    sections.clear();
+    for (const auto &[n, pk]: opkg.packages) {
         //ListBox will trim strings internally depending on render width
         string displayName = pk->Package;
         displayName.append(" -- ").append(pk->Description);
@@ -113,7 +118,7 @@ ListFilter::ListFilter(widgets::ListBox *filterPan, widgets::ListBox *packagePan
         pkCache.push_back(item);
     }
     std::vector<std::string> lsec;
-    opkg::Instance->LoadSections(&lsec);
+    opkg.LoadSections(&lsec);
     std::sort(lsec.begin(), lsec.end());
     for (const auto &s: lsec)
         sections.push_back(filterPanel->add(s));

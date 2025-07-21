@@ -58,10 +58,8 @@ inline bool try_parse_long(const char *prefix, const char *line, long &field) {
     }
 }
 
-string lastLine;
-
 //this is mostly copied from opkg's own parser
-bool opkg::parse_line(shared_ptr<package> &ptr, const map<string, shared_ptr<package>> &packages, const char *line, bool update, bool upstream, bool &parsing_desc, bool &parsing_conf) {
+bool opkg::parse_line(shared_ptr<package> &ptr, const map<string, shared_ptr<package>> &packages, const char *line, bool update, bool upstream, bool &parsing_desc, bool &parsing_conf, string &lastLine) {
     if (ptr == nullptr)
         return false;
     switch (*line) {

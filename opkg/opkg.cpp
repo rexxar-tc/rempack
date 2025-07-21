@@ -14,6 +14,8 @@
 #include "zlib.h"
 #include "utils.h"
 #include <sstream>
+#include <queue>
+
 
 #define  CONTAINS(x,z) ((x).find(z) != (x).end())
 
@@ -37,6 +39,32 @@ using namespace std;
 
 const fs::path OPKG_DB{"/opt/var/opkg-lists"};
 const fs::path OPKG_LIB{"/opt/lib/opkg"}; //info(dir) lists(dir(empty?)) status(f)
+
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+
+class SimpleLatch {
+public:
+    explicit SimpleLatch(int count) : count_(count) {}
+
+    void count_down() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (--count_ == 0) {
+            cv_.notify_all();
+        }
+    }
+
+    void wait() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        cv_.wait(lock, [&] { return count_ == 0; });
+    }
+
+private:
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    int count_;
+};
 
 //need to remove LD_PRELOAD var set by rm2fb-client:
 std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so", "/opt/lib/librm2fb_client.so.1", "/opt/lib/libsysfs_preload.so"};
@@ -261,72 +289,129 @@ void opkg::update_states() {
     }
 }
 
-void opkg::InitializeRepositories() {
-//TODO: This can most likely be parallelized to shorten the startup delay on multicore devices
-    packages.clear();
+static void scanRepos(const filesystem::directory_entry &f, map<string, shared_ptr<package>> &packages){
+    printf("extracting archive %s\n", f.path().c_str());
+    auto gzf = gzopen(f.path().c_str(), "rb");
+    int count = 0;
     int pc = 0;
     char cbuf[4096]{};
     auto pk = make_shared<package>();
-        bool parsing_desc = false;
-        bool parsing_conf = false;
-    for (const auto &f: fs::directory_iterator(OPKG_DB)) {
-        //printf("extracting archive %s\n", f.path().c_str());
-        auto gzf = gzopen(f.path().c_str(), "rb");
-        repositories.push_back(f.path().filename());
-        int count = 0;
-        //gzgets reads one line out of a gzipped file
-        while (gzgets(gzf, cbuf, sizeof(cbuf)) != nullptr) {
-            count++;
-            if (!parse_line(pk, packages, cbuf, false, true, parsing_desc, parsing_conf)) {     //if parse_line returns false, we're done parsing this package
-                parsing_desc = false;
-                parsing_conf = false;
-                if (pk->Package.empty())
-                    continue;
-
-                pk->Repo = f.path().filename();
-                pc++;
-                auto mp = packages.emplace(pk->Package, pk);
-                if (!mp.second) {
-                    printf("emplacement failed for package %d: %s\n", pc, pk->Package.c_str());
-                }
-                pk = make_shared<package>();
+    bool parsing_desc = false;
+    bool parsing_conf = false;
+    string lastLine;
+    //gzgets reads one line out of a gzipped file
+    while (gzgets(gzf, cbuf, sizeof(cbuf)) != nullptr) {
+        count++;
+        if (!opkg::parse_line(pk, packages, cbuf, false, true, parsing_desc, parsing_conf, lastLine)) {     //if parse_line returns false, we're done parsing this package
+            parsing_desc = false;
+            parsing_conf = false;
+            if (pk->Package.empty())
                 continue;
+
+            pk->Repo = f.path().filename();
+            pc++;
+            auto mp = packages.emplace(pk->Package, pk);
+            if (!mp.second) {
+                printf("emplacement failed for package %d: %s\n", pc, pk->Package.c_str());
             }
+            pk = make_shared<package>();
+            continue;
         }
-        printf("Read %d lines\n", count);
+    }
+    printf("Read %d lines\n", count);
+}
+
+static void scanControl(const filesystem::directory_entry &f, map<string, shared_ptr<package>> &packages, int &pc){
+    bool parsing_desc = false;
+    bool parsing_conf = false;
+    ifstream cfile;
+    cfile.open(f.path(), ios::in);
+    if (!cfile.is_open()) {
+        printf("ERROR! Failed to open control file %s\n", f.path().c_str());
+        return;
+    }
+    auto pname = f.path().filename().string().substr(0, f.path().filename().string().find_last_of('.'));
+    auto pit = packages.find(pname);
+    if (pit == packages.end()) {
+        printf("ERROR! Could not match package %s to control file %s\n", pname.c_str(), f.path().c_str());
+        return;
+    }
+    auto pk = pit->second;
+    pk->State = package::Installed;
+    string lastLine;
+    for (string line; getline(cfile, line);) {
+        pc++;
+        if(!opkg::parse_line(pk, packages, line.c_str(), false, false, parsing_desc, parsing_conf, lastLine)) {    //no need to update extant, we know what package this is from the filename
+            parsing_desc = false;
+            parsing_conf = false;
+        }
+    }
+}
+
+
+void opkg::InitializeRepositories(const std::function<void()> &callback) {
+    try {
+        auto th = new thread([=]() {
+            {
+                init_repos_internal();
+                callback();
+            }
+        });
+        th->detach();
+    }
+    catch (const std::exception &e) {
+        std::cerr << "OPKG THREAD EXC" << ' ' << e.what() << std::endl;
+    }
+}
+
+void opkg::init_repos_internal()
+{
+//TODO: This can most likely be parallelized to shorten the startup delay on multicore devices
+    packages.clear();
+    repositories.clear();
+    packages_by_repo.clear();
+    int pc = 0;
+    auto pk = make_shared<package>();
+
+    auto rn = std::count_if(fs::directory_iterator(OPKG_DB),
+                  fs::directory_iterator{},
+                  [](const fs::directory_entry& entry) {
+                      return entry.is_regular_file();
+                  });
+    auto repo_latch = make_shared<SimpleLatch>(rn);
+    for (const auto &f: fs::directory_iterator(OPKG_DB)) {
+        auto md = packages_by_repo.emplace(f.path().filename(), map<string, shared_ptr<package>>{});
+        std::cout << "repo" << std::endl;
+        (new thread([=]() {
+            std::cout << "repo scan" << std::endl;
+            scanRepos(f, md.first->second);
+            repo_latch->count_down();
+            std::cout << "latched" <<std::endl;
+        }))->detach();
+    }
+    //blocking this thread here also blocks all task queue items
+    //we need to just launch a thread
+    repo_latch->wait();
+    for(const auto &r : packages_by_repo){
+        repositories.push_back(r.first);
+        for(const auto &rp : r.second){
+            auto mp = packages.emplace(rp);
+            if(!mp.second)
+                printf("emplacement failed for package %d: %s\n", pc, rp.second->Package.c_str());
+            pc++;
+        }
     }
     printf("Parsed %d packages\n", pc);
 
-    parsing_desc = false;
-    parsing_conf = false;
     pc = 0;
     auto infopath = OPKG_LIB;
     infopath += "/info";
     int fc = 0;
+
     for (const auto &f: fs::directory_iterator(infopath)) {
         if (f.path().extension() == ".control") {
             fc++;
-            ifstream cfile;
-            cfile.open(f.path(), ios::in);
-            if (!cfile.is_open()) {
-                printf("ERROR! Failed to open control file %s\n", f.path().c_str());
-                continue;
-            }
-            auto pname = f.path().filename().string().substr(0, f.path().filename().string().find_last_of('.'));
-            auto pit = packages.find(pname);
-            if (pit == packages.end()) {
-                printf("ERROR! Could not match package %s to control file %s\n", pname.c_str(), f.path().c_str());
-                continue;
-            }
-            pk = pit->second;
-            pk->State = package::Installed;
-            for (string line; getline(cfile, line);) {
-                pc++;
-                if(!parse_line(pk, packages, line.c_str(), false, false, parsing_desc, parsing_conf)) {    //no need to update extant, we know what package this is from the filename
-                    parsing_desc = false;
-                    parsing_conf = false;
-                }
-            }
+            scanControl(f, packages, pc);
         }
     }
     printf("Processed %d control files containing %d lines\n", fc, pc);

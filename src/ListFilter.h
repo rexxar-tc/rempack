@@ -13,10 +13,12 @@
  */
 
 #include "rempack/rempack_widgets.h"
+#include "opkg.h"
 class ListFilter {
 public:
     ListFilter(widgets::ListBox *filterPanel, widgets::ListBox *packagePanel);
     void updateLists(const shared_ptr<widgets::FilterOptions>& options, const std::string& query);
+    void loadLists(opkg& opkg);
 private:
     widgets::ListBox *filterPanel;
     widgets::ListBox *packagePanel;
