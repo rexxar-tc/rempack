@@ -148,14 +148,17 @@ void onPreviewClick(void*){
 }
 
 void initScreen(){
+    fb->waveform_mode = WAVEFORM_MODE_INIT;
+    fb->clear_screen();
+    fb->redraw_screen(true);
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
-    //fb->update_mode = UPDATE_MODE_FULL;
-    //fb->waveform_mode = WAVEFORM_MODE_A2;
+    fb->update_mode = UPDATE_MODE_FULL;
+    fb->waveform_mode = WAVEFORM_MODE_GC16;
     fb->dirty = true;
-    fb->redraw_screen();
+    fb->redraw_screen(true);
     fb->clear_screen();
     //fb->redraw_screen();
-    //fb->update_mode = UPDATE_MODE_PARTIAL;
+    fb->update_mode = UPDATE_MODE_PARTIAL;
     //fb->waveform_mode = WAVEFORM_MODE_GC16;
 }
 
