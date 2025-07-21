@@ -105,7 +105,6 @@ namespace widgets {
 
     void ListBox::on_reflow() {
         layout_buttons();
-        trim_texts();
         mark_redraw();
     }
 
@@ -165,6 +164,7 @@ namespace widgets {
     void ListBox::render() {
         undraw();
         refresh_list();
+        trim_texts();
         int sx = this->x + padding;
         int sy = this->y + padding;
         for (const auto &item: _currentView) {
@@ -274,7 +274,7 @@ namespace widgets {
     }
 
     void ListBox::trim_texts() {
-        for (const auto &it: contents) {
+        for (const auto &it: _currentView) {
             auto wd = it->_widget;
             wd->text = utils::clip_string(it->label, wd->w, wd->h, ui::Widget::style.font_size);
             wd->mark_redraw();
