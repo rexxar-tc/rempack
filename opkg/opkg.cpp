@@ -297,28 +297,6 @@ void opkg::InitializeRepositories() {
     }
     printf("Parsed %d packages\n", pc);
 
-    //process status and info for installed packages
-    auto statuspath = OPKG_LIB;
-    statuspath += "/status";
-    ifstream statusfile;
-    statusfile.open(statuspath, ios::in);
-    if(!statusfile.is_open())
-        printf("fail opening status file %s\n", statuspath.c_str());
-
-    parsing_desc = false;
-    parsing_conf = false;
-    pc = 0;
-    for(string line; getline(statusfile, line);){
-        if(!parse_line(pk, packages, line.c_str(), true, false, parsing_desc, parsing_conf)){
-            parsing_desc = false;
-            parsing_conf = false;
-        }
-        pc++;                                   //parse_line will take care of updating extant packages
-    }
-    statusfile.close();
-
-    printf("parsed %d status lines\n", pc);
-
     parsing_desc = false;
     parsing_conf = false;
     pc = 0;
@@ -341,6 +319,7 @@ void opkg::InitializeRepositories() {
                 continue;
             }
             pk = pit->second;
+            pk->State = package::Installed;
             for (string line; getline(cfile, line);) {
                 pc++;
                 if(!parse_line(pk, packages, line.c_str(), false, false, parsing_desc, parsing_conf)) {    //no need to update extant, we know what package this is from the filename
