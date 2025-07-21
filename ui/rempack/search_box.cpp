@@ -34,6 +34,7 @@ namespace widgets {
         pixmap = make_shared<ui::Pixmap>(x + w - h, y, h, h, ICON(assets::png_search_png));
         children.push_back(pixmap);
         _keyboard = new Keyboard();
+        _keyboard->pinOverlay = true;
         _keyboard->events.changed += PLS_DELEGATE(onChange);
         _keyboard->events.done += PLS_DELEGATE(onDone);
 

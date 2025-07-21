@@ -42,11 +42,137 @@ void setupStyle(){
             .border_right = false
     };
 }
+
+void inputScene(shared_ptr<ui::InnerScene> &s, input::SynMotionEvent &ev) {
+    bool is_hit = false;
+    bool hit_widget = false;
+    if (ev.x == -1 || ev.y == -1) {
+        return;
+    }
+    auto mouse_down = ev.left > 0 || ev.right > 0 || ev.middle > 0;
+
+    auto widgets = s->widgets;
+    for (auto it = widgets.rbegin(); it != widgets.rend(); it++) {
+        auto widget = *it;
+        if (widget->ignore_event(ev) || !widget->visible) {
+            continue;
+        }
+
+        if (ev._stop_propagation) {
+            break;
+        }
+
+        is_hit = widget->is_hit(ev.x, ev.y);
+
+        auto prev_mouse_down = widget->mouse_down;
+        auto prev_mouse_inside = widget->mouse_inside;
+        auto prev_mouse_x = widget->mouse_x;
+        auto prev_mouse_y = widget->mouse_y;
+
+        widget->mouse_down_first = (ui::MainLoop::first_mouse_down && mouse_down && is_hit) || widget->mouse_down_first;
+        widget->mouse_down = widget->mouse_down_first && mouse_down && is_hit;
+        widget->mouse_inside = is_hit;
+
+        if (is_hit) {
+            if (widget->mouse_down) {
+                widget->mouse_x = ev.x;
+                widget->mouse_y = ev.y;
+
+                widget->mouse.move(ev);
+            } else {
+
+
+                widget->mouse.hover(ev);
+            }
+
+            if (!prev_mouse_down && mouse_down) {
+                widget->mouse.down(ev);
+            }
+
+            if (prev_mouse_down && !mouse_down) {
+                widget->mouse.up(ev);
+
+                if (widget->mouse_down_first) {
+                    widget->mouse.click(ev);
+                }
+            }
+
+            if (!prev_mouse_inside) {
+                widget->mouse.enter(ev);
+            }
+
+            hit_widget = true;
+        } else {
+
+            if (prev_mouse_inside) {
+                widget->mouse.leave(ev);
+            }
+        }
+    }
+
+    for (auto it = widgets.rbegin(); it != widgets.rend(); it++) {
+        auto widget = *it;
+        if (widget->ignore_event(ev) || !widget->visible) {
+            continue;
+        }
+
+        auto prev_mouse_inside = widget->mouse_inside;
+
+        is_hit = widget->is_hit(ev.x, ev.y);
+        widget->mouse_down = widget->mouse_down_first && mouse_down && is_hit;
+        widget->mouse_inside = is_hit;
+
+        if (!is_hit) {
+            if (prev_mouse_inside) {
+                widget->mouse.leave(ev);
+            }
+        }
+
+        if (!mouse_down) {
+            widget->mouse_down_first = false;
+        }
+    }
+
+    if (mouse_down) {
+        ui::MainLoop::first_mouse_down = false;
+    } else {
+        ui::MainLoop::first_mouse_down = true;
+    }
+
+    auto ol = ui::MainLoop::get_overlay();
+    if (ol != nullptr && mouse_down && !hit_widget) {
+        if (!ol->pinned) {
+            ui::MainLoop::hide_overlay(ol);
+        }
+    }
+}
+
+void inputEv(input::SynMotionEvent ev){
+    if (!ui::MainLoop::overlay_is_visible()) {
+        inputScene(ui::MainLoop::scene, ev);
+        return;
+    }
+    auto sstack = ui::MainLoop::scene_stack;
+    for(int i = sstack.size() - 1; i >= 0; i--){
+        auto s = sstack[i];
+        inputScene(s, ev);
+        if(ev._stop_propagation) {
+            if(!s->pinned)
+                ui::MainLoop::hide_overlay(s);
+            return;
+        }
+    }
+    inputScene(ui::MainLoop::scene, ev);
+}
+
 void Rempack::startApp() {
     setupStyle();
     fb = framebuffer::get();
     auto scene = buildHomeScene(fb->width, fb->height);
     ui::MainLoop::set_scene(scene);
+
+    //set up global input handler to override scene stack input
+    ui::MainLoop::motion_event += inputEv;
 
     ui::MainLoop::main();
     ui::MainLoop::refresh();
@@ -179,7 +305,7 @@ void onPreviewClick(void*){
 
 void setupDebug(){
 #ifndef NDEBUG
-    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
     fb->draw_rect(0,0,fb->width, fb->height, BLACK);
     fb->update_mode = UPDATE_MODE_FULL;

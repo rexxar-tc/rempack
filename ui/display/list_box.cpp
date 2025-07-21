@@ -184,7 +184,7 @@ namespace widgets {
 
 //check the Y position relative to top of widget, divide by itemHeight
     void ListBox::on_mouse_click(input::SynMotionEvent &ev) {
-//ev.stop_propagation();
+        ev.stop_propagation();
         if (!selectable)
             return;
         auto hgt = itemHeight + padding;

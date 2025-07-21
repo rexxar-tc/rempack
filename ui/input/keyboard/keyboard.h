@@ -105,5 +105,6 @@ namespace widgets {
         void render() override;
 
         void show() override;
+        bool ignore_event(input::SynMotionEvent &ev) override{return true;}
     };
 }
