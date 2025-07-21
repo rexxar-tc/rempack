@@ -263,8 +263,7 @@ void opkg::update_states() {
 }
 
 static void scanRepos(const filesystem::directory_entry &f, map<string, shared_ptr<package>> &packages){
-    printf("extracting archive %s\n", f.path().c_str());
-    auto start = std::chrono::steady_clock::now();
+    //printf("extracting archive %s\n", f.path().c_str());
     auto gzf = gzopen(f.path().c_str(), "rb");
     int count = 0;
     int pc = 0;
@@ -293,10 +292,6 @@ static void scanRepos(const filesystem::directory_entry &f, map<string, shared_p
         }
     }
     printf("Read %d lines\n", count);
-    auto end = std::chrono::steady_clock::now();
-    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    auto thid = pthread_self();
-    std::cout << "Thread " << thid << " processed in " << dt.count() << "ms" <<std::endl;
 }
 
 static void scanControl(const filesystem::directory_entry &f, map<string, shared_ptr<package>> &packages, int &pc){
@@ -345,7 +340,6 @@ void opkg::InitializeRepositoriesAsync(const std::function<void()> &callback) {
 void opkg::init_repos_internal()
 {
 //TODO: This can most likely be parallelized to shorten the startup delay on multicore devices
-    auto start = std::chrono::steady_clock::now();
     packages.clear();
     repositories.clear();
     packages_by_repo.clear();
@@ -354,13 +348,9 @@ void opkg::init_repos_internal()
 
     for (const auto &f: fs::directory_iterator(OPKG_DB)) {
         auto md = packages_by_repo.emplace(f.path().filename(), map<string, shared_ptr<package>>{});
-        std::cout << "repo" << std::endl;
-        std::cout << "repo scan" << std::endl;
         scanRepos(f, md.first->second);
     }
 
-    auto rend = std::chrono::steady_clock::now();
-    auto estart = rend;
     for(const auto &r : packages_by_repo){
         repositories.push_back(r.first);
         for(const auto &rp : r.second){
@@ -370,7 +360,6 @@ void opkg::init_repos_internal()
             pc++;
         }
     }
-    auto estop = std::chrono::steady_clock::now();
     printf("Parsed %d packages\n", pc);
 
     pc = 0;
@@ -378,30 +367,18 @@ void opkg::init_repos_internal()
     infopath += "/info";
     int fc = 0;
 
-    auto cstart = std::chrono::steady_clock::now();
     for (const auto &f: fs::directory_iterator(infopath)) {
         if (f.path().extension() == ".control") {
             fc++;
             scanControl(f, packages, pc);
         }
     }
-    auto cend = std::chrono::steady_clock::now();
     printf("Processed %d control files containing %d lines\n", fc, pc);
     printf("Processed %d packages\n", packages.size());
 
     link_dependencies();
     update_lists();
     update_states();
-
-    auto end = std::chrono::steady_clock::now();
-    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    auto dtr = std::chrono::duration_cast<std::chrono::milliseconds>(rend - start);
-    auto dtc = std::chrono::duration_cast<std::chrono::milliseconds>(cend - cstart);
-    auto dte = std::chrono::duration_cast<std::chrono::milliseconds>(estop - estart);
-    std::cout << "repo init in " << dtr.count() << "ms" <<std::endl;
-    std::cout << "opkg init in " << dt.count() << "ms" <<std::endl;
-    std::cout << "control init in " << dtc.count() << "ms" <<std::endl;
-    std::cout << "emplacement in " << dte.count() << "ms" <<std::endl;
 }
 
 std::unordered_set<std::string> uninstall_cache;
