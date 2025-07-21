@@ -75,7 +75,7 @@ public:
     void LoadSections(vector<string> *categories, vector<string> excludeRepos);
     void LoadPackages(vector<string> *pVector){ LoadPackages(pVector, vector<string>()); }
     void LoadPackages(vector<string> *pVector, vector<string> excludeRepos);
-    void InitializeRepositories(const std::function<void()> &callback);
+    void InitializeRepositoriesAsync(const std::function<void()> &callback);
     void link_dependencies();
     static vector<uint8_t> getCachedSplashscreen(const shared_ptr<package>& pkg);
     static bool isPackageCached(const shared_ptr<package>& pkg);

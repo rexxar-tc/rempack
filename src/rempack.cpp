@@ -229,7 +229,7 @@ ui::Scene buildHomeScene(int width, int height) {
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);
 
     filterMgr = new ListFilter(filterPanel, packagePanel);
-    pkg.InitializeRepositories([=](){
+    pkg.InitializeRepositoriesAsync([=](){
         ui::IdleQueue::add_task([=]() {
             for(auto &r : pkg.repositories){
                 filterOpts->Repos.emplace(r, r != "entware");   //hide entware by default, there's so many openwrt packages it drowns out toltec
