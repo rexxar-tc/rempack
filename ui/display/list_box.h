@@ -81,9 +81,9 @@ namespace widgets {
         vector<shared_ptr<ListItem>> contents;
         std::unordered_set<shared_ptr<ListItem>> selectedItems;
 
-        ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene>& s);
+        ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene>& s, RoundCornerStyle buttonStyle);
 
-        ListBox(int x, int y, int w, int h, int itemHeight, const vector<string>& items, ui::Scene& scene);
+        ListBox(int x, int y, int w, int h, int itemHeight, const vector<string>& items, ui::Scene& scene, RoundCornerStyle buttonStyle);
 
         shared_ptr<ListItem> add(const string& label, const std::any& object = nullptr);
         shared_ptr<ListItem> add(const string& label, const string& key, const std::any& object = nullptr);

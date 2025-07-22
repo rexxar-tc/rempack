@@ -11,8 +11,8 @@ namespace widgets{
     //basically a reimplementation of ui::Button with a clickable image instead of text
     class ImageButton : public EventButton {
     public:
-        ImageButton(int x, int y, int w, int h, icons::Icon icon);
-        ImageButton(int x, int y, int w, int h, const string& text);
+        ImageButton(int x, int y, int w, int h, icons::Icon icon, RoundCornerStyle style);
+        ImageButton(int x, int y, int w, int h, const string& text, RoundCornerStyle style);
 
         void render() override;
 
@@ -20,18 +20,8 @@ namespace widgets{
 
         void on_mouse_click(input::SynMotionEvent &ev) override;
 
-
     private:
         shared_ptr<ui::Pixmap> pixmap;
-    };
-
-    class RoundImageButton : public ImageButton{
-    public:
-
-        shared_ptr<RoundCornerWidget> border;
-        RoundImageButton(int x, int y, int w, int h, icons::Icon icon, RoundCornerStyle style);
-        RoundImageButton(int x, int y, int w, int h, const string &text, RoundCornerStyle style);
-        void on_reflow()override;
     };
 
 }

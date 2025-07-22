@@ -62,7 +62,10 @@ void Rempack::startApp() {
     setupDebug();
     filterMgr->updateLists(filterOpts, "");
     while(true){
+        auto mstart = chrono::steady_clock::now();
         ui::MainLoop::main();
+        auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
+        std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
         ui::MainLoop::redraw();
         fb->waveform_mode = WAVEFORM_MODE_GC16;
         //fb->update_mode = UPDATE_MODE_PARTIAL;
@@ -168,11 +171,23 @@ void setupDebug(){
         ev.y = searchBox->y;
         ev.left = 1;
 
-    searchBox->on_mouse_click(ev);
+    //searchBox->on_mouse_click(ev);
     //_selected = pk;
     //onInstallClick(nullptr);
     //auto pt = opkg::DownloadPackage(pk, dummyline);
     //std::cout << pt << std::endl;
+
+//auto scene = ui::make_scene();
+//auto ed = make_shared<widgets::RoundCornerEditor>(20,20,300,300);
+//    scene->add(ed);
+//    for(const auto &c : ed->children) {
+//        scene->add(c);
+//        for(const auto &sc : c->children) {
+//            scene->add(sc);
+//        }
+//    }
+//    scene->pinned = true;
+//    ui::MainLoop::show_overlay(scene);
 #endif
 }
 
@@ -218,7 +233,7 @@ ui::Scene buildHomeScene(int width, int height) {
     /* Applications */
     //full-width horizontal stack underneath the search pane. give it half the remaining height
     auto applicationPane = new ui::HorizontalReflow(0, 0, layout->w, (layout->h - searchPane->h - padding)/2, scene);
-    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, scene);
+    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, scene, widgets::LightButtonStyle());
     std::vector<std::string> sections;
     pkg.LoadSections(&sections);
     for (const auto &s: sections)
@@ -227,7 +242,7 @@ ui::Scene buildHomeScene(int width, int height) {
     filterPanel->events.selected += PLS_DELEGATE(onFilterAdded);
     filterPanel->events.deselected += PLS_DELEGATE(onFilterRemoved);
 
-    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 45, scene);
+    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 45, scene, widgets::LightButtonStyle());
     packagePanel->multiSelect = false;
     packagePanel->events.selected += PLS_DELEGATE(onPackageSelect);
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);

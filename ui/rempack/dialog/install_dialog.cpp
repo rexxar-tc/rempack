@@ -45,7 +45,7 @@ namespace widgets{
         auto t1 = new ui::Text(dx, dy, dw, utils::line_height(), s1.str());
         layout.pack_start(t1);
         int lh = min((int) 300, (int) ((labels.size()) * (utils::line_height() + 5)) + 10);
-        auto l1 = new ListBox(dx, dy + padding, dw, lh, utils::line_height(), scene);
+        auto l1 = new ListBox(dx, dy + padding, dw, lh, utils::line_height(), scene, LightButtonStyle());
         for (const auto &line: labels) {
             l1->add(line);
         }

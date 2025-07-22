@@ -2,8 +2,20 @@
 // Created by brant on 7/3/25.
 //
 #include "event_button.h"
-
+#include "../debug/debug_widgets.h"
+#include <utility>
 namespace widgets {
+    EventButton::EventButton(int x, int y, int w, int h, string text, RoundCornerStyle style): ui::Button(x,y,w,h,text), border_style(style) {
+        x_padding = 0;
+        y_padding = 0;
+        border = make_shared<RoundCornerWidget>(x,y,w,h,style);
+        children.push_back(border);
+
+    }
+
+    EventButton::EventButton(int x, int y, int w, int h, RoundCornerStyle style): EventButton(x,y,w,h,"",style) {
+    }
+
     EventButton::EventButton(int x, int y, int w, int h, string text) : Button(x, y, w, h, text) {
         x_padding = 0;
         y_padding = 0;
@@ -25,6 +37,12 @@ namespace widgets {
     void EventButton::enable() {
         enabled = true;
         mark_redraw();
+    }
+//e-40c2r4
+    void EventButton::render_border() {
+        //widgets::drawRoundedBox(x, y, w, h, cstyle.cornerRadius, fb, cstyle.borderThickness,
+        //                        cstyle.startColor, cstyle.inset, cstyle.gradient, cstyle.endColor,
+        //                        cstyle.expA, cstyle.expB);
     }
 
     void EventButton::render() {

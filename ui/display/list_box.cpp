@@ -381,14 +381,14 @@ namespace widgets {
         }
     }
 
-    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene> &s) : RoundCornerWidget(x, y, w, h, RoundCornerStyle()) {
+    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene> &s, RoundCornerStyle buttonStyle) : RoundCornerWidget(x, y, w, h, RoundCornerStyle()) {
         this->itemHeight = itemHeight;
         _pageLabel = make_shared<ui::Text>(0,0,w,itemHeight,"");
 
-        _navLL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_left_png));
-        _navL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_left_png));
-        _navR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_right_png));
-        _navRR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_right_png));
+        _navLL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_left_png),buttonStyle);
+        _navL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_left_png),buttonStyle);
+        _navR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_right_png),buttonStyle);
+        _navRR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_right_png),buttonStyle);
         _navLL->hide();
         _navL->hide();
         _navR->hide();
@@ -412,7 +412,7 @@ namespace widgets {
         layout_buttons();
     }
 
-    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const vector<string> &items, ui::Scene &scene) : ListBox(x,y,w,h,itemHeight,scene) {
+    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const vector<string> &items, ui::Scene &scene, RoundCornerStyle buttonStyle) : ListBox(x,y,w,h,itemHeight,scene,buttonStyle) {
         for(const auto &s: items){
             this->add(s);
         }

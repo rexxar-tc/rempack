@@ -8,11 +8,10 @@
 #include "rempack/overlay/menu_data.h"
 
 namespace widgets{
-    class ConfigButton : public RoundImageButton {
+    class ConfigButton : public ImageButton {
     public:
-        RoundCornerStyle style;
         MenuData *data;
-        ConfigButton(int x, int y, int w, int h, MenuData *data, RoundCornerStyle style = RoundCornerStyle()) : RoundImageButton(x, y, w, h, ICON(assets::png_menu_png), style) {
+        ConfigButton(int x, int y, int w, int h, MenuData *data, RoundCornerStyle style = RoundCornerStyle()) : ImageButton(x, y, w, h, ICON(assets::png_menu_png), style) {
             this->data = data;
         }
         void on_overlay_hidden(ui::InnerScene::DialogVisible v);

@@ -42,9 +42,7 @@ namespace widgets{
 
     class RoundCornerEditor : public ui::Widget {
     public:
-        RoundCornerEditor(int x, int y, int w, int h, RoundedTextInput *target) : ui::Widget(x,y,w,h) {
-            this->target = target;
-            this->style= target->style;
+        RoundCornerEditor(int x, int y, int w, int h) : ui::Widget(x,y,w,h) {
             int padding = 20;
             //add a few gradient previews
             auto _x = x;
@@ -84,55 +82,64 @@ namespace widgets{
             inputB->range->set_value(style.expB);
             inputB->range->events.done += PLS_DELEGATE(this->updateSliderB);
             children.push_back(inputB);
-            inputT = make_shared<LabeledRangeInput>(x, y, w, lineHeight, "THICC");
+            inputT = make_shared<LabeledRangeInput>(x, y, w, lineHeight, "Radius");
             y += lineHeight + padding;
             inputT->range->set_range(0, 50);
-            inputT->range->set_value(style.borderThickness);
+            inputT->range->set_value(style.cornerRadius);
             inputT->range->events.done += PLS_DELEGATE(this->updateSliderT);
             children.push_back(inputT);
         }
 
         void update_values() {
             for (auto &g: gradients) {
-                g->expA = target->style.expA;
-                g->coefB = target->style.expB;
+                g->expA = style.expA;
+                g->coefB = style.expB;
                 g->mark_redraw();
             }
+            updateChildren();
         }
 
     private:
-        RoundedTextInput *target;
-        RoundCornerStyle style;
+        //RoundedTextInput *target;
+        RoundCornerStyle style = RoundCornerStyle();
         std::vector<shared_ptr<GradientGizmo>> gradients;
         shared_ptr<LabeledRangeInput> inputA, inputB, inputT, inputS, inputEnd;
         shared_ptr<ui::ToggleButton> gradientSw;
+\
+        void updateChildren(){
+            //for(const auto &w: EventButton::debugWidgets){
+            //    w->undraw();
+            //    w->cstyle = style;
+            //    w->mark_redraw();
+            //}
+        }
 
         void updateSliderA(float p) {
-            target->style.expA = inputA->range->get_value();
+            style.expA = inputA->range->get_value();
             update_values();
-            target->mark_redraw();
+            mark_redraw();
         }
 
         void updateSliderB(float p) {
-            target->style.expB = inputB->range->get_value();
+            style.expB = inputB->range->get_value();
             update_values();
-            target->mark_redraw();
+            mark_redraw();
         }
 
         void updateSliderT(float p) {
-            target->style.borderThickness = inputT->range->get_value();
+            style.cornerRadius = inputT->range->get_value();
             update_values();
-            target->mark_redraw();
+            mark_redraw();
         }
 
         void updateSliderS(float p) {
-            target->style.startColor = p;
+            style.startColor = p;
             inputS->mark_redraw();
             update_values();
         }
 
         void updateSliderE(float p) {
-            target->style.endColor = p;
+            style.endColor = p;
             inputEnd->mark_redraw();
             update_values();
         }
