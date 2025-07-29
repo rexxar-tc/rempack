@@ -389,6 +389,10 @@ namespace widgets {
         _navL = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_left_png),buttonStyle);
         _navR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_nav_arrow_right_png),buttonStyle);
         _navRR = make_shared<ImageButton>(0,0,itemHeight,itemHeight,ICON(assets::png_fast_arrow_right_png),buttonStyle);
+        _navLL->enableBorder(false);
+        _navL->enableBorder(false);
+        _navR->enableBorder(false);
+        _navRR->enableBorder(false);
         _navLL->hide();
         _navL->hide();
         _navR->hide();

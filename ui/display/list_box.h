@@ -112,7 +112,7 @@ namespace widgets {
     private:
         //TODO: style sheets
         int itemHeight;
-        int padding = 5;
+        int padding = 10;
         int pageOffset = 0;
 
         void selectIndex(int index);

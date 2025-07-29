@@ -32,11 +32,16 @@ namespace widgets {
         void render() override;
 
         void render_border() override;
-
+        void mark_redraw() override;
+        void on_reflow() override;
+        void show() override;
+        void hide() override;
+        void enableBorder(bool enable);
+        void undraw() override;
         RoundCornerStyle border_style;
         shared_ptr<RoundCornerWidget> border;
     protected:
         bool enabled = true;
+        bool borderEnabled = true;
         virtual void debugRender();
     };
-}

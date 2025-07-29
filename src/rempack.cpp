@@ -114,7 +114,7 @@ void onFiltersChanged(widgets::FilterOptions &options){
         packagePanel->sortPredicate = platform::RemarkableRules::splashscreenComparator;
     else
         packagePanel->sortPredicate = nullptr;
-    packagePanel->mark_redraw();
+    filterMgr->updateLists(filterOpts, currentQuery);
 }
 
 void onInstallClick(void*){

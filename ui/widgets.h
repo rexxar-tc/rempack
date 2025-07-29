@@ -87,15 +87,7 @@ namespace widgets {
     };
 
 
-    inline RoundCornerStyle LightButtonStyle(){
-        auto res = RoundCornerStyle();
-        res.expA  = -40;
-        res.expB = 2;
-        res.cornerRadius = 4;
-        res.inset = 4;
-        return res;
-
-    }
+    RoundCornerStyle LightButtonStyle();
 class DebuggableWidget: public ui::Widget{
 public:
     DebuggableWidget(int x, int y, int w, int h): ui::Widget(x, y, w, h){}
