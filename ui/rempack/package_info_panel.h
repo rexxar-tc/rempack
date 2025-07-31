@@ -36,6 +36,7 @@ namespace widgets {
         PACKAGE_EVENTS events;
 
         void display_package(const shared_ptr<package>& package);
+        void get_preview();
         void on_reflow() override;
         void set_image(const shared_ptr<package>& package);
     private:

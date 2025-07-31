@@ -76,7 +76,7 @@ namespace widgets {
 
     void BorderedPixmap::setAspectWidth(int imageX, int imageY) {
         auto aspect = (float)imageX / (float)imageY;
-        int dw = (int)std::floor((float)this->h * aspect);
+        int dw = (int)((float)this->h * aspect);
         if(dw == this->w)
             return;
 

@@ -23,15 +23,19 @@ namespace widgets {
     }
 
     void PackageInfoPanel::layout_image() {
+        _text->undraw();
         if(_image->visible) {
             int dw = (_image->x - _text->x) - (padding * 4);
             _text->set_coords(x+padding,y+padding, dw, _text->h);
         }
         else{
+
             _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
         }
-        _text->undraw();
         _text->mark_redraw();
+        _previewBtn->mark_redraw();
+        _installBtn->mark_redraw();
+        _removeBtn->mark_redraw();
         mark_redraw();
     }
 
@@ -167,5 +171,10 @@ namespace widgets {
     void PackageInfoPanel::debugRender() {
         fb->draw_rect(_text->x, _text->y, _text->w, _text->h, toRColor(0,255,255), false);
         RoundCornerWidget::debugRender();
+    }
+
+    void PackageInfoPanel::get_preview() {
+    if(_previewBtn->visible && _previewBtn->is_enabled())
+        events.preview();
     }
 } // widgets

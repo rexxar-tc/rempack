@@ -104,4 +104,8 @@ namespace widgets {
         border->on_reflow();
         Rect::on_reflow();
     }
+
+    bool EventButton::is_enabled() {
+        return enabled;
+    }
 }
