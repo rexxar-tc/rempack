@@ -17,7 +17,7 @@
 #include "text_helpers.h"
 
 namespace widgets {
-    constexpr remarkable_color toRColor(uint8_t r, uint8_t g, uint8_t b)
+    constexpr uint16_t toRColor(uint8_t r, uint8_t g, uint8_t b)
     {
         uint16_t r5 = (r * 31 + 127) / 255;  // Scale 0–255 to 0–31
         uint16_t g6 = (g * 63 + 127) / 255;  // Scale 0–255 to 0–63
