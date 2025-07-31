@@ -54,7 +54,7 @@ namespace widgets {
     //calls into drawRoundedCorners first, then draws the lines connecting the arcs
     //gradient is based on a sigmoid function (see utils::sigmoid)
     //colors are specified as a float in the range (0,1) where 0 is black and 1 is white (see color::from_float)
-    inline void drawRoundedBox(int x0, int y0, int w, int h, int radius, framebuffer::FB *fb,
+    void drawRoundedBox(int x0, int y0, int w, int h, int radius, framebuffer::FB *fb,
                                int stroke = 1, float grayfColor = 0, int shrink = 0, bool gradient = false,
                                float grayfendColor = 1,
                                float expA = -20.f, float coefB = 8, float alphaThreshold = 0.9f);
@@ -83,8 +83,11 @@ namespace widgets {
             expA = -9.f;
             expB = 1.f;
         }
+
     };
 
+
+    RoundCornerStyle LightButtonStyle();
 class DebuggableWidget: public ui::Widget{
 public:
     DebuggableWidget(int x, int y, int w, int h): ui::Widget(x, y, w, h){}
@@ -95,7 +98,7 @@ protected:
 
     class RoundCornerWidget : public DebuggableWidget {
     public:
-        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : DebuggableWidget(x, y, w, h){};
+        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : DebuggableWidget(x, y, w, h), style(style){};
 
 
         void undraw() override;

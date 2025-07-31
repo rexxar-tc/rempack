@@ -64,9 +64,8 @@ namespace widgets{
         int sy = y0 + shrink;
         int dx = w - (2 * shrink);
         int dy = h - (2 * shrink);
-
         if (!gradient) {
-            auto color = color::from_float(grayfColor);
+            auto color = color::gray32((int)std::floor(31.0*grayfColor));
             drawRoundedCorners(sx, sy, dx, dy, radius, fb, grayfColor, stroke);
             fb->_draw_rect_fast(sx - stroke - radius, sy, stroke, dy, color);
             fb->_draw_rect_fast(sx + dx + radius, sy, stroke, dy, color);
@@ -79,7 +78,7 @@ namespace widgets{
                 auto fc = utils::sigmoid(grayfColor + (dc * i), expA, coefB);
                 if(fc>=alphaThreshold)
                     continue;   //don't break, the curve may change later in the stroke
-                auto color = color::from_float(fc);
+                auto color = color::gray32((int)std::floor(31.0*fc));
                 //left
                 fb->_draw_rect_fast(sx - i - radius - 1, sy, 1, dy, color);
                 //right
@@ -92,9 +91,21 @@ namespace widgets{
         }
     }
 
+    RoundCornerStyle LightButtonStyle() {
+        auto res = RoundCornerStyle();
+        res.expA  = -15;
+        res.expB = 3;
+        res.cornerRadius = 3;
+        res.inset = 3;
+        res.gradient = true;
+        res.borderThickness = 5;
+        res.startColor = 2.0/31.0f;
+        return res;
+
+    }
 
 
-        //TODO: this still isn't quite right
+    //TODO: this still isn't quite right
         void RoundCornerWidget::undraw() {
             ui::Widget::undraw();
             return;
@@ -125,9 +136,10 @@ namespace widgets{
         }
 
         void RoundCornerWidget::render_border() {
+        fb->waveform_mode = WAVEFORM_MODE_GC16;
             drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.borderThickness,
                            style.startColor, style.inset, style.gradient, style.endColor,
-                           style.expA, style.expB);
+                           style.expA, style.expB,1.f);
         }
 
         void RoundCornerWidget::render_inside_fill(float gray){

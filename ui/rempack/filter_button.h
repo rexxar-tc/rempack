@@ -8,11 +8,10 @@
 #include "buttons/image_button.h"
 
 namespace widgets{
-    class FilterButton:public RoundImageButton{
+    class FilterButton:public ImageButton{
     public:
-        RoundCornerStyle style;
         shared_ptr<FilterOptions> options;
-        FilterButton(int x, int y, int w, int h, shared_ptr<FilterOptions> defaultOptions, RoundCornerStyle style = RoundCornerStyle()) : RoundImageButton(x, y, w, h, ICON(assets::png_filter_png), style) {
+        FilterButton(int x, int y, int w, int h, shared_ptr<FilterOptions> defaultOptions, RoundCornerStyle style = RoundCornerStyle()) : ImageButton(x, y, w, h, ICON(assets::png_filter_png), style) {
             options = defaultOptions;
         }
         PLS_DEFINE_SIGNAL(FILTER_EVENT, FilterOptions);

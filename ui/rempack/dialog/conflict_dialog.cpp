@@ -29,7 +29,7 @@ namespace widgets {
         int dw = w - padding - padding;
         t1 = new ui::Text(dx, dy, dw, utils::line_height(), "Loading...");
         layout->pack_start(t1);
-        l1 = new widgets::ListBox(dx, dy + padding, dw, utils::line_height(), utils::line_height(), scene);
+        l1 = new widgets::ListBox(dx, dy + padding, dw, utils::line_height(), utils::line_height(), scene, LightButtonStyle());
         l1->selectable = false;
         layout->pack_start(l1);
         t2 = new ui::Text(dx, dy + padding + padding, dw, utils::line_height(), "Do you want to remove these packages?");

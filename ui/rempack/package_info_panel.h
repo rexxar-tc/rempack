@@ -39,7 +39,7 @@ namespace widgets {
         void on_reflow() override;
         void set_image(const shared_ptr<package>& package);
     private:
-        int padding = 5;
+        int padding = 15;
         int controlHeight = 40;
         int controlWidth = 200;
         shared_ptr<ui::MultiText> _text;
