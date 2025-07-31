@@ -3,7 +3,6 @@
 //
 
 #include "package_info_panel.h"
-#include "dispatcher.h"
 
 namespace widgets {
     const float rm_aspect = 0.75;
@@ -51,7 +50,7 @@ namespace widgets {
                 auto ic = images.emplace(package->Package,
                                          ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->w,
                                                         _image->h));
-                widgets::Dispatcher::add_task([=]() {
+                ui::TaskQueue::add_task([=]() {
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
@@ -144,12 +143,16 @@ namespace widgets {
         _removeBtn = make_shared<EventButton>(x,y,200, controlHeight,"Uninstall");
         _previewBtn = make_shared<EventButton>(x,y,200, controlHeight,"Preview");
         _image = make_shared<BorderedPixmap>(x,y,200,controlHeight, icons::Icon(), RoundCornerStyle());
+        _installBtn->disable();
         children.push_back(_installBtn);
         scene->add(_installBtn);
+        _removeBtn->disable();
         children.push_back(_removeBtn);
         scene->add(_removeBtn);
+        _previewBtn->hide();
         children.push_back(_previewBtn);
         scene->add(_previewBtn);
+        _image->hide();
         children.push_back(_image);
         scene->add(_image);
         _installBtn->events.clicked += [this](void*){events.install();};

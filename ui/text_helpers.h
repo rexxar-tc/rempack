@@ -39,8 +39,8 @@ namespace utils{
                 else{
                     //hard wrap long tokens
                     if(v.w > widthLimit){
-                        int soffset = 0;
-                        for(int i = 1; i <= token.size(); i++){
+                        size_t soffset = 0;
+                        for(size_t i = 1; i <= token.size(); i++){
                             auto sstr = token.substr(soffset, i - soffset);
                             auto sv = stbtext::get_text_size(sstr, fontSize);
                             if(x + sv.w < widthLimit && i < token.size())

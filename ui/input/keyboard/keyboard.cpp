@@ -14,6 +14,7 @@ namespace widgets {
 
         void Keyboard::set_text(string t) {
             text = t;
+            //events.changed(t);
         };
 
 
@@ -50,10 +51,10 @@ namespace widgets {
                 ui::MainLoop::show_overlay(s);
             }
             currentLayer = layer;
-            ui::MainLoop::refresh();
+            //ui::MainLoop::refresh();
         }
 
-        ui::Scene Keyboard::create_layout(string row1chars, string row2chars, string row3chars) {
+        ui::Scene Keyboard::create_layout(const string& row1chars, const string& row2chars, const string& row3chars) {
             auto s = ui::make_scene();
             s->add(this);
 
@@ -85,13 +86,13 @@ namespace widgets {
 
             auto shift_key = new KeyButton(0, 0, btn_width, btn_height, "shift");
             shift_key->set_style(BTN_STYLE);
-            shift_key->mouse.click += PLS_LAMBDA(auto & ev)
+            shift_key->mouse.click += [=](auto & ev)
             {
                 if (!numbers and !shifted) {
                     upper_layout();
-                } else if (!numbers and shifted) {
+                } else if (!numbers) {
                     lower_layout();
-                } else if (numbers and !shifted) {
+                } else if (!shifted) {
                     symbol_layout();
                 } else {
                     number_layout();
@@ -107,16 +108,17 @@ namespace widgets {
 
             backspace_key->mouse.click += PLS_LAMBDA(auto & ev)
             {
-                if (text.size() > 0) {
+                if (!text.empty()) {
                     text.pop_back();
                     dirty = 1;
-                    events.changed();
+                    auto kev = KeyboardEvent{text};
+                    events.changed(kev);
                 }
             };
             row3->add_key(backspace_key);
 
-            auto kbd = new KeyButton(0, 0, btn_width, btn_height, "kbd");
-            kbd->mouse.click += PLS_LAMBDA(auto & ev)
+            auto kbd = new KeyButton(0, 0, btn_width, btn_height, "abc|123");
+            kbd->mouse.click += [=](auto & ev)
             {
                 if (numbers) {
                     lower_layout();
@@ -126,21 +128,22 @@ namespace widgets {
             };
             auto space_key = new KeyButton(0, 0, btn_width * 8, btn_height, "space");
             space_key->set_style(BTN_STYLE);
-            space_key->mouse.click += PLS_LAMBDA(auto & ev)
+            space_key->mouse.click += [=](auto & ev)
             {
                 text += " ";
                 dirty = 1;
-                events.changed();
+                auto kev = KeyboardEvent{text};
+                events.changed(kev);
             };
 
             auto enter_key = new KeyButton(0, 0, btn_width, btn_height, "done");
             enter_key->set_style(BTN_STYLE);
-            enter_key->mouse.click += PLS_LAMBDA(auto & ev)
+            enter_key->mouse.click += [=](auto & ev)
             {
                 hide();
-                ui::MainLoop::refresh();
+                //ui::MainLoop::refresh();
                 auto kev = KeyboardEvent{text};
-                events.changed(kev);
+                //events.changed(kev);
 
                 if (ui::MainLoop::hide_overlay(s) == nullptr) {
                     std::cerr << "No keyboard overlay to hide" << std::endl;
@@ -160,16 +163,15 @@ namespace widgets {
             string s(1, c);
             auto key = new KeyButton(0, 0, btn_width, btn_height, s);
             key->set_style(BTN_STYLE);
-            key->mouse.click += PLS_LAMBDA(auto & ev)
-            {
-                dirty = 1;
+            key->mouse.up += PLS_LAMBDA(auto &ev) {
+                mark_redraw();
                 if (c == ' ') {
                     return;
                 }
 
-                text.push_back(c);
-                events.changed();
-                //std::cerr << "key pressed:" << ' ' << c << std::endl;
+                text += c;
+                auto kev = KeyboardEvent{text};
+                events.changed(kev);
             };
             return key;
         };
@@ -180,11 +182,48 @@ namespace widgets {
             return key;
         };
 
-        void Keyboard::render() {
-            //fb->draw_rect(x, y, w, h, WHITE, true);
-        };
 
         void Keyboard::show() {
             lower_layout();
         };
+
+    void Keyboard::undraw() {
+        Widget::undraw();
     }
+
+    void KeyButton::on_mouse_down(input::SynMotionEvent &ev) {
+        ev.stop_propagation();
+        mark_redraw();
+        fb->waveform_mode = WAVEFORM_MODE_A2;
+    }
+
+    void KeyButton::before_render() {
+        ui::Button::before_render();
+        mouse_inside = mouse_down && mouse_inside;
+    }
+
+    void KeyButton::render() {
+        if (this->mouse_down) {
+            //fb->waveform_mode = WAVEFORM_MODE_A2;
+            fb->draw_rect(this->x, this->y, this->w, this->h, BLACK, true);
+        } else {
+            fb->draw_rect(this->x, this->y, this->w, this->h, color::GRAY_14, true);
+            if (this->iconWidget != nullptr) {
+                this->iconWidget->render();
+            }
+
+            this->textWidget->render();
+        }
+    }
+
+    void KeyButton::render_border() {
+        fb->draw_rect(x, y, w, h, color::GRAY_10, false);
+    }
+
+    void Row::add_key(KeyButton *key) {
+        if (layout == nullptr) {
+            layout = new ui::HorizontalLayout(x, y, w, h, scene);
+        }
+        layout->pack_start(key);
+    }
+}

@@ -13,15 +13,22 @@ namespace widgets {
 
     void SearchBox::on_mouse_click(input::SynMotionEvent &ev) {
         ev.stop_propagation();
+        events.open();
         _keyboard->show();
     }
 
     void SearchBox::onChange(KeyboardEvent ev) {
         //need to do a full undraw in case characters were removed
         RoundedTextInput::undraw();
-        set_text(_keyboard->text + '_');
+        set_text(ev.text + '_');
         //redraw the button we just erased
         pixmap->mark_redraw();
+        mark_redraw();
+        auto ltext = ev.text;
+        ui::TaskQueue::add_task([=]() {
+            auto lltext = ltext;
+            this->events.updated(lltext);
+        });
     }
 
     void SearchBox::onDone(KeyboardEvent ev) {
@@ -33,7 +40,9 @@ namespace widgets {
         //TODO: style sheets
         pixmap = make_shared<ui::Pixmap>(x + w - h, y, h, h, ICON(assets::png_search_png));
         children.push_back(pixmap);
-        _keyboard = new Keyboard();
+        auto dx = fb->height - 400;
+        auto dw = fb->width;
+        _keyboard = new Keyboard(dx, 0, dw, 400);
         _keyboard->events.changed += PLS_DELEGATE(onChange);
         _keyboard->events.done += PLS_DELEGATE(onDone);
 

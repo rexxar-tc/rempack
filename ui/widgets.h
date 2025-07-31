@@ -85,12 +85,18 @@ namespace widgets {
         }
     };
 
+class DebuggableWidget: public ui::Widget{
+public:
+    DebuggableWidget(int x, int y, int w, int h): ui::Widget(x, y, w, h){}
+    void render() override;
+protected:
+    virtual void debugRender();
+};
 
-    class RoundCornerWidget : public ui::Widget {
+    class RoundCornerWidget : public DebuggableWidget {
     public:
-        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : ui::Widget(x, y, w, h){};
+        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : DebuggableWidget(x, y, w, h){};
 
-        void render() override;
 
         void undraw() override;
 
@@ -99,7 +105,6 @@ namespace widgets {
         void render_inside_fill(float gray = 1.f);
         RoundCornerStyle style;
     protected:
-        virtual void debugRender();
         uint16_t undraw_color = WHITE;
     };
 

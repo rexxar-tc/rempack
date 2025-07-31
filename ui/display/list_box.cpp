@@ -36,6 +36,8 @@ namespace widgets {
             }
         }
         if (item != nullptr) {
+            item->_selected = false;
+            selectedItems.erase(item);
             contents.erase(contents.begin() + i);
             events.removed(item);
             mark_redraw();
@@ -47,6 +49,7 @@ namespace widgets {
     void ListBox::removeAt(int index) {
         auto item = contents[index];
         auto w = item->_widget;
+        selectedItems.erase(item);
         contents.erase(contents.begin() + index);
         events.removed(item);
         mark_redraw();
@@ -96,12 +99,12 @@ namespace widgets {
 
     void ListBox::clear() {
         contents.clear();
+        selectedItems.clear();
         mark_redraw();
     }
 
     void ListBox::on_reflow() {
         layout_buttons();
-        trim_texts();
         mark_redraw();
     }
 
@@ -161,6 +164,7 @@ namespace widgets {
     void ListBox::render() {
         undraw();
         refresh_list();
+        trim_texts();
         int sx = this->x + padding;
         int sy = this->y + padding;
         for (const auto &item: _currentView) {
@@ -174,11 +178,12 @@ namespace widgets {
 //TODO: style sheets
 //item is selected, draw an effect
 //I can't be bothered to make this configurable right now
-                fb->draw_rect(wi->x, wi->y, wi->w, wi->h, color::GRAY_9, true);
+                fb->draw_rect(wi->x, wi->y, wi->w, wi->h, color::GRAY_12, true);
             }
             wi->render();
             sy += itemHeight + padding;
         }
+        fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
         RoundCornerWidget::render();
     }
 
@@ -269,7 +274,7 @@ namespace widgets {
     }
 
     void ListBox::trim_texts() {
-        for (const auto &it: contents) {
+        for (const auto &it: _currentView) {
             auto wd = it->_widget;
             wd->text = utils::clip_string(it->label, wd->w, wd->h, ui::Widget::style.font_size);
             wd->mark_redraw();
