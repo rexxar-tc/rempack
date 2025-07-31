@@ -29,12 +29,14 @@ namespace widgets{
         int padding = 20;
         auto s = ui::make_scene();
         s->add(this);
+
         mark_redraw();
         //auto v = new ui::VerticalLayout(x, y, 500, 800, s);
-        auto dw = 500 - padding - padding;
-        auto dh = 800 - padding - padding;
+        auto dw = w - padding - padding;
+        auto dh = h - padding - padding;
         auto dx = x + padding;
         auto dy = y + padding;
+
         auto iTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Installed");
         iTog->toggled = options->Installed;
         iTog->style.justify = ui::Style::JUSTIFY::LEFT;
