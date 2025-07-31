@@ -3,20 +3,22 @@
 #copies your app to the tablet, runs it, then waits for interrupt
 #before closing it and restarting the remarkable interface
 
-REMARKABLE_HOST="remarkable"
+RM_PORT=${RM_PORT:="22"}
+REMARKABLE_HOST=${REMARKABLE_HOST:="remarkable"}
 APP_PATH=${1}
 APP=$(basename "${APP_PATH}")
 BASE_DIR="/home/root/${APP}"
 RM_USER="root"
 
 function kill_remote_app() {
-  ssh ${RM_USER}@${REMARKABLE_HOST} killall ${APP} 2> /dev/null
+  ssh ${RM_USER}@${REMARKABLE_HOST} -p${RM_PORT}  killall ${APP} 2> /dev/null
 }
 
 function cleanup() {
   kill_remote_app
   #ssh ${RM_USER}@${REMARKABLE_HOST} rm ${BASE_DIR}/${APP}
-  ssh ${RM_USER}@${REMARKABLE_HOST} "source ~/.bashrc; launcherctl start-launcher"
+  ssh ${RM_USER}@${REMARKABLE_HOST} -p${RM_PORT} "source ~/.bashrc; launcherctl start-launcher"
+  rsync -e "ssh -p ${RM_PORT}" -azP ${RM_USER}@${REMARKABLE_HOST}:~/.cache/${APP}/screens ~/git/${APP}/screens
   echo "FINISHED"
   trap - EXIT
   exit 0
@@ -24,12 +26,62 @@ function cleanup() {
 
 trap cleanup EXIT
 trap cleanup SIGINT
+#!/bin/bash
 
-#this is probably brittle, I'm sure it's fine
-ssh ${RM_USER}@${REMARKABLE_HOST} mkdir -p ${BASE_DIR}
-scp ${APP_PATH} ${RM_USER}@${REMARKABLE_HOST}:${BASE_DIR}/${APP}
+# Function to show usage
+usage() {
+    echo "Usage: $0 SOURCE_PATH [-p PORT] [-h HOST] [-o OUTPATH]"
+    exit 1
+}
+
+# Ensure at least one argument (SOURCE_PATH)
+if [[ $# -lt 1 ]]; then
+    usage
+fi
+
+shift
+
+# Parse options
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -p)
+            shift
+            RM_PORT="$1"
+            ;;
+        -p*)
+            RM_PORT="${1#-p}"
+            ;;
+        -h)
+            shift
+            REMARKABLE_HOST="$1"
+            ;;
+        -h*)
+            REMARKABLE_HOST="${1#-h}"
+            ;;
+        -o)
+            shift
+            BASE_DIR="$1"
+            ;;
+        -o*)
+            BASE_DIR="${1#-o}"
+            ;;
+        -*)
+            echo "Unknown option: $1"
+            usage
+            ;;
+        *)
+            echo "Unexpected argument: $1"
+            usage
+            ;;
+    esac
+    shift
+done
+
 kill_remote_app
+#this is probably brittle, I'm sure it's fine
+ssh ${RM_USER}@${REMARKABLE_HOST} -p${RM_PORT} "mkdir -p ${BASE_DIR}"
+rsync -rz --port ${RM_PORT} ${APP_PATH} ${RM_USER}@${REMARKABLE_HOST}:${BASE_DIR}/${APP}
 echo "RUNNING ${APP}"
 #remove rm2fb-client if you're running on a RM1
-ssh ${RM_USER}@${REMARKABLE_HOST} "source ~/.bashrc; killall gdbserver; launcherctl stop-launcher"
-ssh ${RM_USER}@${REMARKABLE_HOST} /opt/bin/rm2fb-client ${BASE_DIR}/${APP}
+ssh -p${RM_PORT}  ${RM_USER}@${REMARKABLE_HOST} "source ~/.bashrc; killall gdbserver; launcherctl stop-launcher"
+ssh -p${RM_PORT}  ${RM_USER}@${REMARKABLE_HOST} "LD_PRELOAD=/opt/lib/librm2fb_client.so ${BASE_DIR}/${APP}"

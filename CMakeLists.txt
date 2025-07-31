@@ -78,6 +78,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         assets/icons/icons_embed.h
         rules/platform_rules.cpp
         src/ListFilter.cpp
+        src/ScreenCatcher.h
+        src/ScreenCatcher.cpp
 )
 
 target_compile_options(${PROJECT_NAME}
