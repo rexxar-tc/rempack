@@ -14,6 +14,9 @@
 #include "rempack/rempack_widgets.h"
 #include "platform_rules.h"
 #include "ListFilter.h"
+#include "ScreenCatcher.h"
+#include <filesystem>
+namespace fs = filesystem;
 using ListItem = widgets::ListBox::ListItem;
 
 ui::Scene buildHomeScene(int width, int height);
@@ -32,6 +35,13 @@ void setupDebug();
 shared_ptr<package> selected;
 shared_ptr<widgets::FilterOptions> filterOpts;
 
+int sPipe;
+
+void Rempack::startApp(int pipe){
+    sPipe = pipe;
+    startApp();
+}
+
 void setupStyle(){
     setenv("RMKIT_DEFAULT_FONT", "/usr/share/fonts/ttf/ebgaramond/EBGaramond-VariableFont_wght.ttf", 0);
     stbtext::GRAYSCALE = true;
@@ -47,19 +57,47 @@ void setupStyle(){
             .border_right = false
     };
 }
+static string get_cached_path(const string& basename = "rempack"){
+    const char* xdg_cache_home = std::getenv("XDG_CACHE_HOME");
+    string base = xdg_cache_home ? xdg_cache_home : std::getenv("HOME") + std::string("/.cache");
+    string path =  base + "/" + basename;
+    if(!fs::exists(path))
+        fs::create_directories(path);
+    return path;
+}
+
+int scount = 0;
 
 [[noreturn]]
 void Rempack::startApp() {
     setupStyle();
+
+    std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm tm{};
+    localtime_r(&t, &tm);
+
     fb = framebuffer::get();
     auto scene = buildHomeScene(fb->width, fb->height);
     ui::MainLoop::set_scene(scene);
 
+    //TODO: we need one tick before the first real frame to set some things up?
     ui::MainLoop::main();
     ui::MainLoop::refresh();
     //ui::MainLoop::redraw();
 
     setupDebug();
+
+    std::ostringstream oss;
+    oss << "rempack/screens/" << std::put_time(&tm, "%Y-%m-%d_%H-%M") << "/";
+    string spath = oss.str();
+
+    spath = get_cached_path(spath);
+
+    std::cout << "Screenshot path: " << spath << std::endl;
+
+    if(!fs::exists(spath))
+        fs::create_directories(spath);
+
     filterMgr->updateLists(filterOpts, "");
     while(true){
         auto mstart = chrono::steady_clock::now();
@@ -67,6 +105,10 @@ void Rempack::startApp() {
         auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
         std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
         ui::MainLoop::redraw();
+            stringstream lss;
+            lss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
+            ScreenCatcher::WriteScreen(lss.str(), fb->fbmem, fb->width, fb->height, sPipe);
+            scount++;
         fb->waveform_mode = WAVEFORM_MODE_GC16;
         //fb->update_mode = UPDATE_MODE_PARTIAL;
         ui::MainLoop::read_input();
@@ -162,14 +204,16 @@ void initScreen(){
 
 void setupDebug(){
 #ifndef NDEBUG
-    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
 
-    //packagePanel->select("splashscreen-poweroff-sacks_spiral");
-    auto ev = input::SynMotionEvent();
-        ev.x = searchBox->x;
-        ev.y = searchBox->y;
-        ev.left = 1;
+    //std::filesystem::remove_all("/home/root/.cache/rempack");
+    //packagePanel->select("splashscreen-batteryempty-starr");
+    //displayBox->get_preview();
+    //auto ev = input::SynMotionEvent();
+    //    ev.x = searchBox->x;
+    //    ev.y = searchBox->y;
+    //    ev.left = 1;
 
     //searchBox->on_mouse_click(ev);
     //_selected = pk;
