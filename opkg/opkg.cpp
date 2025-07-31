@@ -14,6 +14,7 @@
 #include "zlib.h"
 #include "utils.h"
 #include <sstream>
+#include <thread>
 
 #define  CONTAINS(x,z) ((x).find(z) != (x).end())
 
@@ -261,79 +262,115 @@ void opkg::update_states() {
     }
 }
 
-void opkg::InitializeRepositories() {
-//TODO: This can most likely be parallelized to shorten the startup delay on multicore devices
-    packages.clear();
+static void scanRepos(const filesystem::directory_entry &f, map<string, shared_ptr<package>> &packages){
+    //printf("extracting archive %s\n", f.path().c_str());
+    auto gzf = gzopen(f.path().c_str(), "rb");
+    int count = 0;
     int pc = 0;
     char cbuf[4096]{};
     auto pk = make_shared<package>();
-    for (const auto &f: fs::directory_iterator(OPKG_DB)) {
-        //printf("extracting archive %s\n", f.path().c_str());
-        auto gzf = gzopen(f.path().c_str(), "rb");
-        repositories.push_back(f.path().filename());
-        int count = 0;
-        //gzgets reads one line out of a gzipped file
-        while (gzgets(gzf, cbuf, sizeof(cbuf)) != nullptr) {
-            count++;
-            if (!parse_line(pk, cbuf, false, true)) {     //if parse_line returns false, we're done parsing this package
-                if (pk->Package.empty())
-                    continue;
-
-                pk->Repo = f.path().filename();
-                pc++;
-                auto mp = packages.emplace(pk->Package, pk);
-                if (!mp.second) {
-                    printf("emplacement failed for package %d: %s\n", pc, pk->Package.c_str());
-                }
-                pk = make_shared<package>();
+    bool parsing_desc = false;
+    bool parsing_conf = false;
+    string lastLine;
+    //gzgets reads one line out of a gzipped file
+    while (gzgets(gzf, cbuf, sizeof(cbuf)) != nullptr) {
+        count++;
+        if (!opkg::parse_line(pk, packages, cbuf, false, true, parsing_desc, parsing_conf, lastLine)) {     //if parse_line returns false, we're done parsing this package
+            parsing_desc = false;
+            parsing_conf = false;
+            if (pk->Package.empty())
                 continue;
+
+            pk->Repo = f.path().filename();
+            pc++;
+            auto mp = packages.emplace(pk->Package, pk);
+            if (!mp.second) {
+                printf("emplacement failed for package %d: %s\n", pc, pk->Package.c_str());
             }
+            pk = make_shared<package>();
+            continue;
         }
-        printf("Read %d lines\n", count);
+    }
+    printf("Read %d lines\n", count);
+}
+
+static void scanControl(const filesystem::directory_entry &f, map<string, shared_ptr<package>> &packages, int &pc){
+    bool parsing_desc = false;
+    bool parsing_conf = false;
+    ifstream cfile;
+    cfile.open(f.path(), ios::in);
+    if (!cfile.is_open()) {
+        printf("ERROR! Failed to open control file %s\n", f.path().c_str());
+        return;
+    }
+    auto pname = f.path().filename().string().substr(0, f.path().filename().string().find_last_of('.'));
+    auto pit = packages.find(pname);
+    if (pit == packages.end()) {
+        printf("ERROR! Could not match package %s to control file %s\n", pname.c_str(), f.path().c_str());
+        return;
+    }
+    auto pk = pit->second;
+    pk->State = package::Installed;
+    string lastLine;
+    for (string line; getline(cfile, line);) {
+        pc++;
+        if(!opkg::parse_line(pk, packages, line.c_str(), false, false, parsing_desc, parsing_conf, lastLine)) {    //no need to update extant, we know what package this is from the filename
+            parsing_desc = false;
+            parsing_conf = false;
+        }
+    }
+}
+
+
+void opkg::InitializeRepositoriesAsync(const std::function<void()> &callback) {
+    try {
+        auto th = new thread([=]() {
+            {
+                init_repos_internal();
+                callback();
+            }
+        });
+        th->detach();
+    }
+    catch (const std::exception &e) {
+        std::cerr << "OPKG THREAD EXC" << ' ' << e.what() << std::endl;
+    }
+}
+
+void opkg::init_repos_internal()
+{
+//TODO: This can most likely be parallelized to shorten the startup delay on multicore devices
+    packages.clear();
+    repositories.clear();
+    packages_by_repo.clear();
+    int pc = 0;
+    auto pk = make_shared<package>();
+
+    for (const auto &f: fs::directory_iterator(OPKG_DB)) {
+        auto md = packages_by_repo.emplace(f.path().filename(), map<string, shared_ptr<package>>{});
+        scanRepos(f, md.first->second);
+    }
+
+    for(const auto &r : packages_by_repo){
+        repositories.push_back(r.first);
+        for(const auto &rp : r.second){
+            auto mp = packages.emplace(rp);
+            if(!mp.second)
+                printf("emplacement failed for package %d: %s\n", pc, rp.second->Package.c_str());
+            pc++;
+        }
     }
     printf("Parsed %d packages\n", pc);
-
-    //process status and info for installed packages
-    auto statuspath = OPKG_LIB;
-    statuspath += "/status";
-    ifstream statusfile;
-    statusfile.open(statuspath, ios::in);
-    if(!statusfile.is_open())
-        printf("fail opening status file %s\n", statuspath.c_str());
-
-    pc = 0;
-    for(string line; getline(statusfile, line);){
-        parse_line(pk, line.c_str(), true, false);     //no need to do any logic here;
-        pc++;                                   //parse_line will take care of updating extant packages
-    }
-    statusfile.close();
-
-    printf("parsed %d status lines\n", pc);
 
     pc = 0;
     auto infopath = OPKG_LIB;
     infopath += "/info";
     int fc = 0;
+
     for (const auto &f: fs::directory_iterator(infopath)) {
         if (f.path().extension() == ".control") {
             fc++;
-            ifstream cfile;
-            cfile.open(f.path(), ios::in);
-            if (!cfile.is_open()) {
-                printf("ERROR! Failed to open control file %s\n", f.path().c_str());
-                continue;
-            }
-            auto pname = f.path().filename().string().substr(0, f.path().filename().string().find_last_of('.'));
-            auto pit = packages.find(pname);
-            if (pit == packages.end()) {
-                printf("ERROR! Could not match package %s to control file %s\n", pname.c_str(), f.path().c_str());
-                continue;
-            }
-            pk = pit->second;
-            for (string line; getline(cfile, line);) {
-                pc++;
-                parse_line(pk, line.c_str(), false, false);    //no need to update extant, we know what package this is from the filename
-            }
+            scanControl(f, packages, pc);
         }
     }
     printf("Processed %d control files containing %d lines\n", fc, pc);
@@ -342,7 +379,6 @@ void opkg::InitializeRepositories() {
     link_dependencies();
     update_lists();
     update_states();
-
 }
 
 std::unordered_set<std::string> uninstall_cache;
