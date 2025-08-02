@@ -55,7 +55,7 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-ssh -p${RM_PORT} ${RM_USER}@${REMARKABLE_HOST} "/opt/bin/launcherctl stop-launcher; killall gdbserver 2>/dev/null; killall ${APP} 2>/dev/null" &
+ssh -p${RM_PORT} ${RM_USER}@${REMARKABLE_HOST} "/opt/bin/launcherctl stop-launcher; killall gdbserver 2>/dev/null; killall ${APP} 2>/dev/null; mkdir -p ${BASE_DIR}"
 #ssh ${RM_USER}@${REMARKABLE_HOST} "/opt/bin/launcherctl stop-launcher; killall ${APP} 2>/dev/null" &
 #ssh ${RM_USER}@${REMARKABLE_HOST} "killall ${APP} 2>/dev/null"
 rsync -zP --port "${RM_PORT}" "${APP_PATH}" "${RM_USER}@${REMARKABLE_HOST}:${BASE_DIR}/"
