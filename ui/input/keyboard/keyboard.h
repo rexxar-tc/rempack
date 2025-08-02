@@ -96,5 +96,7 @@ namespace widgets {
 
         void undraw() override;
         void show() override;
+    protected:
+        string debugName() const override {return "Keyboard";}
     };
 }

@@ -35,6 +35,8 @@ namespace widgets {
 
         OFILTER_EVENTS events;
 
+    protected:
+        string debugName() const override {return "FilterOverlay";}
     private:
         void upate_event();
         /*

@@ -108,6 +108,7 @@ namespace widgets {
         shared_ptr<ImageButton> _navLL, _navL, _navR, _navRR;
         void layout_buttons();
         void debugRender() override;
+        string debugName() const override {return "ListBox";}
 
     private:
         //TODO: style sheets

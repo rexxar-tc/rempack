@@ -5,7 +5,7 @@
 #pragma once
 
 #ifndef NDEBUG
-//#define WIDGET_DEBUG
+#define WIDGET_DEBUG
 #endif
 
 #include <list>
@@ -94,6 +94,7 @@ public:
     void render() override;
 protected:
     virtual void debugRender();
+    virtual string debugName() const = 0;
 };
 
     class RoundCornerWidget : public DebuggableWidget {
@@ -109,6 +110,7 @@ protected:
         RoundCornerStyle style;
     protected:
         uint16_t undraw_color = WHITE;
+string debugName() const override{return "RoundCornerWidget";}
     };
 
 

@@ -19,6 +19,9 @@ namespace widgets {
         void setImage(ui::CachedIcon icon);
         void setImage(icons::Icon icon, int w, int h);
         void setImage(ui::CachedIcon icon, int w, int h);
+    protected:
+        string debugName() const override {return "BorderedPixmap";}
+        void debugRender() override;
     private:
         shared_ptr<ui::Pixmap> image;
     };

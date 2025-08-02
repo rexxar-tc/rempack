@@ -107,7 +107,11 @@ namespace widgets{
 
     //TODO: this still isn't quite right
         void RoundCornerWidget::undraw() {
-            ui::Widget::undraw();
+            fb->waveform_mode = WAVEFORM_MODE_GC16;
+            drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.borderThickness,
+                           WHITE, style.inset, false, WHITE,
+                           style.expA, style.expB,1.f);
+            render_inside_fill();
             return;
             //top
             fb->draw_rect(x + style.inset - style.cornerRadius - style.borderThickness,
@@ -162,6 +166,7 @@ namespace widgets{
     }
 
     void DebuggableWidget::debugRender() {
+        fb->draw_text(this->x, this->y, debugName(), 18);
         fb->draw_rect(this->x, this->y, this->w, this->h, toRColor(255,0,0), false);
     }
 }

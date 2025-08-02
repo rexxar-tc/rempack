@@ -39,6 +39,7 @@ namespace widgets {
         ui::Scene make_overlay();
     protected:
         void debugRender() override;
+        string debugName() const override {return "MenuOverlay";}
     };
 
 } // widgets

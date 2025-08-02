@@ -54,6 +54,7 @@ namespace widgets {
         void layout_image();
     protected:
         void debugRender() override;
+        string debugName() const override {return "InfoPanel";}
     };
 
 } // widgets

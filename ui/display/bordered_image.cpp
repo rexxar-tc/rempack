@@ -80,7 +80,14 @@ namespace widgets {
         if(dw == this->w)
             return;
 
-        int xo = this->w - dw;
-        set_coords(this->x - xo, this->y, this->h, dw);
+        std::cout << "resize " << imageX << ", " << imageY << std::endl;
+
+        set_coords(this->x, this->y, this->h, dw);
+        mark_redraw();
+    }
+
+    void BorderedPixmap::debugRender() {
+        DebuggableWidget::debugRender();
+        fb->draw_rect(image->x, image->y, image->w, image->h, toRColor(64,128,255), false);
     }
 } // widgets
