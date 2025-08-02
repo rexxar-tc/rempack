@@ -286,7 +286,7 @@ ui::Scene buildHomeScene(int width, int height) {
     /* Applications */
     //full-width horizontal stack underneath the search pane. give it half the remaining height
     auto applicationPane = new ui::HorizontalReflow(0, 0, layout->w, (layout->h - searchPane->h - padding)/2, scene);
-    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, scene, widgets::LightButtonStyle());
+    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, widgets::LightButtonStyle());
     std::vector<std::string> sections;
     pkg.LoadSections(&sections);
     for (const auto &s: sections)
@@ -295,7 +295,7 @@ ui::Scene buildHomeScene(int width, int height) {
     filterPanel->events.selected += PLS_DELEGATE(onFilterAdded);
     filterPanel->events.deselected += PLS_DELEGATE(onFilterRemoved);
 
-    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 45, scene, widgets::LightButtonStyle());
+    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 45, widgets::LightButtonStyle());
     packagePanel->multiSelect = false;
     packagePanel->events.selected += PLS_DELEGATE(onPackageSelect);
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);

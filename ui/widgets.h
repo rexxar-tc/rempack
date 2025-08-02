@@ -88,7 +88,7 @@ namespace widgets {
 
 
     RoundCornerStyle LightButtonStyle();
-class DebuggableWidget: public ui::Widget{
+class DebuggableWidget: virtual public ui::Widget{
 public:
     DebuggableWidget(int x, int y, int w, int h): ui::Widget(x, y, w, h){}
     void render() override;
@@ -97,9 +97,9 @@ protected:
     virtual string debugName() const = 0;
 };
 
-    class RoundCornerWidget : public DebuggableWidget {
+    class RoundCornerWidget : virtual public DebuggableWidget {
     public:
-        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : DebuggableWidget(x, y, w, h), style(style){};
+        RoundCornerWidget(int x, int y, int w, int h, RoundCornerStyle style) : ui::Widget(x,y,w,h), DebuggableWidget(x, y, w, h), style(style){};
 
 
         void undraw() override;
@@ -113,5 +113,18 @@ protected:
 string debugName() const override{return "RoundCornerWidget";}
     };
 
+class RecursiveInputWidget: public virtual ui::Widget{
+protected:
+    RecursiveInputWidget(int x, int y, int w, int h): ui::Widget(x,y,w,h){}
+    //bool ignore_event(input::SynMotionEvent &ev) override;
+    void on_mouse_enter(input::SynMotionEvent &ev) override;
+    void on_mouse_leave(input::SynMotionEvent &ev) override;
+    void on_mouse_click(input::SynMotionEvent &ev) override;
+    void on_mouse_down(input::SynMotionEvent &ev) override;
+    void on_mouse_up(input::SynMotionEvent &ev) override;
+    void on_mouse_move(input::SynMotionEvent &ev) override;
+    void on_mouse_hover(input::SynMotionEvent &ev) override;
+    void on_key_pressed(input::SynKeyEvent &ev) override;
+};
 
 }

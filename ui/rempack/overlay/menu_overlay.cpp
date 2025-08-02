@@ -8,7 +8,7 @@
 #include "opkg.h"
 
 namespace widgets {
-    MenuOverlay::MenuOverlay(int x, int y, int w, int h, MenuData *currentData) : RoundCornerWidget(x,y,w,h,RoundCornerStyle()) {
+    MenuOverlay::MenuOverlay(int x, int y, int w, int h, MenuData *currentData) : ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), RoundCornerWidget(x,y,w,h,RoundCornerStyle()) {
         data = currentData;
         scene = make_overlay();
     }

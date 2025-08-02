@@ -84,7 +84,7 @@ namespace widgets {
 
         KEYBOARD_EVENTS events;
 
-        Keyboard(int x = 0, int y = 0, int w = 0, int h = 0) : DebuggableWidget(x, y, w, h) {
+        Keyboard(int x = 0, int y = 0, int w = 0, int h = 0) : ui::Widget(x,y,w,h), DebuggableWidget(x, y, w, h) {
             auto [dw, full_h] = fb->get_display_size();
             h = full_h / 4;
             this->w = dw;

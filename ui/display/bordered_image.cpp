@@ -5,7 +5,7 @@
 #include "bordered_image.h"
 
 namespace widgets {
-    BorderedPixmap::BorderedPixmap(int x, int y, int w, int h, icons::Icon ico, RoundCornerStyle style) : widgets::RoundCornerWidget(x, y, w, h, style){
+    BorderedPixmap::BorderedPixmap(int x, int y, int w, int h, icons::Icon ico, RoundCornerStyle style) : ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), widgets::RoundCornerWidget(x, y, w, h, style){
         image = make_shared<ui::Pixmap>(x,y,w,h,ico);
         children.push_back(image);
     }

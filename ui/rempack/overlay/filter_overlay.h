@@ -15,7 +15,7 @@ namespace widgets {
     public:
         ui::Scene scene;
         shared_ptr<FilterOptions> options;
-        FilterOverlay(int x, int y, int w, int h, shared_ptr<FilterOptions> currentOptions): RoundCornerWidget(x,y,w,h,RoundCornerStyle()) {
+        FilterOverlay(int x, int y, int w, int h, shared_ptr<FilterOptions> currentOptions): ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), RoundCornerWidget(x,y,w,h,RoundCornerStyle()) {
             options = std::move(currentOptions);
             scene = make_overlay();
         }

@@ -139,7 +139,7 @@ namespace widgets {
     }
 
     PackageInfoPanel::PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style,
-                                       shared_ptr<ui::InnerScene> &scene) : RoundCornerWidget(x,y,w,h,style){
+                                       shared_ptr<ui::InnerScene> &scene) : ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), RoundCornerWidget(x,y,w,h,style){
         _text = make_shared<ui::MultiText>(x,y,w,h,"");
         _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
         children.push_back(_text);

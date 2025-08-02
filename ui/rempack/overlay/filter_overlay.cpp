@@ -99,7 +99,7 @@ namespace widgets{
         dy += padding + groupTog->h;
         if (!options->Repos.empty()) {
             //TODO: set height of the list based on number of entries
-            _repoList = make_shared<ListBox>(dx, dy, dw, 200, 25, s, RoundCornerStyle());
+            _repoList = make_shared<ListBox>(dx, dy, dw, 200, 25, RoundCornerStyle());
             for (auto &[r, set]: options->Repos) {
                 auto item = _repoList->add(r);
                 if (set) {
@@ -122,7 +122,7 @@ namespace widgets{
             dy += padding + _repoList->h;
         }
         if (!options->Licenses.empty()) {
-            _licenseList = make_shared<ListBox>(dx, dy, dw, 200, 25, scene, RoundCornerStyle());
+            _licenseList = make_shared<ListBox>(dx, dy, dw, 200, 25, RoundCornerStyle());
             for (auto &[l, set]: options->Licenses) {
                 auto item = _licenseList->add(l);
                 if (set) {
