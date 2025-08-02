@@ -1,3 +1,5 @@
+find_package(ZLIB REQUIRED)
+
 add_library(rmkit_impl STATIC rmkit_impl.cpp)
 add_library(stb_impl STATIC stb_impl.cpp)
 
@@ -14,3 +16,4 @@ target_compile_definitions(stb_impl PRIVATE
         #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
 )
+target_link_libraries(stb_impl PRIVATE ZLIB::ZLIB)
