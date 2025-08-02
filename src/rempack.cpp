@@ -16,6 +16,7 @@
 #include "ListFilter.h"
 #include "ScreenCatcher.h"
 #include <filesystem>
+#include "debugging.h"
 namespace fs = filesystem;
 using ListItem = widgets::ListBox::ListItem;
 
@@ -57,6 +58,15 @@ void setupStyle(){
             .border_right = false
     };
 }
+
+void initScreen(bool clear = true){
+    fb->update_mode = UPDATE_MODE_FULL;
+    fb->waveform_mode = WAVEFORM_MODE_INIT;
+    fb->redraw_screen(true);
+    if(clear)
+        fb->clear_screen();
+}
+
 static string get_cached_path(const string& basename = "rempack"){
     const char* xdg_cache_home = std::getenv("XDG_CACHE_HOME");
     string base = xdg_cache_home ? xdg_cache_home : std::getenv("HOME") + std::string("/.cache");
@@ -99,23 +109,33 @@ void Rempack::startApp() {
         fs::create_directories(spath);
 
     filterMgr->updateLists(filterOpts, "");
-    while(true){
+    while(true) {
         auto mstart = chrono::steady_clock::now();
         ui::MainLoop::main();
         auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
         std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
-        ui::MainLoop::redraw();
+        if (fb->dirty) {
             stringstream lss;
             lss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
             ScreenCatcher::WriteScreen(lss.str(), fb->fbmem, fb->width, fb->height, sPipe);
+            auto ws = std::chrono::steady_clock::now();
+            debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
+            auto dws = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - ws).count();
+            if(dws > 10){
+                cout << "ws: " << dws << endl;
+            }
             scount++;
-        fb->waveform_mode = WAVEFORM_MODE_GC16;
-        //fb->update_mode = UPDATE_MODE_PARTIAL;
+            if (scount % 40 == 0) {
+                initScreen(false);
+            }
+        }
+
+        ui::MainLoop::redraw();
+        //fb->waveform_mode = WAVEFORM_MODE_GC16;
         ui::MainLoop::read_input();
     }
 
 }
-
 void searchQueryOpen(string s){
     if(selected != nullptr){
         selected = nullptr;
@@ -150,6 +170,7 @@ void onPackageDeselect([[maybe_unused]] shared_ptr<ListItem> item) {
     selected = nullptr;
     displayBox->display_package(nullptr);
 }
+
 void onFiltersChanged(widgets::FilterOptions &options){
     //_filterOpts = options;
     if(options.groupSplash)
@@ -158,7 +179,6 @@ void onFiltersChanged(widgets::FilterOptions &options){
         packagePanel->sortPredicate = nullptr;
     filterMgr->updateLists(filterOpts, currentQuery);
 }
-
 void onInstallClick(void*){
     auto m = new widgets::InstallDialog(500,500,600,800,vector<shared_ptr<package>>{selected});
 
@@ -186,30 +206,19 @@ void onUninstallClick(void*){
     m->setCallback([](bool b){displayBox->display_package(selected);});
     m->show();
 }
+
 void onPreviewClick(void*){
     displayBox->set_image(selected);
 }
 
-void initScreen(){
-    fb->draw_rect(0,0,fb->width, fb->height, BLACK);
-    //fb->update_mode = UPDATE_MODE_FULL;
-    //fb->waveform_mode = WAVEFORM_MODE_A2;
-    fb->dirty = true;
-    fb->redraw_screen();
-    fb->clear_screen();
-    //fb->redraw_screen();
-    //fb->update_mode = UPDATE_MODE_PARTIAL;
-    //fb->waveform_mode = WAVEFORM_MODE_GC16;
-}
-
 void setupDebug(){
-#ifndef NDEBUG
+//#ifndef NDEBUG
     //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
 
     //std::filesystem::remove_all("/home/root/.cache/rempack");
-    //packagePanel->select("splashscreen-batteryempty-starr");
-    //displayBox->get_preview();
+    packagePanel->select("splashscreen-batteryempty-starr");
+    displayBox->get_preview();
     //auto ev = input::SynMotionEvent();
     //    ev.x = searchBox->x;
     //    ev.y = searchBox->y;
@@ -232,7 +241,7 @@ void setupDebug(){
 //    }
 //    scene->pinned = true;
 //    ui::MainLoop::show_overlay(scene);
-#endif
+//#endif
 }
 
 //1404x1872 - 157x209mm -- 226dpi
