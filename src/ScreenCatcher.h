@@ -9,7 +9,7 @@
 
 class ScreenCatcher {
 public:
-    int Listen(int pipe);
+    static int Listen(int pipe);
     static int WriteScreen(const std::string& path, uint16_t* buf, uint w, uint h, int pipefd);
 };
 

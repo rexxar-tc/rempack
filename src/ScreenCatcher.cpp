@@ -34,9 +34,14 @@
 #include <condition_variable>
 #include <unistd.h>     // read, pipe
 #include <vector>
+#include <filesystem>
+
+//try to keep memory use under control during very rapid render calls
+#define MAX_QUEUE_SIZE 16
 
 static_assert(sizeof(remarkable_color) == sizeof(uint16_t), "Screen capture is not implemented for this platform! Wrong color width!");
 
+namespace fs = std::filesystem;
 struct shot{
     uint w;
     uint h;
@@ -80,7 +85,7 @@ static void dump_screen(const std::string &path, const vector<uint16_t> &fb, uin
 void worker() {
     while (true) {
         std::unique_lock<std::mutex> lock(queueMutex);
-        cv.wait(lock, []{ return !workQueue.empty() || done; });
+        cv.wait(lock, [&]{ return !workQueue.empty() || done; });
 
         if (done && workQueue.empty()) {
             break;
@@ -89,6 +94,11 @@ void worker() {
         auto data = std::move(workQueue.front());
         workQueue.pop();
         lock.unlock();
+
+        fs::path path = data.path;
+        path = path.parent_path();
+        if(!fs::exists(path))
+            fs::create_directories(path);
 
         dump_screen(data.path, data.data, data.w, data.h);
     }
@@ -100,7 +110,7 @@ int read_exact(int fd, void* buf, uint32_t count) {
 
     while (total < count) {
         auto n = read(fd, ptr + total, count - total);
-        if (n <= 0) {
+        if (n < 0) {
             // Error or EOF
             return n;
         }
@@ -120,24 +130,24 @@ int ScreenCatcher::Listen(int pipe) {
     uint32_t buflen = 0;
     int n = read_exact(pipe, &buflen, 4);
     //std::cout << "plen " << buflen << '\n';
-    while(n > 0){
+    while (n >= 0) {
         std::string path;
         path.resize(buflen);;
         n = read_exact(pipe, path.data(), buflen);
         //std::cout << path << '\n';
-        if(n <= 0)
+        if (n <= 0)
             return 1;
 
         uint dims[2];
         n = read_exact(pipe, dims, sizeof(dims));
-       // std::cout << "dims " << dims[0] << ',' << dims[1] << '\n';
-        if(n <= 0)
+        // std::cout << "dims " << dims[0] << ',' << dims[1] << '\n';
+        if (n <= 0)
             return 2;
 
         std::vector<remarkable_color> buf(dims[0] * dims[1]);
         n = read_exact(pipe, buf.data(), buf.size() * sizeof(remarkable_color));
-       // std::cout << "read " << buf.size() << std::endl;
-        if(n <= 0)
+        // std::cout << "read " << buf.size() << std::endl;
+        if (n <= 0)
             return 3;
 
         shot data = {
@@ -146,11 +156,22 @@ int ScreenCatcher::Listen(int pipe) {
                 std::move(buf),
                 std::move(path)
         };
+        size_t sz;
         {
             std::lock_guard<std::mutex> lock(queueMutex);
             workQueue.emplace(data);
+            sz = workQueue.size();
         }
         cv.notify_one();
+
+        //if the work queue is full, we want the calling thread to block
+        //easiest way is to block this thread so the pipe backs up
+        while (sz >= MAX_QUEUE_SIZE) {
+            std::unique_lock<std::mutex> lock(queueMutex);
+            sz = workQueue.size();
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(100)); //each image takes 1-2 seconds to process
+        }
         n = read_exact(pipe, &buflen, 4);
     }
 
@@ -166,7 +187,7 @@ ssize_t write_all(int fd, const void* buf, size_t count) {
 
     while (total_written < count) {
         ssize_t n = write(fd, ptr + total_written, count - total_written);
-        if (n <= 0) {
+        if (n < 0) {
             if (errno == EINTR) continue;
             return -1;  // error
         }
@@ -176,7 +197,10 @@ ssize_t write_all(int fd, const void* buf, size_t count) {
 }
 
 int ScreenCatcher::WriteScreen(const std::string& path, remarkable_color *buf, uint w, uint h, int pipe) {
-    //std::cout << "WRITE " << w << ',' << h << '\n';
+    if(done)
+        return 0;
+
+    //std::cout << "WRITE " << path << '\n';
     auto len = path.length();
     auto n = write_all(pipe, &len, sizeof(len));
     if(n != sizeof(len))
