@@ -196,10 +196,12 @@ namespace widgets {
             auto shgt = sy / hgt;
             int idx = floor(shgt);
 //printf("Click at %d,%d: computed offset %d: displayed %d\n", ev.x, ev.y, idx, displayed_items());
-            if (idx >= (int) _currentView.size())
+            if (idx < (int) _currentView.size()) {
+                selectIndex(idx);
+                mark_redraw();
+                ev.stop_propagation();
                 return;
-            selectIndex(idx);
-            mark_redraw();
+            }
         }
         RecursiveInputWidget::on_mouse_click(ev);
     }
