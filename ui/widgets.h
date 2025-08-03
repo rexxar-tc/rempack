@@ -116,6 +116,7 @@ string debugName() const override{return "RoundCornerWidget";}
 class RecursiveInputWidget: public virtual ui::Widget{
 protected:
     RecursiveInputWidget(int x, int y, int w, int h): ui::Widget(x,y,w,h){}
+    void on_reflow() override;
     //bool ignore_event(input::SynMotionEvent &ev) override;
     void on_mouse_enter(input::SynMotionEvent &ev) override;
     void on_mouse_leave(input::SynMotionEvent &ev) override;

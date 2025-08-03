@@ -171,59 +171,114 @@ namespace widgets {
         fb->draw_rect(this->x, this->y, this->w, this->h, toRColor(255, 0, 0), false);
     }
 
+    // TODO: this doesn't properly handle state like mouse_inside, _enter, _leave
     void RecursiveInputWidget::on_mouse_enter(input::SynMotionEvent &ev) {
         for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
             c->on_mouse_enter(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_mouse_enter(ev);
     }
 
     void RecursiveInputWidget::on_mouse_leave(input::SynMotionEvent &ev) {
         for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
             c->on_mouse_leave(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_mouse_leave(ev);
     }
 
     void RecursiveInputWidget::on_mouse_click(input::SynMotionEvent &ev) {
         for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
             c->on_mouse_click(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_mouse_click(ev);
     }
 
     void RecursiveInputWidget::on_mouse_down(input::SynMotionEvent &ev) {
         for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
             c->on_mouse_down(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_mouse_down(ev);
     }
 
     void RecursiveInputWidget::on_mouse_up(input::SynMotionEvent &ev) {
         for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
             c->on_mouse_up(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_mouse_up(ev);
     }
 
     void RecursiveInputWidget::on_mouse_move(input::SynMotionEvent &ev) {
         for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
             c->on_mouse_move(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_mouse_move(ev);
     }
 
     void RecursiveInputWidget::on_mouse_hover(input::SynMotionEvent &ev) {
         for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
             c->on_mouse_hover(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_mouse_hover(ev);
     }
 
     void RecursiveInputWidget::on_key_pressed(input::SynKeyEvent &ev) {
         for (const auto &c: children) {
+            if (!c->visible)
+                continue;
             c->on_key_pressed(ev);
+            if (ev._stop_propagation)
+                return;
         }
         Widget::on_key_pressed(ev);
+    }
+
+    void RecursiveInputWidget::on_reflow() {
+        for(const auto &c : children){
+            if(c->visible)
+                c->on_reflow();
+        }
+        Rect::on_reflow();
     }
 }
