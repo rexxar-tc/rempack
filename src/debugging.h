@@ -56,7 +56,13 @@ namespace debugging{
             widget->render();
             widget->render_border();
             widget->fb = ofb;
-            fb.draw_rect(widget->x, widget->y, widget->w, widget->h, rand(), false); // NOLINT
+            auto g = widgets::toRColor(0,255,0);
+            auto r = widgets::toRColor(255,0,0);
+            fb2.draw_rect(widget->x, widget->y, widget->w, widget->h, g, false); // NOLINT
+            for(int i = -1; i < 3; i++ ) {
+                fb3.draw_rect(widget->_x - i, widget->_y - i, widget->_w + (2 * i), widget->_h + (2 * i), r, false); // NOLINT
+            }
+            fb3.draw_rect(widget->x, widget->y, widget->w, widget->h, g, false); // NOLINT
 
             if (fb3.dirty) {
                 //update
