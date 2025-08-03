@@ -40,10 +40,12 @@ namespace widgets {
         //std::cout << s;
         ui::TaskQueue::add_task([=]() {
             auto lines = utils::wrap_string(s, w - padding - padding, ui::Style::DEFAULT.font_size);
-            ui::TaskQueue::add_task([=]() {
+            ui::IdleQueue::add_task([=]() {
                 for (const auto &l: lines)
                     push_line(l);
                 update_texts();
+
+                fb->waveform_mode = HWTCON_WAVEFORM_MODE_GC16;
             });
         });
         //mark_redraw();
@@ -95,4 +97,5 @@ namespace widgets {
         this->buttons.emplace_back("Dismiss");
         this->title = title;
     }
+
 } // widgets
