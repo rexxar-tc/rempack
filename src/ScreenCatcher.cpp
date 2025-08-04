@@ -32,19 +32,25 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <unistd.h>     // read, pipe
+#include <unistd.h>
 #include <vector>
 #include <filesystem>
 
+#ifdef DEV
+#define CONCURRENCY 8
+#else
+#define CONCURRENCY 2
+#endif
+
 //try to keep memory use under control during very rapid render calls
-#define MAX_QUEUE_SIZE 16
+constexpr int  MAX_QUEUE_SIZE = (16 * CONCURRENCY);
 
 static_assert(sizeof(remarkable_color) == sizeof(uint16_t), "Screen capture is not implemented for this platform! Wrong color width!");
 
 namespace fs = std::filesystem;
 struct shot{
-    uint w;
-    uint h;
+    size_t w;
+    size_t h;
     std::vector<remarkable_color> data;
     std::string path;
 };
@@ -53,7 +59,6 @@ std::queue<shot> workQueue;
 std::mutex queueMutex;
 std::condition_variable cv;
 bool done = false;
-std::thread w1, w2;
 
 static void dump_screen(const std::string &path, const vector<uint16_t> &fb, uint w, uint h) {
     auto buf = (unsigned char *) malloc(w * h * 3);
@@ -64,7 +69,7 @@ static void dump_screen(const std::string &path, const vector<uint16_t> &fb, uin
         *(llen++) = uint8_t(((s & 0x7e0) >> 5) / 63. * 255.);
         *(llen++) = uint8_t((s & 0x1f) / 31. * 255.);
     }
-    std::cerr << "SAVING " << path << std::endl;
+    //std::cerr << "SAVING " << path << std::endl;
 
     auto start = std::chrono::steady_clock::now();
     //set compression low so it's faster
@@ -124,12 +129,17 @@ int ScreenCatcher::Listen(int pipe) {
     //otherwise the UI thread can stutter
     nice(10);
 
-    w1 = std::thread(worker);
-    w2 = std::thread(worker);
+    std::vector<std::thread> workers(CONCURRENCY);
+    for(int i = 0; i < CONCURRENCY; i++){
+        workers.emplace_back(worker);
+    }
 
-    uint32_t buflen = 0;
-    int n = read_exact(pipe, &buflen, 4);
+    size_t buflen = 0;
+    int n = read_exact(pipe, &buflen, sizeof(size_t));
     //std::cout << "plen " << buflen << '\n';
+    if(n != sizeof(size_t)){
+        std::cerr << "SIZE ERROR" << std::endl;
+    }
     while (n >= 0) {
         std::string path;
         path.resize(buflen);;
@@ -138,19 +148,19 @@ int ScreenCatcher::Listen(int pipe) {
         if (n <= 0)
             return 1;
 
-        uint dims[2];
-        n = read_exact(pipe, dims, sizeof(dims));
+        size_t dims[2];
+        n = read_exact(pipe, dims, sizeof(size_t) * 2);
         // std::cout << "dims " << dims[0] << ',' << dims[1] << '\n';
         if (n <= 0)
             return 2;
 
         std::vector<remarkable_color> buf(dims[0] * dims[1]);
-        n = read_exact(pipe, buf.data(), buf.size() * sizeof(remarkable_color));
-        // std::cout << "read " << buf.size() << std::endl;
+        n = read_exact(pipe, buf.data(), dims[0] * dims[1] * sizeof(remarkable_color));
+        //std::cout << "read " << buf.size() << std::endl;
         if (n <= 0)
             return 3;
 
-        shot data = {
+        shot data {
                 dims[0],
                 dims[1],
                 std::move(buf),
@@ -164,6 +174,7 @@ int ScreenCatcher::Listen(int pipe) {
         }
         cv.notify_one();
 
+        auto sts = std::chrono::steady_clock::now();
         //if the work queue is full, we want the calling thread to block
         //easiest way is to block this thread so the pipe backs up
         while (sz >= MAX_QUEUE_SIZE) {
@@ -172,12 +183,17 @@ int ScreenCatcher::Listen(int pipe) {
             lock.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); //each image takes 1-2 seconds to process
         }
-        n = read_exact(pipe, &buflen, 4);
+        auto dts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - sts);
+        if(dts.count() > 10)
+            std::cout << "STALL: " << dts.count() << std::endl;
+        n = read_exact(pipe, &buflen, sizeof(size_t));
     }
 
+    std::cerr << "EXITING" << std::endl;
+    done = true;
     cv.notify_all();
-    w1.join();
-    w2.join();
+    for(auto &w : workers)
+        w.join();
     return 0;
 }
 
@@ -201,16 +217,16 @@ int ScreenCatcher::WriteScreen(const std::string& path, remarkable_color *buf, u
         return 0;
 
     //std::cout << "WRITE " << path << '\n';
-    auto len = path.length();
+    size_t len = path.length();
     auto n = write_all(pipe, &len, sizeof(len));
-    if(n != sizeof(len))
+    if(n != sizeof(size_t))
         return 4;
     n = write_all(pipe, path.data(), len);
     if(n!=len)
         return 5;
-    uint dims[2] = {w,h};
-    n = write_all(pipe, dims, sizeof(dims));
-    if(n != sizeof(dims))
+    size_t dims[2] = {w,h};
+    n = write_all(pipe, dims, sizeof(size_t) * 2);
+    if(n != sizeof(size_t) * 2)
         return 6;
     auto buflen = w * h * sizeof(remarkable_color);
     n = write_all(pipe, buf, buflen);
