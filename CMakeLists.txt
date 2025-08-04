@@ -87,11 +87,13 @@ target_compile_options(${PROJECT_NAME}
         PUBLIC $<$<CONFIG:Release>:-O3>
 )
 
+target_compile_options(archive_static PRIVATE -Wno-deprecated-declarations)
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         #when building for native hardware, REMARKABLE must be defined
         $<$<STREQUAL:${TARGET_PLATFORM},rm>:REMARKABLE>
         #debug builds require an external font file. I've provided one for you in /include
-        $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
+        $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h" DEV>
         )
 target_compile_definitions(widgets PRIVATE
         #when building for native hardware, REMARKABLE must be defined

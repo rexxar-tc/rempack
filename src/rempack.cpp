@@ -44,7 +44,10 @@ void Rempack::startApp(int pipe){
 }
 
 void setupStyle(){
+//#ifdef REMARKABLE
     setenv("RMKIT_DEFAULT_FONT", "/usr/share/fonts/ttf/ebgaramond/EBGaramond-VariableFont_wght.ttf", 0);
+//#endif
+//    setenv("RMKIT_DEFAULT_FONT", "/usr/share/fonts/TTF/TSCu_Comic.ttf", 0);
     stbtext::GRAYSCALE = true;
     ui::Style::DEFAULT = {
             .font_size = 40,
@@ -80,6 +83,9 @@ int scount = 0;
 
 [[noreturn]]
 void Rempack::startApp() {
+#ifdef DEV
+    util::RM_CUR_VERSION = util::RM2;
+#endif
     setupStyle();
 
     std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -109,17 +115,25 @@ void Rempack::startApp() {
         fs::create_directories(spath);
 
     filterMgr->updateLists(filterOpts, "");
+#ifdef DEV
+    uint8_t *lastframe = new uint8_t[fb->byte_size];
+#endif
     while(true) {
         auto mstart = chrono::steady_clock::now();
         ui::MainLoop::main();
+        ui::MainLoop::redraw();
         auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
-        std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
-        if (fb->dirty) {
+        auto dirty = fb->dirty;
+#ifdef DEV
+        dirty = memcmp(lastframe, fb->fbmem, fb->byte_size) != 0;
+#endif
+        if (dirty) {
+            std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
             stringstream lss;
             lss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
             ScreenCatcher::WriteScreen(lss.str(), fb->fbmem, fb->width, fb->height, sPipe);
             auto ws = std::chrono::steady_clock::now();
-            debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
+            //debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
             auto dws = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - ws).count();
             if(dws > 10){
                 cout << "ws: " << dws << endl;
@@ -128,13 +142,18 @@ void Rempack::startApp() {
             if (scount % 40 == 0) {
                 initScreen(false);
             }
+
+#ifdef DEV
+            memcpy(lastframe, fb->fbmem, fb->byte_size);
+            fb->reset_dirty(fb->dirty_area);
+            fb->dirty = 0;
+#endif
         }
 
-        ui::MainLoop::redraw();
         //fb->waveform_mode = WAVEFORM_MODE_GC16;
         ui::MainLoop::read_input();
     }
-
+    close(sPipe);
 }
 void searchQueryOpen(string s){
     if(selected != nullptr){
