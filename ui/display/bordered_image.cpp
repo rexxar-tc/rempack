@@ -36,7 +36,7 @@ namespace widgets {
         mark_redraw();
     }
 
-    void BorderedPixmap::setImage(ui::CachedIcon icon) {
+    void BorderedPixmap::setImage(const ui::CachedIcon& icon) {
         image->set_coords(x, y, w, h);
         image->icon = icon;
         image->show();
@@ -63,26 +63,28 @@ namespace widgets {
         mark_redraw();
     }
 
-    void BorderedPixmap::setImage(icons::Icon icon, int w, int h) {
-        int dx = (this->w / 2) - (w/2) + x;
-        int dy = (this->h / 2) - (h/2) + y;
-        image->set_coords(dx, dy, w, h);
-        image->icon = ui::CachedIcon(icon.data, icon.len, icon.name, w, h);
+    void BorderedPixmap::setImage(icons::Icon icon, int i_w, int i_h) {
+        int dx = (this->w / 2) - (i_w/2) + x;
+        int dy = (this->h / 2) - (i_h/2) + y;
+        image->set_coords(dx, dy, i_w, i_h);
+        image->icon = ui::CachedIcon(icon.data, icon.len, icon.name, i_w, i_h);
         image->undraw();
         image->show();
-        //fb->update_mode = UPDATE_MODE_FULL;
         mark_redraw();
     }
 
+    int BorderedPixmap::getWidthForAspect(int i_w, int i_h) {
+        auto aspect = (float)i_w / i_h;
+        auto dw = (int)((float)this->h * aspect);
+        return dw;
+    }
+
     void BorderedPixmap::setAspectWidth(int imageX, int imageY) {
-        auto aspect = (float)imageX / (float)imageY;
-        int dw = (int)((float)this->h * aspect);
+        int dw = getWidthForAspect(imageX, imageY);
         if(dw == this->w)
             return;
 
-        std::cout << "resize " << imageX << ", " << imageY << std::endl;
-
-        set_coords(this->x, this->y, this->h, dw);
+        set_coords(this->x - (this->w - dw), this->y, dw, this->h);
         mark_redraw();
     }
 

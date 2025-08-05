@@ -9,6 +9,13 @@ namespace widgets {
     const icons::Icon syncIcon = ICON(assets::png_cloud_download_png);
     map<string, ui::CachedIcon> images {};
     shared_ptr<package> selectedPackage;
+    int padding = 15;
+    int controlHeight = 40;
+    int controlWidth = 200;
+    shared_ptr<ui::MultiText> _text;
+    shared_ptr<EventButton> _installBtn, _removeBtn, _previewBtn;
+    shared_ptr<BorderedPixmap> _image;
+    shared_ptr<ui::VerticalReflow> _layout;
 
     void PackageInfoPanel::on_reflow() {
         layout_image();
@@ -33,9 +40,9 @@ namespace widgets {
             _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
         }
         _text->mark_redraw();
-        _previewBtn->mark_redraw();
-        _installBtn->mark_redraw();
-        _removeBtn->mark_redraw();
+        //_previewBtn->mark_redraw();
+        //_installBtn->mark_redraw();
+        //_removeBtn->mark_redraw();
         mark_redraw();
     }
 
@@ -52,8 +59,7 @@ namespace widgets {
                 int ix, iy, comp;
                 bool decoded = stbi_info_from_memory(data.data(), data.size(), &ix, &iy, &comp);
                 auto ic = images.emplace(package->Package,
-                                         ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->w,
-                                                        _image->h));
+                                         ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->getWidthForAspect(ix, iy), _image->h));
                 ui::TaskQueue::add_task([=]() {
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
@@ -126,7 +132,9 @@ namespace widgets {
         dx += controlWidth + padding;
         _previewBtn->set_coords(dx, dy, controlWidth, controlHeight);
 
-        _image->set_coords(w - dw + padding + padding, y + (padding * 2), dw, dh);
+
+        //_image->set_coords(w - dw, _text->y, dw, _text->h);
+        _image->set_coords(w - dw - padding, y + (padding * 2), dw, dh);
 
         _installBtn->on_reflow();
         _removeBtn->on_reflow();
@@ -138,10 +146,12 @@ namespace widgets {
         _previewBtn->mark_redraw();
     }
 
-    PackageInfoPanel::PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style,
-                                       shared_ptr<ui::InnerScene> &scene) : ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), RoundCornerWidget(x,y,w,h,style){
+    shared_ptr<ui::InnerScene> scene;
+
+    PackageInfoPanel::PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style) : ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), RoundCornerWidget(x,y,w,h,style){
         _text = make_shared<ui::MultiText>(x,y,w,h,"");
         _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
+        scene = ui::make_scene();
         children.push_back(_text);
         _installBtn = make_shared<EventButton>(x,y,200, controlHeight,"Install", LightButtonStyle());
         _removeBtn = make_shared<EventButton>(x,y,200, controlHeight,"Uninstall", LightButtonStyle());
