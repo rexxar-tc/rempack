@@ -80,12 +80,25 @@ static string get_cached_path(const string& basename = "rempack"){
 }
 
 int scount = 0;
+volatile bool sigExit = false;
 
-[[noreturn]]
+void onExit(int signal){
+    if(sigExit || sPipe <= 0){
+        return;
+    }
+    auto v = close(sPipe);
+    sPipe = -1;
+    std::cerr << v << "SIGNAL: " << signal << std::endl;
+    sigExit = true;
+    ui::TaskQueue::wakeup();
+    ui::IdleQueue::wakeup();
+}
+
 void Rempack::startApp() {
 #ifdef DEV
     util::RM_CUR_VERSION = util::RM2;
 #endif
+    ui::MainLoop::exit += onExit;
     setupStyle();
 
     std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -152,8 +165,13 @@ void Rempack::startApp() {
 
         //fb->waveform_mode = WAVEFORM_MODE_GC16;
         ui::MainLoop::read_input();
+
+        if(sigExit){
+            std::cerr << "BRK\n";
+            break;
+        }
     }
-    close(sPipe);
+    std::cerr << "MAIN LOOP EXIT" << std::endl;
 }
 void searchQueryOpen(string s){
     if(selected != nullptr){

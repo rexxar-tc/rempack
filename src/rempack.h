@@ -9,8 +9,8 @@
 
 class Rempack {
 public:
-    [[noreturn]] static void startApp();
-    [[noreturn]] static void startApp(int pipe);
+    static void startApp();
+    static void startApp(int pipe);
 private:
 
 };

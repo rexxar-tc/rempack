@@ -115,7 +115,8 @@ int read_exact(int fd, void* buf, uint32_t count) {
 
     while (total < count) {
         auto n = read(fd, ptr + total, count - total);
-        if (n < 0) {
+        if (n <= 0) {
+            std::cerr << "REOF" << std::endl;
             // Error or EOF
             return n;
         }
@@ -134,6 +135,7 @@ int ScreenCatcher::Listen(int pipe) {
         workers.emplace_back(worker);
     }
 
+    int err = 0;
     size_t buflen = 0;
     int n = read_exact(pipe, &buflen, sizeof(size_t));
     //std::cout << "plen " << buflen << '\n';
@@ -145,20 +147,26 @@ int ScreenCatcher::Listen(int pipe) {
         path.resize(buflen);;
         n = read_exact(pipe, path.data(), buflen);
         //std::cout << path << '\n';
-        if (n <= 0)
-            return 1;
+        if (n <= 0) {
+            err = 1;
+            break;
+        }
 
         size_t dims[2];
         n = read_exact(pipe, dims, sizeof(size_t) * 2);
         // std::cout << "dims " << dims[0] << ',' << dims[1] << '\n';
-        if (n <= 0)
-            return 2;
+        if (n <= 0) {
+            err = 2;
+            break;
+        }
 
         std::vector<remarkable_color> buf(dims[0] * dims[1]);
         n = read_exact(pipe, buf.data(), dims[0] * dims[1] * sizeof(remarkable_color));
         //std::cout << "read " << buf.size() << std::endl;
-        if (n <= 0)
-            return 3;
+        if (n <= 0){
+            err = 3;
+            break;
+        }
 
         shot data {
                 dims[0],
@@ -187,14 +195,19 @@ int ScreenCatcher::Listen(int pipe) {
         if(dts.count() > 10)
             std::cout << "STALL: " << dts.count() << std::endl;
         n = read_exact(pipe, &buflen, sizeof(size_t));
+        if(n <= 0){
+            err = 9;
+            break;
+        }
     }
 
     std::cerr << "EXITING" << std::endl;
     done = true;
     cv.notify_all();
-    for(auto &w : workers)
+    for(auto &w : workers) {
         w.join();
-    return 0;
+    }
+    return err;
 }
 
 ssize_t write_all(int fd, const void* buf, size_t count) {
@@ -204,6 +217,7 @@ ssize_t write_all(int fd, const void* buf, size_t count) {
     while (total_written < count) {
         ssize_t n = write(fd, ptr + total_written, count - total_written);
         if (n < 0) {
+            std::cerr << "WEOF" << std::endl;
             if (errno == EINTR) continue;
             return -1;  // error
         }
