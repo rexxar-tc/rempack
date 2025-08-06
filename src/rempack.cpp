@@ -38,6 +38,18 @@ shared_ptr<widgets::FilterOptions> filterOpts;
 
 int sPipe;
 
+#ifdef DEV
+// run this constructor as early as possible to preempt calls to framebuffer::get()
+// and inject a custom framebuffer instead of the default file-backed RM2 size buffer
+__attribute__((constructor(1000)))
+static void my_fb_initializer() {
+    std::cout << "init fb: " << (framebuffer::_FB == nullptr) << std::endl;
+    //set memory-backed framebuffer of any dimension
+    //framebuffer::_FB = make_shared<framebuffer::VirtualFB>(1406,1874);
+    framebuffer::_FB = make_shared<framebuffer::VirtualFB>(900,1200);
+}
+#endif
+
 void Rempack::startApp(int pipe){
     sPipe = pipe;
     startApp();
@@ -95,26 +107,12 @@ void onExit(int signal){
 }
 
 void Rempack::startApp() {
-#ifdef DEV
-    util::RM_CUR_VERSION = util::RM2;
-#endif
     ui::MainLoop::exit += onExit;
     setupStyle();
 
     std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::tm tm{};
     localtime_r(&t, &tm);
-
-    fb = framebuffer::get();
-    auto scene = buildHomeScene(fb->width, fb->height);
-    ui::MainLoop::set_scene(scene);
-
-    //TODO: we need one tick before the first real frame to set some things up?
-    ui::MainLoop::main();
-    ui::MainLoop::refresh();
-    //ui::MainLoop::redraw();
-
-    setupDebug();
 
     std::ostringstream oss;
     oss << "rempack/screens/" << std::put_time(&tm, "%Y-%m-%d_%H-%M") << "/";
@@ -126,6 +124,27 @@ void Rempack::startApp() {
 
     if(!fs::exists(spath))
         fs::create_directories(spath);
+
+    fb = framebuffer::get();
+    auto scene = buildHomeScene(fb->width, fb->height);
+    ui::MainLoop::set_scene(scene);
+
+    //TODO: we need one tick before the first real frame to set some things up?
+    ui::MainLoop::main();
+    ui::MainLoop::refresh();
+    //ui::MainLoop::redraw();
+
+    stringstream sss;
+    sss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
+    ScreenCatcher::WriteScreen(sss.str(), fb->fbmem, fb->width, fb->height, sPipe);
+    debugging::render_debug_layers(ui::MainLoop::scene, fs::path(sss.str()).replace_extension() / "debug", sPipe);
+    scount++;
+    setupDebug();
+    ScreenCatcher::WriteScreen(sss.str(), fb->fbmem, fb->width, fb->height, sPipe);
+    debugging::render_debug_layers(ui::MainLoop::scene, fs::path(sss.str()).replace_extension() / "debug1", sPipe);
+    scount++;
+
+
 
     filterMgr->updateLists(filterOpts, "");
 #ifdef DEV
@@ -146,7 +165,7 @@ void Rempack::startApp() {
             lss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
             ScreenCatcher::WriteScreen(lss.str(), fb->fbmem, fb->width, fb->height, sPipe);
             auto ws = std::chrono::steady_clock::now();
-            //debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
+            debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
             auto dws = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - ws).count();
             if(dws > 10){
                 cout << "ws: " << dws << endl;
@@ -250,7 +269,7 @@ void onPreviewClick(void*){
 
 void setupDebug(){
 //#ifndef NDEBUG
-    //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+//    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
 
     //std::filesystem::remove_all("/home/root/.cache/rempack");
@@ -340,7 +359,7 @@ ui::Scene buildHomeScene(int width, int height) {
     filterMgr = new ListFilter(filterPanel, packagePanel);
     filterMgr->updateLists(filterOpts, "");
 
-    displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle(), scene);
+    displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle());
 
     displayBox->events.install += PLS_DELEGATE(onInstallClick);
     displayBox->events.uninstall += PLS_DELEGATE(onUninstallClick);
