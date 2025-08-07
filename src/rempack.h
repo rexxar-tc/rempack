@@ -5,6 +5,8 @@
 #pragma once
 
 #define CAPTURE_SCREEN
+//#define CAPTURE_LAYERS
+
 //#include "defines.h"
 
 class Rempack {

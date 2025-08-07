@@ -45,8 +45,8 @@ __attribute__((constructor(1000)))
 static void my_fb_initializer() {
     std::cout << "init fb: " << (framebuffer::_FB == nullptr) << std::endl;
     //set memory-backed framebuffer of any dimension
-    //framebuffer::_FB = make_shared<framebuffer::VirtualFB>(1406,1874);
-    framebuffer::_FB = make_shared<framebuffer::VirtualFB>(900,1200);
+    framebuffer::_FB = make_shared<framebuffer::VirtualFB>(1404,1872);
+    //framebuffer::_FB = make_shared<framebuffer::VirtualFB>(900,1200);
 }
 #endif
 
@@ -56,10 +56,7 @@ void Rempack::startApp(int pipe){
 }
 
 void setupStyle(){
-//#ifdef REMARKABLE
     setenv("RMKIT_DEFAULT_FONT", "/usr/share/fonts/ttf/ebgaramond/EBGaramond-VariableFont_wght.ttf", 0);
-//#endif
-//    setenv("RMKIT_DEFAULT_FONT", "/usr/share/fonts/TTF/TSCu_Comic.ttf", 0);
     stbtext::GRAYSCALE = true;
     ui::Style::DEFAULT = {
             .font_size = 40,
@@ -98,32 +95,51 @@ void onExit(int signal){
     if(sigExit || sPipe <= 0){
         return;
     }
-    auto v = close(sPipe);
+    //close the screencap process if it's running
+    close(sPipe);
     sPipe = -1;
-    std::cerr << v << "SIGNAL: " << signal << std::endl;
+    //std::cerr << v << "SIGNAL: " << signal << std::endl;
+    //attempt to wake main thread and let it clean up
     sigExit = true;
     ui::TaskQueue::wakeup();
     ui::IdleQueue::wakeup();
 }
 
+string spath;
+
+string screenPath(int idx){
+    if(spath.empty()) {
+        std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm tm{};
+        localtime_r(&t, &tm);
+        std::ostringstream oss;
+        oss << "rempack/screens/" << std::put_time(&tm, "%Y-%m-%d_%H-%M") << "/";
+        spath = get_cached_path(oss.str());
+        if (!fs::exists(spath))
+            fs::create_directories(spath);
+    }
+    stringstream sss;
+    sss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
+
+    return sss.str();
+}
+
+void capture_screen(int idx){
+#ifdef CAPTURE_SCREEN
+    ScreenCatcher::WriteScreen(screenPath(idx), fb->fbmem, fb->width, fb->height, sPipe);
+#endif
+}
+
+void capture_layers(int idx){
+#ifdef CAPTURE_LAYERS
+    //debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
+    debugging::render_debug_layers(ui::MainLoop::scene, fb->width, fb->height, fs::path(screenPath(idx)).replace_extension() / "debug", sPipe);
+#endif
+}
+
 void Rempack::startApp() {
     ui::MainLoop::exit += onExit;
     setupStyle();
-
-    std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::tm tm{};
-    localtime_r(&t, &tm);
-
-    std::ostringstream oss;
-    oss << "rempack/screens/" << std::put_time(&tm, "%Y-%m-%d_%H-%M") << "/";
-    string spath = oss.str();
-
-    spath = get_cached_path(spath);
-
-    std::cout << "Screenshot path: " << spath << std::endl;
-
-    if(!fs::exists(spath))
-        fs::create_directories(spath);
 
     fb = framebuffer::get();
     auto scene = buildHomeScene(fb->width, fb->height);
@@ -134,54 +150,34 @@ void Rempack::startApp() {
     ui::MainLoop::refresh();
     //ui::MainLoop::redraw();
 
-    stringstream sss;
-    sss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
-    ScreenCatcher::WriteScreen(sss.str(), fb->fbmem, fb->width, fb->height, sPipe);
-    debugging::render_debug_layers(ui::MainLoop::scene, fs::path(sss.str()).replace_extension() / "debug", sPipe);
+#ifdef DEV
+    capture_screen(scount);
+    capture_layers(scount);
     scount++;
+#endif
     setupDebug();
-    ScreenCatcher::WriteScreen(sss.str(), fb->fbmem, fb->width, fb->height, sPipe);
-    debugging::render_debug_layers(ui::MainLoop::scene, fs::path(sss.str()).replace_extension() / "debug1", sPipe);
+#ifdef DEV
+    capture_screen(scount);
+    capture_layers(scount);
     scount++;
-
-
+#endif
 
     filterMgr->updateLists(filterOpts, "");
-#ifdef DEV
-    uint8_t *lastframe = new uint8_t[fb->byte_size];
-#endif
     while(true) {
         auto mstart = chrono::steady_clock::now();
         ui::MainLoop::main();
-        ui::MainLoop::redraw();
-        auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
-        auto dirty = fb->dirty;
-#ifdef DEV
-        dirty = memcmp(lastframe, fb->fbmem, fb->byte_size) != 0;
-#endif
-        if (dirty) {
+        if (fb->dirty) {
+            auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
             std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
-            stringstream lss;
-            lss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
-            ScreenCatcher::WriteScreen(lss.str(), fb->fbmem, fb->width, fb->height, sPipe);
-            auto ws = std::chrono::steady_clock::now();
-            debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
-            auto dws = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - ws).count();
-            if(dws > 10){
-                cout << "ws: " << dws << endl;
-            }
+            capture_screen(scount);
+            capture_layers(scount);
             scount++;
             if (scount % 40 == 0) {
                 initScreen(false);
             }
-
-#ifdef DEV
-            memcpy(lastframe, fb->fbmem, fb->byte_size);
-            fb->reset_dirty(fb->dirty_area);
-            fb->dirty = 0;
-#endif
         }
 
+        ui::MainLoop::redraw();
         //fb->waveform_mode = WAVEFORM_MODE_GC16;
         ui::MainLoop::read_input();
 
