@@ -105,39 +105,13 @@ namespace widgets {
 
     }
 
-
-    //TODO: this still isn't quite right
     void RoundCornerWidget::undraw() {
         fb->waveform_mode = WAVEFORM_MODE_GC16;
         drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.borderThickness,
-                       WHITE, style.inset, false, WHITE,
+                       1.f, style.inset, false, 1.f,
                        style.expA, style.expB, 1.f);
         render_inside_fill();
         return;
-        //top
-        fb->draw_rect(x + style.inset - style.cornerRadius - style.borderThickness,
-                      y + style.inset - style.cornerRadius - style.borderThickness,
-                      w - style.inset + style.cornerRadius + style.borderThickness,
-                      style.borderThickness,
-                      undraw_color, true);
-        //bottom
-        fb->draw_rect(x + style.inset - style.cornerRadius - style.borderThickness,
-                      y + h - style.inset + style.cornerRadius,
-                      w - style.inset + style.cornerRadius + style.borderThickness,
-                      style.borderThickness,
-                      undraw_color, true);
-        //left
-        fb->draw_rect(x + style.inset - style.cornerRadius - style.borderThickness,
-                      y + style.inset - style.cornerRadius - style.borderThickness,
-                      style.borderThickness,
-                      h - style.inset + style.cornerRadius + style.borderThickness,
-                      undraw_color, true);
-        //right
-        fb->draw_rect(x + w - style.inset + style.cornerRadius,
-                      y + style.inset - style.cornerRadius - style.borderThickness,
-                      style.borderThickness,
-                      h - style.inset + style.cornerRadius + style.borderThickness,
-                      undraw_color, true);
     }
 
     void RoundCornerWidget::render_border() {
