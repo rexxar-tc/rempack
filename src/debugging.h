@@ -31,86 +31,135 @@ namespace debugging{
     }
 
     namespace {
-        /*
-         * Three levels:
-         * Full screen
-         * Full widget
-         * Individual widget
-         *
-         */
-        void render_layer(framebuffer::FB &fb, framebuffer::FB &fb2, shared_ptr<ui::Widget> &widget, const fs::path &basePath, int wakeSig) {
+        //std::mutex mutex_;
+        stack<shared_ptr<framebuffer::FB>> bufferPool;
+
+        int buffer_count = 0;
+
+        void release_buffer(shared_ptr<framebuffer::FB> fb){
+            //std::lock_guard<std::mutex> lock(mutex_);
+            bufferPool.push(fb);
+        }
+
+        shared_ptr<framebuffer::FB> get_buffer(int x, int y){
+            //std::lock_guard<std::mutex> lock(mutex_);
+            if(bufferPool.empty()) {
+                std::cout << "allocations: " << buffer_count << std::endl;
+                buffer_count++;
+                return make_shared<framebuffer::VirtualFB>(x, y);
+            }
+            auto r = bufferPool.top();
+            bufferPool.pop();
+            return r;
+        }
+
+        class PooledBuffer{
+        private:
+            shared_ptr<framebuffer::FB> fb = nullptr;
+        public:
+            PooledBuffer(int x, int y){
+                fb = get_buffer(x, y);
+            }
+            ~PooledBuffer(){
+                release_buffer(fb);
+            }
+
+            shared_ptr<framebuffer::FB> operator->(){return fb;}
+            shared_ptr<framebuffer::FB>& operator*(){return fb;}
+            PooledBuffer(const PooledBuffer&) = delete;
+            PooledBuffer& operator=(const PooledBuffer&) = delete;
+            PooledBuffer(PooledBuffer&& other) noexcept : fb(other.fb) {
+                other.fb = nullptr;
+            }
+            PooledBuffer& operator=(PooledBuffer&& other) noexcept {
+                if (this != &other) {
+                    if (fb) release_buffer(fb);
+                    fb = other.fb;
+                    other.fb = nullptr;
+                }
+                return *this;
+            }
+        };
+
+        void render_layer(shared_ptr<framebuffer::FB> &globalFb, shared_ptr<framebuffer::FB> &parentFb, shared_ptr<ui::Widget> &widget, const fs::path &basePath, int wakeSig) {
 
             if (!widget->visible)
                 return;
 
-            framebuffer::VirtualFB fb3(fb.width, fb.height);
-            fb3.clear_screen();
+            //auto localFb = get_buffer(globalFb->width, globalFb->height);
+            PooledBuffer localFb(globalFb->width, globalFb->height);
+            //localFb.clear_screen();
+            memset(localFb->fbmem, 0xFF, localFb->byte_size);
             auto ofb = widget->fb;
-            widget->fb = &fb;
+            widget->fb = globalFb.get();
             widget->render();
             widget->render_border();
-            widget->fb = &fb2;
+            widget->fb = parentFb.get();
             widget->render();
             widget->render_border();
-            widget->fb = &fb3;
+            widget->fb = (*localFb).get();
             widget->render();
             widget->render_border();
             widget->fb = ofb;
             auto g = widgets::toRColor(0,255,0);
             auto r = widgets::toRColor(255,0,0);
-            fb2.draw_rect(widget->x, widget->y, widget->w, widget->h, g, false); // NOLINT
+            parentFb->draw_rect(widget->x, widget->y, widget->w, widget->h, g, false); // NOLINT
             for(int i = -1; i < 3; i++ ) {
-                fb3.draw_rect(widget->_x - i, widget->_y - i, widget->_w + (2 * i), widget->_h + (2 * i), r, false); // NOLINT
+                localFb->draw_rect(widget->_x - i, widget->_y - i, widget->_w + (2 * i), widget->_h + (2 * i), r, false); // NOLINT
             }
-            fb3.draw_rect(widget->x, widget->y, widget->w, widget->h, g, false); // NOLINT
+            localFb->draw_rect(widget->x, widget->y, widget->w, widget->h, g, false); // NOLINT
 
-            if (fb3.dirty) {
+            if (localFb->dirty) {
                 //update
                 auto oPath = basePath;
                 oPath += "_3";
                 oPath.replace_extension(".png");
-                ScreenCatcher::WriteScreen(oPath, fb3.fbmem, fb3.width, fb3.height, wakeSig);
+                ScreenCatcher::WriteScreen(oPath, localFb->fbmem, localFb->width, localFb->height, wakeSig);
             }
             if(!widget->children.empty()){
                 int j = 0;
                 for (auto &cc: widget->children) {
-                    render_layer(fb, fb3, cc, basePath / to_string(j++), wakeSig);
+                    render_layer(globalFb, *localFb, cc, basePath / to_string(j++), wakeSig);
                 }
             }
-            if (fb2.dirty) {
+            if (parentFb->dirty) {
                 //update
                 auto oPath = basePath;
                 oPath += "_2";
                 oPath.replace_extension(".png");
-                ScreenCatcher::WriteScreen(oPath, fb2.fbmem, fb2.width, fb2.height, wakeSig);
+                ScreenCatcher::WriteScreen(oPath, parentFb->fbmem, parentFb->width, parentFb->height, wakeSig);
             }
         }
     }
 
     //1404x1872 - 157x209mm -- 226dpi
-    void render_debug_layers(const shared_ptr<ui::InnerScene>& scene, const string& basePath, int wakeSig) {
+    void render_debug_layers(const shared_ptr<ui::InnerScene>& scene, int x, int y, const string& basePath, int wakeSig) {
 
-        auto fb = framebuffer::VirtualFB(1404, 1872);
-        auto fb2 = framebuffer::VirtualFB(1404, 1872);
-        fb.clear_screen();
-        fb2.clear_screen();
+        auto fb = PooledBuffer(x, y);
+        auto fb2 = PooledBuffer(x, y);
+        //fb.clear_screen();
+        memset(fb->fbmem, 0xFF, fb->byte_size);
+        //fb2.clear_screen();
+        memset(fb2->fbmem, 0xFF, fb2->byte_size);
         fs::path path = basePath;
         int count = 0;
         for (auto &w: scene->widgets) {
-            render_layer(fb, fb2, w, path / to_string(count++), wakeSig);
+            render_layer(*fb, *fb2, w, path / to_string(count++), wakeSig);
             fs::path lpath = path;
             lpath += "_1";
             lpath.replace_extension(".png");
-            if(fb2.dirty)
+            if(fb2->dirty)
             {
-                ScreenCatcher::WriteScreen(lpath, fb2.fbmem, fb2.width, fb2.height, wakeSig);
-                fb2.clear_screen();
+                ScreenCatcher::WriteScreen(lpath, fb2->fbmem, fb2->width, fb2->height, wakeSig);
+                fb2->clear_screen();
             }
         }
 
             auto oPath = path;
             oPath.replace_extension(".png");
-            ScreenCatcher::WriteScreen(oPath, fb.fbmem, fb.width, fb.height, wakeSig);
-
+            ScreenCatcher::WriteScreen(oPath, fb->fbmem, fb->width, fb->height, wakeSig);
+        while(!bufferPool.empty())
+            bufferPool.pop();
+        buffer_count = 0;
     }
 }
