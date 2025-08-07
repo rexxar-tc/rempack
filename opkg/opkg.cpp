@@ -35,12 +35,12 @@ using namespace std;
  * Size: 2122
  */
 
-#ifdef REMARkABLE
+#ifdef DEV
+const fs::path OPKG_DB{fs::current_path() / "../data/opt/var/opkg-lists"};
+const fs::path OPKG_LIB{fs::current_path() / "../data/opt/lib/opkg"};
+#else
 const fs::path OPKG_DB{"/opt/var/opkg-lists"};
 const fs::path OPKG_LIB{"/opt/lib/opkg"}; //info(dir) lists(dir(empty?)) status(f)
-#else
-const fs::path OPKG_DB{fs::current_path() / "data/opt/var/opkg-lists"};
-const fs::path OPKG_LIB{fs::current_path() / "data/opt/lib/opkg"};
 #endif
 //need to remove LD_PRELOAD var set by rm2fb-client:
 std::unordered_set<std::string> preload_excludes = {"/opt/lib/librm2fb_client.so", "/opt/lib/librm2fb_client.so.1", "/opt/lib/libsysfs_preload.so"};

@@ -101,31 +101,8 @@ target_compile_definitions(widgets PRIVATE
         #debug builds require an external font file. I've provided one for you in /include
         $<$<STREQUAL:${TARGET_PLATFORM},x86>:FONT_EMBED_H="font_embed.h">
         )
+target_compile_definitions(opkg PRIVATE $<$<STREQUAL:${TARGET_PLATFORM},x86>:DEV>)
 target_link_libraries(${PROJECT_NAME} PRIVATE opkg widgets rmkit_impl archive_static)
-
-#below is an unfinished experiment in using rmkit-sim to do local emulation
-#I'll finish it someday
-#to enable local emulation, install resim (link here)
-#if resim is not available in the PATH environment variable, you may specify it here
-#set(RESIM_ALTERNATE_PATH "~/.local/bin/")
-
-#find_program(RESIM_PATH resim
-#        "$ENV{PATH}" "${RESIM_ALTERNATE_PATH}")
-
-#if(NOT RESIM_PATH)
-#    message(WARNING "Resim is not found in any search path. Local emulation disabled!")
-#endif ()
-
-#if(RESIM_PATH)
-##    message(NOTICE "Resim found at ${RESIM_PATH}. Setting up target...")
-#    add_custom_target(Simulate
-#            COMMAND ${RESIM_PATH} ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
-#            VERBATIM)
-#    add_dependencies(Simulate ${PROJECT_NAME})
-##else()
-##    message(NOTICE "Resim path not found, Simulate target disabled!")
-#endif()
-
 
 add_custom_target(docker_release
         COMMAND docker run -i -v "${CMAKE_SOURCE_DIR}:/mnt/project" --pull missing -w /mnt/project ghcr.io/toltec-dev/toolchain:latest sh docker_build_script.sh
