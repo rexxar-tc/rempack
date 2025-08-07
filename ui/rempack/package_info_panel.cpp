@@ -32,7 +32,7 @@ namespace widgets {
     void PackageInfoPanel::layout_image() {
         _text->undraw();
         if(_image->visible) {
-            int dw = (_image->x - _text->x) - (padding * 4);
+            int dw = (_image->x - _text->x) - (padding * 2);
             _text->set_coords(x+padding,y+padding, dw, _text->h);
         }
         else{
@@ -124,17 +124,17 @@ namespace widgets {
     void PackageInfoPanel::layout_buttons() {
         auto dx = x + padding;
         auto dy = y + h - padding - controlHeight;
-        auto dh = h - (padding * 6) - controlHeight;
-        auto dw = (int)(floor(dh * rm_aspect));
+        auto dh = h - (padding * 3) - controlHeight;
+        auto dw = (int)(dh * rm_aspect);
         _installBtn->set_coords(dx, dy, controlWidth, controlHeight);
         dx += controlWidth + padding;
         _removeBtn->set_coords(dx, dy, controlWidth, controlHeight);
         dx += controlWidth + padding;
         _previewBtn->set_coords(dx, dy, controlWidth, controlHeight);
 
-
-        //_image->set_coords(w - dw, _text->y, dw, _text->h);
-        _image->set_coords(w - dw - padding, y + (padding * 2), dw, dh);
+        _image->undraw();
+        _image->set_coords(w - dw, _text->y, dw, _text->h);
+       // _image->set_coords(w - dw - padding, y + (padding * 2), dw, dh);
 
         _installBtn->on_reflow();
         _removeBtn->on_reflow();
@@ -149,14 +149,24 @@ namespace widgets {
     shared_ptr<ui::InnerScene> scene;
 
     PackageInfoPanel::PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style) : ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), RoundCornerWidget(x,y,w,h,style){
-        _text = make_shared<ui::MultiText>(x,y,w,h,"");
-        _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
-        scene = ui::make_scene();
+        auto lx = x+padding;
+        auto ly = y+padding;
+        auto lw = w-(2*padding);
+        auto h1 = h-(3*padding) - controlHeight;
+        _text = make_shared<ui::MultiText>(lx, ly, lw, h1, "");
+        auto iq = (int)(h1 * 0.75f); //dummy aspect ratio of 3/4 like the RM2
+        _image = make_shared<BorderedPixmap>(lx - iq, ly ,iq, h1, icons::Icon(), RoundCornerStyle());
+        _image->hide();
         children.push_back(_text);
-        _installBtn = make_shared<EventButton>(x,y,200, controlHeight,"Install", LightButtonStyle());
-        _removeBtn = make_shared<EventButton>(x,y,200, controlHeight,"Uninstall", LightButtonStyle());
-        _previewBtn = make_shared<EventButton>(x,y,200, controlHeight,"Preview", LightButtonStyle());
-        _image = make_shared<BorderedPixmap>(x,y,200,controlHeight, icons::Icon(), RoundCornerStyle());
+
+        ly += h1 + padding;
+        controlWidth = min(controlWidth, lw / 4);
+        scene = ui::make_scene();
+        _installBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Install", LightButtonStyle());
+        lx += controlWidth + padding;
+        _removeBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Uninstall", LightButtonStyle());
+        lx += controlWidth + padding;
+        _previewBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Preview", LightButtonStyle());
         _installBtn->disable();
         _installBtn->border->show();
         children.push_back(_installBtn);
@@ -169,7 +179,6 @@ namespace widgets {
         _previewBtn->border->hide();
         children.push_back(_previewBtn);
         scene->add(_previewBtn);
-        _image->hide();
         children.push_back(_image);
         scene->add(_image);
         _installBtn->events.clicked += [this](void*){events.install();};
@@ -179,6 +188,7 @@ namespace widgets {
     }
 
     void PackageInfoPanel::debugRender() {
+        _image->debugRender();
         fb->draw_rect(_text->x, _text->y, _text->w, _text->h, toRColor(0,255,255), false);
         RoundCornerWidget::debugRender();
     }
