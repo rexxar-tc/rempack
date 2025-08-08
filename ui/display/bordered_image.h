@@ -20,11 +20,11 @@ namespace widgets {
         void setImage(icons::Icon icon, int w, int h);
         void setImage(ui::CachedIcon icon, int w, int h);
         int getWidthForAspect(int i_w, int i_h);
-    protected:
-        string debugName() const override {return "BorderedPixmap";}
         void debugRender() override;
+        string debugName() const override {return "BorderedPixmap";}
     private:
         shared_ptr<ui::Pixmap> image;
+        void center_image();
     };
 
 } // widgets

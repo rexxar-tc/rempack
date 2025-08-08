@@ -10,12 +10,20 @@ namespace widgets {
         children.push_back(image);
     }
 
+    void BorderedPixmap::center_image(){
+        int dx = (this->w / 2) - (image->w/2) + this->x;
+        int dy = (this->h / 2) - (image->h/2) + this->y;
+        image->x = dx;
+        image->y = dy;
+    }
+
     void BorderedPixmap::mark_redraw() {
         image->mark_redraw();
         Widget::mark_redraw();
     }
 
     void BorderedPixmap::on_reflow() {
+        center_image();
         //image->set_coords(x, y, w, h);
         //image->mark_redraw();
         Rect::on_reflow();
@@ -84,7 +92,8 @@ namespace widgets {
         if(dw == this->w)
             return;
 
-        set_coords(this->x - (this->w - dw), this->y, dw, this->h);
+        undraw();
+        set_coords(this->x, this->y, dw, this->h);
         mark_redraw();
     }
 

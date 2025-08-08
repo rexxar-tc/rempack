@@ -41,11 +41,10 @@ namespace widgets {
         void set_image(const shared_ptr<package>& package);
     private:
 
-        void layout_buttons();
+        void layout_controls();
 
         void set_text(const string& text);
         void set_states(bool installed, bool canPreview = false);
-        void layout_image();
     protected:
         void debugRender() override;
         string debugName() const override {return "InfoPanel";}

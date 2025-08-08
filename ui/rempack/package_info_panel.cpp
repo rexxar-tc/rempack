@@ -18,8 +18,7 @@ namespace widgets {
     shared_ptr<ui::VerticalReflow> _layout;
 
     void PackageInfoPanel::on_reflow() {
-        layout_image();
-        layout_buttons();
+        layout_controls();
     }
 
     void PackageInfoPanel::set_text(const string& text) {
@@ -29,30 +28,13 @@ namespace widgets {
         this->mark_redraw();
     }
 
-    void PackageInfoPanel::layout_image() {
-        _text->undraw();
-        if(_image->visible) {
-            int dw = (_image->x - _text->x) - (padding * 2);
-            _text->set_coords(x+padding,y+padding, dw, _text->h);
-        }
-        else{
-
-            _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
-        }
-        _text->mark_redraw();
-        //_previewBtn->mark_redraw();
-        //_installBtn->mark_redraw();
-        //_removeBtn->mark_redraw();
-        mark_redraw();
-    }
-
     void PackageInfoPanel::set_image(const shared_ptr<package>& package) {
         _previewBtn->disable();
         _image->show();
         auto it = images.find(package->Package);
         if (it == images.end()) {
             _image->setImage(syncIcon, 100, 100);
-            layout_image();
+            layout_controls();
             ui::TaskQueue::add_task([=]() {
                 vector<uint8_t> data;
                 data = opkg::getCachedSplashscreen(package);
@@ -64,7 +46,7 @@ namespace widgets {
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
-                    layout_image();
+                    layout_controls();
                     _text->set_text(opkg::FormatPackage(selectedPackage));
                 });
             });
@@ -72,7 +54,7 @@ namespace widgets {
             auto ico = it->second;
             _image->setAspectWidth(ico.width, ico.height);
             _image->setImage(ico);
-            layout_image();
+            layout_controls();
             if(selectedPackage != nullptr)
                 _text->set_text(opkg::FormatPackage(selectedPackage));
         }
@@ -121,21 +103,33 @@ namespace widgets {
         }
     }
 
-    void PackageInfoPanel::layout_buttons() {
+    void PackageInfoPanel::layout_controls() {
+        undraw();
+        auto lx = x+padding;
+        auto ly = y+padding;
         auto dx = x + padding;
         auto dy = y + h - padding - controlHeight;
-        auto dh = h - (padding * 3) - controlHeight;
-        auto dw = (int)(dh * rm_aspect);
         _installBtn->set_coords(dx, dy, controlWidth, controlHeight);
         dx += controlWidth + padding;
         _removeBtn->set_coords(dx, dy, controlWidth, controlHeight);
         dx += controlWidth + padding;
         _previewBtn->set_coords(dx, dy, controlWidth, controlHeight);
 
-        _image->undraw();
-        _image->set_coords(w - dw, _text->y, dw, _text->h);
-       // _image->set_coords(w - dw - padding, y + (padding * 2), dw, dh);
 
+        auto h1 = h-(3*padding) - controlHeight;
+        if(_image->visible) {
+            _image->set_coords(w - _image->w, ly, _image->w, h1);
+            _text->set_coords(lx, ly, w - (padding * 4) - _image->w, h1);
+            _image->on_reflow();
+            _image->mark_redraw();
+        }
+        else{
+            _text->set_coords(lx, ly, w - (padding * 2), h1);
+        }
+
+        mark_redraw();
+        _text->mark_redraw();
+        _text->on_reflow();
         _installBtn->on_reflow();
         _removeBtn->on_reflow();
         _previewBtn->on_reflow();
@@ -152,20 +146,18 @@ namespace widgets {
         auto lx = x+padding;
         auto ly = y+padding;
         auto lw = w-(2*padding);
-        auto h1 = h-(3*padding) - controlHeight;
+        auto h1 = h-(4*padding) - controlHeight;
         _text = make_shared<ui::MultiText>(lx, ly, lw, h1, "");
         auto iq = (int)(h1 * 0.75f); //dummy aspect ratio of 3/4 like the RM2
         _image = make_shared<BorderedPixmap>(lx - iq, ly ,iq, h1, icons::Icon(), RoundCornerStyle());
         _image->hide();
         children.push_back(_text);
 
-        ly += h1 + padding;
+        ly = y + w - controlHeight - padding;
         controlWidth = min(controlWidth, lw / 4);
         scene = ui::make_scene();
         _installBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Install", LightButtonStyle());
-        lx += controlWidth + padding;
         _removeBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Uninstall", LightButtonStyle());
-        lx += controlWidth + padding;
         _previewBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Preview", LightButtonStyle());
         _installBtn->disable();
         _installBtn->border->show();
@@ -184,7 +176,7 @@ namespace widgets {
         _installBtn->events.clicked += [this](void*){events.install();};
         _removeBtn->events.clicked += [this](void*){events.uninstall();};
         _previewBtn->events.clicked += [this](void*){events.preview();};
-        layout_buttons();
+        layout_controls();
     }
 
     void PackageInfoPanel::debugRender() {
