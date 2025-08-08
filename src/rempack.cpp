@@ -132,8 +132,7 @@ void capture_screen(int idx){
 
 void capture_layers(int idx){
 #ifdef CAPTURE_LAYERS
-    //debugging::render_debug_layers(ui::MainLoop::scene, fs::path(lss.str()).replace_extension() / "debug", sPipe);
-    debugging::render_debug_layers(ui::MainLoop::scene, fb->width, fb->height, fs::path(screenPath(idx)).replace_extension() / "debug", sPipe);
+    debugging::render_debug_layers(ui::MainLoop::scene, fb->width, fb->height, fs::path(screenPath(idx)).replace_extension(), sPipe);
 #endif
 }
 
@@ -160,21 +159,34 @@ void Rempack::startApp() {
     capture_screen(scount);
     capture_layers(scount);
     scount++;
+    auto *lastframe = new uint8_t[fb->byte_size];
 #endif
 
     filterMgr->updateLists(filterOpts, "");
     while(true) {
         auto mstart = chrono::steady_clock::now();
         ui::MainLoop::main();
-        if (fb->dirty) {
+        auto dirty = fb->dirty;
+#ifdef DEV
+        //I really don't know why this is necessary sometimes.
+        dirty = memcmp(lastframe, fb->fbmem, fb->byte_size) != 0;
+#endif
+        if (dirty) {
+#ifndef NDEBUG
             auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
             std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
+#endif
             capture_screen(scount);
             capture_layers(scount);
             scount++;
             if (scount % 40 == 0) {
                 initScreen(false);
             }
+#ifdef DEV
+            memcpy(lastframe, fb->fbmem, fb->byte_size);
+            fb->reset_dirty(fb->dirty_area);
+            fb->dirty = 0;
+#endif
         }
 
         ui::MainLoop::redraw();

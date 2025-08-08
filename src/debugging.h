@@ -36,8 +36,10 @@ namespace debugging{
 
         int buffer_count = 0;
 
-        void release_buffer(shared_ptr<framebuffer::FB> fb){
+        void release_buffer(const shared_ptr<framebuffer::FB>& fb){
             //std::lock_guard<std::mutex> lock(mutex_);
+            fb->dirty = 0;
+            memset(fb->fbmem, 0xff, fb->byte_size);
             bufferPool.push(fb);
         }
 
@@ -88,8 +90,6 @@ namespace debugging{
 
             //auto localFb = get_buffer(globalFb->width, globalFb->height);
             PooledBuffer localFb(globalFb->width, globalFb->height);
-            //localFb.clear_screen();
-            memset(localFb->fbmem, 0xFF, localFb->byte_size);
             auto ofb = widget->fb;
             widget->fb = globalFb.get();
             widget->render();
@@ -112,7 +112,7 @@ namespace debugging{
             if (localFb->dirty) {
                 //update
                 auto oPath = basePath;
-                oPath += "_3";
+                //oPath += "_3";
                 oPath.replace_extension(".png");
                 ScreenCatcher::WriteScreen(oPath, localFb->fbmem, localFb->width, localFb->height, wakeSig);
             }
@@ -122,13 +122,13 @@ namespace debugging{
                     render_layer(globalFb, *localFb, cc, basePath / to_string(j++), wakeSig);
                 }
             }
-            if (parentFb->dirty) {
-                //update
-                auto oPath = basePath;
-                oPath += "_2";
-                oPath.replace_extension(".png");
-                ScreenCatcher::WriteScreen(oPath, parentFb->fbmem, parentFb->width, parentFb->height, wakeSig);
-            }
+            //if (parentFb->dirty) {
+            //    //update
+            //    auto oPath = basePath;
+            //    oPath += "_2";
+            //    oPath.replace_extension(".png");
+            //    ScreenCatcher::WriteScreen(oPath, parentFb->fbmem, parentFb->width, parentFb->height, wakeSig);
+            //}
         }
     }
 
@@ -137,28 +137,25 @@ namespace debugging{
 
         auto fb = PooledBuffer(x, y);
         auto fb2 = PooledBuffer(x, y);
-        //fb.clear_screen();
-        memset(fb->fbmem, 0xFF, fb->byte_size);
-        //fb2.clear_screen();
-        memset(fb2->fbmem, 0xFF, fb2->byte_size);
         fs::path path = basePath;
+        path = path / path.filename();
         int count = 0;
         for (auto &w: scene->widgets) {
-            render_layer(*fb, *fb2, w, path / to_string(count++), wakeSig);
+            render_layer(*fb, *fb2, w, path / to_string(count), wakeSig);
             fs::path lpath = path;
-            lpath += "_1";
+            lpath += to_string(count);
             lpath.replace_extension(".png");
-            if(fb2->dirty)
-            {
+            if (fb2->dirty) {
                 ScreenCatcher::WriteScreen(lpath, fb2->fbmem, fb2->width, fb2->height, wakeSig);
                 fb2->clear_screen();
             }
         }
 
-            auto oPath = path;
-            oPath.replace_extension(".png");
-            ScreenCatcher::WriteScreen(oPath, fb->fbmem, fb->width, fb->height, wakeSig);
-        while(!bufferPool.empty())
+        auto oPath = path;
+        oPath += "_0";
+        oPath.replace_extension(".png");
+        ScreenCatcher::WriteScreen(oPath, fb->fbmem, fb->width, fb->height, wakeSig);
+        while (!bufferPool.empty())
             bufferPool.pop();
         buffer_count = 0;
     }
