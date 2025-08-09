@@ -56,6 +56,15 @@ namespace widgets {
     }
 
     bool ListBox::select(const string &label) {
+        if(label.empty()){
+            std::cout << "clearing selection\n";
+            for(const auto &s: selectedItems){
+                events.deselected(s);
+            }
+            selectedItems.clear();
+            mark_redraw();
+            return false;
+        }
         std::cout<<"selecting: "<<label<<std::endl;
         int i = 0;
         shared_ptr<ListItem> item = nullptr;
