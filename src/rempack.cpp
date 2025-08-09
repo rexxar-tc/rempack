@@ -46,7 +46,7 @@ static void my_fb_initializer() {
     std::cout << "init fb: " << (framebuffer::_FB == nullptr) << std::endl;
     //set memory-backed framebuffer of any dimension
     framebuffer::_FB = make_shared<framebuffer::VirtualFB>(1404,1872);
-    //framebuffer::_FB = make_shared<framebuffer::VirtualFB>(900,1200);
+    //framebuffer::_FB = make_shared<framebuffer::VirtualFB>(1872,1404);
 }
 #endif
 
@@ -275,14 +275,51 @@ void onPreviewClick(void*){
     displayBox->set_image(selected);
 }
 
-void setupDebug(){
+    std::deque<std::function<void(void)>> debug_steps;
+void setupDebug() {
 //#ifndef NDEBUG
-//    std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
+    //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
 
     //std::filesystem::remove_all("/home/root/.cache/rempack");
-    packagePanel->select("splashscreen-batteryempty-starr");
-    displayBox->get_preview();
+
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 1\n";
+        packagePanel->select("splashscreen-batteryempty-starr");
+        displayBox->get_preview();
+    });
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 2\n";
+        packagePanel->select("");
+    });
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 3\n";
+        packagePanel->select("dotnet-host");
+    });
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 4\n";
+        packagePanel->select("splashscreen-batteryempty-chaotic_ribbon");
+        displayBox->get_preview();
+    });
+    debug_steps.emplace_back([=]() {
+        sigExit = true;
+        ui::TaskQueue::wakeup();
+    });
+
+    auto tptr = ui::TimerList::get()->set_interval([&]() {
+        if (!debug_steps.empty()) {
+            ui::IdleQueue::add_task([&](){
+                    std::cout << "STEP" << std::endl;
+                    auto &step = debug_steps.front();
+                    debug_steps.pop_front();
+                    step();
+                });
+        } else {
+            std::cout << "EXIT" << std::endl;
+            sigExit = true;
+            ui::TaskQueue::wakeup();
+        }
+    }, 500);
     //auto ev = input::SynMotionEvent();
     //    ev.x = searchBox->x;
     //    ev.y = searchBox->y;

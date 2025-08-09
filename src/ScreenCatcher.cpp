@@ -90,22 +90,34 @@ static void dump_screen(const std::string &path, const vector<uint16_t> &fb, uin
 void worker() {
     while (true) {
         std::unique_lock<std::mutex> lock(queueMutex);
-        cv.wait(lock, [&]{ return !workQueue.empty() || done; });
+        cv.wait(lock, [&] { return !workQueue.empty() || done; });
 
         if (done && workQueue.empty()) {
             break;
         }
 
-        auto data = std::move(workQueue.front());
-        workQueue.pop();
+        if (done) {
+            std::cerr << "CLEARING WORK ON EXIT" << std::endl;
+        }
+
+        do {
+            if (workQueue.empty())
+                break;
+            auto data = std::move(workQueue.front());
+            workQueue.pop();
+            lock.unlock();
+
+            fs::path path = data.path;
+            path = path.parent_path();
+            if (!fs::exists(path))
+                fs::create_directories(path);
+
+            dump_screen(data.path, data.data, data.w, data.h);
+            lock.lock();
+        } while (done && !workQueue.empty());
         lock.unlock();
-
-        fs::path path = data.path;
-        path = path.parent_path();
-        if(!fs::exists(path))
-            fs::create_directories(path);
-
-        dump_screen(data.path, data.data, data.w, data.h);
+        if(done)
+            return;
     }
 }
 
@@ -205,6 +217,7 @@ int ScreenCatcher::Listen(int pipe) {
     done = true;
     cv.notify_all();
     for(auto &w : workers) {
+        if(w.joinable())
         w.join();
     }
     return err;
