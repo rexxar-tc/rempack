@@ -42,7 +42,8 @@ namespace widgets {
                 bool decoded = stbi_info_from_memory(data.data(), data.size(), &ix, &iy, &comp);
                 auto ic = images.emplace(package->Package,
                                          ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->getWidthForAspect(ix, iy), _image->h));
-                ui::TaskQueue::add_task([=]() {
+                ui::IdleQueue::add_task([=]() {
+                    _image->undraw();
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
@@ -79,7 +80,11 @@ namespace widgets {
             _previewBtn->disable();
             set_image(package);
         }
-        undraw();
+        else{
+            _image->undraw();
+            _image->hide();
+        }
+        //undraw();
         mark_redraw();
         on_reflow();
     }
@@ -104,7 +109,7 @@ namespace widgets {
     }
 
     void PackageInfoPanel::layout_controls() {
-        undraw();
+        //undraw();
         auto lx = x+padding;
         auto ly = y+padding;
         auto dx = x + padding;
@@ -118,6 +123,8 @@ namespace widgets {
 
         auto h1 = h-(3*padding) - controlHeight;
         if(_image->visible) {
+            _image->undraw();
+            _text->undraw();
             _image->set_coords(w - _image->w, ly, _image->w, h1);
             _text->set_coords(lx, ly, w - (padding * 4) - _image->w, h1);
             _image->on_reflow();
@@ -180,7 +187,8 @@ namespace widgets {
     }
 
     void PackageInfoPanel::debugRender() {
-        _image->debugRender();
+        if(_image->visible)
+            _image->debugRender();
         fb->draw_rect(_text->x, _text->y, _text->w, _text->h, toRColor(0,255,255), false);
         RoundCornerWidget::debugRender();
     }
