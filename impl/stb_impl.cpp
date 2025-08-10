@@ -17,7 +17,7 @@ extern "C" unsigned char *stbi_zlib_compress_using_zlib(const unsigned char *dat
 
 extern "C" unsigned char *stbi_zlib_compress_using_zlib(const unsigned char *data, int data_len, int *out_len, int quality) {
     z_stream zs = {};
-    deflateInit2(&zs, Z_BEST_SPEED, Z_DEFLATED, 15, 1, Z_DEFAULT_STRATEGY);
+    deflateInit2(&zs, quality, Z_DEFLATED, 15, 9, Z_DEFAULT_STRATEGY);
 
     auto bufsize = deflateBound(&zs, data_len);
     auto* out = (unsigned char*) malloc(bufsize);
