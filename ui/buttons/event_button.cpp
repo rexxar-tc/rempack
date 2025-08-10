@@ -53,24 +53,21 @@ namespace widgets {
         mark_redraw();
     }
 
-//e-40c2r4
     void EventButton::render_border() {
         if (border && borderEnabled)
             border->render_border();
         else
             ui::Widget::render_border();
-        //widgets::drawRoundedBox(x, y, w, h, cstyle.cornerRadius, fb, cstyle.borderThickness,
-        //                        cstyle.startColor, cstyle.inset, cstyle.gradient, cstyle.endColor,
-        //                        cstyle.expA, cstyle.expB);
     }
 
     void EventButton::render() {
         ui::Button::render();
-        if (!enabled) {
-            fb->draw_rect(x, y, w, h, color::GRAY_12, true);
-        }
         if (!text.empty())
             textWidget->render();
+
+        if (!enabled)
+            fb->draw_rect_alpha(x, y, w, h, color::GRAY_12, 127);
+
         //fb->draw_rect(x,y,w,h,BLACK,false);
 #ifdef WIDGET_DEBUG
         this->debugRender();

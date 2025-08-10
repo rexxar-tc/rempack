@@ -7,6 +7,7 @@
 namespace widgets {
     const float rm_aspect = 0.75;
     const icons::Icon syncIcon = ICON(assets::png_cloud_download_png);
+    const icons::Icon bgIcon = ICON(assets::png_land_grayscale_png);
     map<string, ui::CachedIcon> images {};
     shared_ptr<package> selectedPackage;
     int padding = 15;
@@ -15,7 +16,9 @@ namespace widgets {
     shared_ptr<ui::MultiText> _text;
     shared_ptr<EventButton> _installBtn, _removeBtn, _previewBtn;
     shared_ptr<BorderedPixmap> _image;
+    shared_ptr<ui::Pixmap> bgMap = nullptr;
     shared_ptr<ui::VerticalReflow> _layout;
+    unique_ptr<ui::image_data> _imaged;
 
     void PackageInfoPanel::on_reflow() {
         layout_controls();
@@ -48,7 +51,7 @@ namespace widgets {
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
                     layout_controls();
-                    _text->set_text(opkg::FormatPackage(selectedPackage));
+                    _text->set_text(opkg::FormatPackage(package));
                 });
             });
         } else {
@@ -123,8 +126,8 @@ namespace widgets {
 
         auto h1 = h-(3*padding) - controlHeight;
         if(_image->visible) {
-            _image->undraw();
-            _text->undraw();
+            //_image->undraw();
+            //_text->undraw();
             _image->set_coords(w - _image->w, ly, _image->w, h1);
             _text->set_coords(lx, ly, w - (padding * 4) - _image->w, h1);
             _image->on_reflow();
@@ -134,6 +137,7 @@ namespace widgets {
             _text->set_coords(lx, ly, w - (padding * 2), h1);
         }
 
+        undraw();
         mark_redraw();
         _text->mark_redraw();
         _text->on_reflow();
@@ -155,6 +159,7 @@ namespace widgets {
         auto lw = w-(2*padding);
         auto h1 = h-(4*padding) - controlHeight;
         _text = make_shared<ui::MultiText>(lx, ly, lw, h1, "");
+        _text->style.font_size -= 5; //make package text slightly smaller to fit more
         auto iq = (int)(h1 * 0.75f); //dummy aspect ratio of 3/4 like the RM2
         _image = make_shared<BorderedPixmap>(lx - iq, ly ,iq, h1, icons::Icon(), RoundCornerStyle());
         _image->hide();
@@ -184,6 +189,14 @@ namespace widgets {
         _removeBtn->events.clicked += [this](void*){events.uninstall();};
         _previewBtn->events.clicked += [this](void*){events.preview();};
         layout_controls();
+
+        bgMap = make_shared<ui::Pixmap>(x,y,w,h,bgIcon);
+        int iconw = 0;
+        int iconh = 0;
+        int channels;
+
+        auto buf = stbi_load_from_memory(assets::png_land_color_png, assets::png_land_color_png_len, &iconw, &iconh, &channels, 1);
+        imaged = make_unique<image_data>((uint32_t*) buf, (int) iconw, (int) iconh, 1);
     }
 
     void PackageInfoPanel::debugRender() {
@@ -196,5 +209,12 @@ namespace widgets {
     void PackageInfoPanel::get_preview() {
     if(_previewBtn->visible && _previewBtn->is_enabled())
         events.preview();
+    }
+
+    void PackageInfoPanel::render() {
+
+        bgMap->set_coords(x,y,w,h);
+        bgMap->render();
+        DebuggableWidget::render();
     }
 } // widgets

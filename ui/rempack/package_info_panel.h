@@ -46,6 +46,7 @@ namespace widgets {
         void set_text(const string& text);
         void set_states(bool installed, bool canPreview = false);
     protected:
+        void render() override;
         void debugRender() override;
         string debugName() const override {return "InfoPanel";}
     };

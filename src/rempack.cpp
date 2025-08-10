@@ -319,7 +319,7 @@ void setupDebug() {
             sigExit = true;
             ui::TaskQueue::wakeup();
         }
-    }, 500);
+    }, 5000);
     //auto ev = input::SynMotionEvent();
     //    ev.x = searchBox->x;
     //    ev.y = searchBox->y;
