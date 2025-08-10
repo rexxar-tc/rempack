@@ -36,8 +36,8 @@ using namespace std;
  */
 
 #ifdef DEV
-const fs::path OPKG_DB{fs::current_path() / "../data/opt/var/opkg-lists"};
-const fs::path OPKG_LIB{fs::current_path() / "../data/opt/lib/opkg"};
+const fs::path OPKG_DB{fs::current_path() / "../data/opkg/opt/var/opkg-lists"};
+const fs::path OPKG_LIB{fs::current_path() / "../data/opkg/opt/lib/opkg"};
 #else
 const fs::path OPKG_DB{"/opt/var/opkg-lists"};
 const fs::path OPKG_LIB{"/opt/lib/opkg"}; //info(dir) lists(dir(empty?)) status(f)
