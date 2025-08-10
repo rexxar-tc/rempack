@@ -62,6 +62,9 @@ namespace widgets {
 
     void EventButton::render() {
         ui::Button::render();
+
+        //if (!enabled)
+        //    fb->draw_rect(x, y, w, h, color::GRAY_12, true);
         if (!text.empty())
             textWidget->render();
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #ifndef NDEBUG
-#define WIDGET_DEBUG
+//#define WIDGET_DEBUG
 #endif
 
 #include <list>

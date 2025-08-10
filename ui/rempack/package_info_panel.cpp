@@ -8,7 +8,7 @@ namespace widgets {
     const float rm_aspect = 0.75;
     const icons::Icon syncIcon = ICON(assets::png_cloud_download_png);
     const icons::Icon bgIcon = ICON(assets::png_land_grayscale_png);
-    map<string, ui::CachedIcon> images {};
+    map<string, ui::CachedIcon> images{};
     shared_ptr<package> selectedPackage;
     int padding = 15;
     int controlHeight = 40;
@@ -18,20 +18,20 @@ namespace widgets {
     shared_ptr<BorderedPixmap> _image;
     shared_ptr<ui::Pixmap> bgMap = nullptr;
     shared_ptr<ui::VerticalReflow> _layout;
-    unique_ptr<ui::image_data> _imaged;
+    image_data _imaged;
 
     void PackageInfoPanel::on_reflow() {
         layout_controls();
     }
 
-    void PackageInfoPanel::set_text(const string& text) {
+    void PackageInfoPanel::set_text(const string &text) {
         _text->undraw();
         _text->text = text;
         _text->mark_redraw();
         this->mark_redraw();
     }
 
-    void PackageInfoPanel::set_image(const shared_ptr<package>& package) {
+    void PackageInfoPanel::set_image(const shared_ptr<package> &package) {
         _previewBtn->disable();
         _image->show();
         auto it = images.find(package->Package);
@@ -47,7 +47,7 @@ namespace widgets {
                                          ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->getWidthForAspect(ix, iy), _image->h));
                 ui::IdleQueue::add_task([=]() {
                     _image->undraw();
-                    if(decoded)
+                    if (decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
                     layout_controls();
@@ -59,14 +59,14 @@ namespace widgets {
             _image->setAspectWidth(ico.width, ico.height);
             _image->setImage(ico);
             layout_controls();
-            if(selectedPackage != nullptr)
-                _text->set_text(opkg::FormatPackage(selectedPackage));
+            if (package != nullptr)
+                _text->set_text(opkg::FormatPackage(package));
         }
     }
 
     void PackageInfoPanel::display_package(const shared_ptr<package> &package) {
         selectedPackage = package;
-        if(package == nullptr){
+        if (package == nullptr) {
             set_states(false);
             _image->hide();
             _text->hide();
@@ -79,11 +79,10 @@ namespace widgets {
         bool splash = package->Section.rfind("splashscreens") != std::string::npos;
         set_states(package->IsInstalled(), splash);
         set_text(opkg::FormatPackage(package));
-        if(splash && opkg::isPackageCached(package)) {
+        if (splash && opkg::isPackageCached(package)) {
             _previewBtn->disable();
             set_image(package);
-        }
-        else{
+        } else {
             _image->undraw();
             _image->hide();
         }
@@ -103,8 +102,7 @@ namespace widgets {
         if (canPreview) {
             _previewBtn->enable();
             _previewBtn->show();
-        }
-        else {
+        } else {
             _previewBtn->disable();
             _previewBtn->hide();
             _image->hide();
@@ -113,8 +111,8 @@ namespace widgets {
 
     void PackageInfoPanel::layout_controls() {
         //undraw();
-        auto lx = x+padding;
-        auto ly = y+padding;
+        auto lx = x + padding;
+        auto ly = y + padding;
         auto dx = x + padding;
         auto dy = y + h - padding - controlHeight;
         _installBtn->set_coords(dx, dy, controlWidth, controlHeight);
@@ -124,16 +122,15 @@ namespace widgets {
         _previewBtn->set_coords(dx, dy, controlWidth, controlHeight);
 
 
-        auto h1 = h-(3*padding) - controlHeight;
-        if(_image->visible) {
+        auto h1 = h - (3 * padding) - controlHeight;
+        if (_image->visible) {
             //_image->undraw();
             //_text->undraw();
             _image->set_coords(w - _image->w, ly, _image->w, h1);
             _text->set_coords(lx, ly, w - (padding * 4) - _image->w, h1);
             _image->on_reflow();
             _image->mark_redraw();
-        }
-        else{
+        } else {
             _text->set_coords(lx, ly, w - (padding * 2), h1);
         }
 
@@ -195,8 +192,19 @@ namespace widgets {
         int iconh = 0;
         int channels;
 
-        auto buf = stbi_load_from_memory(assets::png_land_color_png, assets::png_land_color_png_len, &iconw, &iconh, &channels, 1);
-        imaged = make_unique<image_data>((uint32_t*) buf, (int) iconw, (int) iconh, 1);
+        auto buf = stbi_load_from_memory(assets::png_land_fullcolor_png, assets::png_land_fullcolor_png_len, &iconw, &iconh, &channels, 3);
+        _imaged = image_data{(uint32_t*) buf, (int) iconw, (int) iconh, 3};
+
+        auto resize_len = w * h * 3;
+        auto resize_buffer = (unsigned char *) calloc(resize_len, 1);
+        stbir_resize_uint8((unsigned char *) _imaged.buffer, iconw, iconh, 0,
+                                      resize_buffer, w, h, 0, 3);
+
+        free(_imaged.buffer);
+
+        _imaged.w = w;
+        _imaged.h = h;
+        _imaged.buffer = (uint32_t *) resize_buffer;
     }
 
     void PackageInfoPanel::debugRender() {
@@ -212,9 +220,10 @@ namespace widgets {
     }
 
     void PackageInfoPanel::render() {
-
-        bgMap->set_coords(x,y,w,h);
-        bgMap->render();
+        fb->draw_bitmap(_imaged, x, y, 22, false);
+        //bgMap->set_coords(x,y,w,h);
+        //bgMap->render();
         DebuggableWidget::render();
     }
+
 } // widgets
