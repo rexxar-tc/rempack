@@ -5,12 +5,14 @@
 #pragma once
 
 #define CAPTURE_SCREEN
+//#define CAPTURE_LAYERS
+
 //#include "defines.h"
 
 class Rempack {
 public:
-    [[noreturn]] static void startApp();
-    [[noreturn]] static void startApp(int pipe);
+    static void startApp();
+    static void startApp(int pipe);
 private:
 
 };

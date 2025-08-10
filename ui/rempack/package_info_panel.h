@@ -22,7 +22,7 @@ namespace widgets {
     */
     class PackageInfoPanel: public RoundCornerWidget{
     public:
-        PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style, shared_ptr<ui::InnerScene> &scene);
+        PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style);
 
         PLS_DEFINE_SIGNAL(PACKAGE_EVENT, void*);
 
@@ -36,23 +36,18 @@ namespace widgets {
         PACKAGE_EVENTS events;
 
         void display_package(const shared_ptr<package>& package);
+        void get_preview();
         void on_reflow() override;
         void set_image(const shared_ptr<package>& package);
     private:
-        int padding = 15;
-        int controlHeight = 40;
-        int controlWidth = 200;
-        shared_ptr<ui::MultiText> _text;
-        shared_ptr<EventButton> _installBtn, _removeBtn, _previewBtn;
-        shared_ptr<BorderedPixmap> _image;
 
-        void layout_buttons();
+        void layout_controls();
 
         void set_text(const string& text);
         void set_states(bool installed, bool canPreview = false);
-        void layout_image();
     protected:
         void debugRender() override;
+        string debugName() const override {return "InfoPanel";}
     };
 
 } // widgets

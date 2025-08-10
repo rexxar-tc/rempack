@@ -8,11 +8,16 @@ namespace widgets {
     const float rm_aspect = 0.75;
     const icons::Icon syncIcon = ICON(assets::png_cloud_download_png);
     map<string, ui::CachedIcon> images {};
-    shared_ptr<package> selectedPackage;
+    int padding = 15;
+    int controlHeight = 40;
+    int controlWidth = 200;
+    shared_ptr<ui::MultiText> _text;
+    shared_ptr<EventButton> _installBtn, _removeBtn, _previewBtn;
+    shared_ptr<BorderedPixmap> _image;
+    shared_ptr<ui::VerticalReflow> _layout;
 
     void PackageInfoPanel::on_reflow() {
-        layout_image();
-        layout_buttons();
+        layout_controls();
     }
 
     void PackageInfoPanel::set_text(const string& text) {
@@ -22,54 +27,40 @@ namespace widgets {
         this->mark_redraw();
     }
 
-    void PackageInfoPanel::layout_image() {
-        if(_image->visible) {
-            int dw = (_image->x - _text->x) - (padding * 4);
-            _text->set_coords(x+padding,y+padding, dw, _text->h);
-        }
-        else{
-            _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
-        }
-        _text->undraw();
-        _text->mark_redraw();
-        mark_redraw();
-    }
-
     void PackageInfoPanel::set_image(const shared_ptr<package>& package) {
         _previewBtn->disable();
         _image->show();
         auto it = images.find(package->Package);
         if (it == images.end()) {
             _image->setImage(syncIcon, 100, 100);
-            layout_image();
+            layout_controls();
             ui::TaskQueue::add_task([=]() {
                 vector<uint8_t> data;
                 data = opkg::getCachedSplashscreen(package);
                 int ix, iy, comp;
                 bool decoded = stbi_info_from_memory(data.data(), data.size(), &ix, &iy, &comp);
                 auto ic = images.emplace(package->Package,
-                                         ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->w,
-                                                        _image->h));
-                ui::TaskQueue::add_task([=]() {
+                                         ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->getWidthForAspect(ix, iy), _image->h));
+                ui::IdleQueue::add_task([=]() {
+                    _image->undraw();
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
                     _image->setImage(ic.first->second);
-                    layout_image();
-                    _text->set_text(opkg::FormatPackage(selectedPackage));
+                    layout_controls();
+                    _text->set_text(opkg::FormatPackage(package));
                 });
             });
         } else {
             auto ico = it->second;
             _image->setAspectWidth(ico.width, ico.height);
             _image->setImage(ico);
-            layout_image();
-            if(selectedPackage != nullptr)
-                _text->set_text(opkg::FormatPackage(selectedPackage));
+            layout_controls();
+            if(package != nullptr)
+                _text->set_text(opkg::FormatPackage(package));
         }
     }
 
     void PackageInfoPanel::display_package(const shared_ptr<package> &package) {
-        selectedPackage = package;
         if(package == nullptr){
             set_states(false);
             _image->hide();
@@ -87,7 +78,11 @@ namespace widgets {
             _previewBtn->disable();
             set_image(package);
         }
-        undraw();
+        else{
+            _image->undraw();
+            _image->hide();
+        }
+        //undraw();
         mark_redraw();
         on_reflow();
     }
@@ -111,19 +106,35 @@ namespace widgets {
         }
     }
 
-    void PackageInfoPanel::layout_buttons() {
+    void PackageInfoPanel::layout_controls() {
+        //undraw();
+        auto lx = x+padding;
+        auto ly = y+padding;
         auto dx = x + padding;
         auto dy = y + h - padding - controlHeight;
-        auto dh = h - (padding * 6) - controlHeight;
-        auto dw = (int)(floor(dh * rm_aspect));
         _installBtn->set_coords(dx, dy, controlWidth, controlHeight);
         dx += controlWidth + padding;
         _removeBtn->set_coords(dx, dy, controlWidth, controlHeight);
         dx += controlWidth + padding;
         _previewBtn->set_coords(dx, dy, controlWidth, controlHeight);
 
-        _image->set_coords(w - dw + padding + padding, y + (padding * 2), dw, dh);
 
+        auto h1 = h-(3*padding) - controlHeight;
+        if(_image->visible) {
+            _image->undraw();
+            _text->undraw();
+            _image->set_coords(w - _image->w, ly, _image->w, h1);
+            _text->set_coords(lx, ly, w - (padding * 4) - _image->w, h1);
+            _image->on_reflow();
+            _image->mark_redraw();
+        }
+        else{
+            _text->set_coords(lx, ly, w - (padding * 2), h1);
+        }
+
+        mark_redraw();
+        _text->mark_redraw();
+        _text->on_reflow();
         _installBtn->on_reflow();
         _removeBtn->on_reflow();
         _previewBtn->on_reflow();
@@ -134,15 +145,25 @@ namespace widgets {
         _previewBtn->mark_redraw();
     }
 
-    PackageInfoPanel::PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style,
-                                       shared_ptr<ui::InnerScene> &scene) : RoundCornerWidget(x,y,w,h,style){
-        _text = make_shared<ui::MultiText>(x,y,w,h,"");
-        _text->set_coords(x+padding,y+padding,w-(2*padding),h-(2*padding) - controlHeight);
+    shared_ptr<ui::InnerScene> scene;
+
+    PackageInfoPanel::PackageInfoPanel(int x, int y, int w, int h, RoundCornerStyle style) : ui::Widget(x,y,w,h), DebuggableWidget(x,y,w,h), RoundCornerWidget(x,y,w,h,style){
+        auto lx = x+padding;
+        auto ly = y+padding;
+        auto lw = w-(2*padding);
+        auto h1 = h-(4*padding) - controlHeight;
+        _text = make_shared<ui::MultiText>(lx, ly, lw, h1, "");
+        auto iq = (int)(h1 * 0.75f); //dummy aspect ratio of 3/4 like the RM2
+        _image = make_shared<BorderedPixmap>(lx - iq, ly ,iq, h1, icons::Icon(), RoundCornerStyle());
+        _image->hide();
         children.push_back(_text);
-        _installBtn = make_shared<EventButton>(x,y,200, controlHeight,"Install", LightButtonStyle());
-        _removeBtn = make_shared<EventButton>(x,y,200, controlHeight,"Uninstall", LightButtonStyle());
-        _previewBtn = make_shared<EventButton>(x,y,200, controlHeight,"Preview", LightButtonStyle());
-        _image = make_shared<BorderedPixmap>(x,y,200,controlHeight, icons::Icon(), RoundCornerStyle());
+
+        ly = y + w - controlHeight - padding;
+        controlWidth = min(controlWidth, lw / 4);
+        scene = ui::make_scene();
+        _installBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Install", LightButtonStyle());
+        _removeBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Uninstall", LightButtonStyle());
+        _previewBtn = make_shared<EventButton>(lx,ly,controlWidth, controlHeight,"Preview", LightButtonStyle());
         _installBtn->disable();
         _installBtn->border->show();
         children.push_back(_installBtn);
@@ -155,17 +176,23 @@ namespace widgets {
         _previewBtn->border->hide();
         children.push_back(_previewBtn);
         scene->add(_previewBtn);
-        _image->hide();
         children.push_back(_image);
         scene->add(_image);
         _installBtn->events.clicked += [this](void*){events.install();};
         _removeBtn->events.clicked += [this](void*){events.uninstall();};
         _previewBtn->events.clicked += [this](void*){events.preview();};
-        layout_buttons();
+        layout_controls();
     }
 
     void PackageInfoPanel::debugRender() {
+        if(_image->visible)
+            _image->debugRender();
         fb->draw_rect(_text->x, _text->y, _text->w, _text->h, toRColor(0,255,255), false);
         RoundCornerWidget::debugRender();
+    }
+
+    void PackageInfoPanel::get_preview() {
+    if(_previewBtn->visible && _previewBtn->is_enabled())
+        events.preview();
     }
 } // widgets

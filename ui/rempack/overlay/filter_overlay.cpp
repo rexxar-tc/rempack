@@ -29,12 +29,14 @@ namespace widgets{
         int padding = 20;
         auto s = ui::make_scene();
         s->add(this);
+
         mark_redraw();
         //auto v = new ui::VerticalLayout(x, y, 500, 800, s);
-        auto dw = 500 - padding - padding;
-        auto dh = 800 - padding - padding;
+        auto dw = w - padding - padding;
+        auto dh = h - padding - padding;
         auto dx = x + padding;
         auto dy = y + padding;
+
         auto iTog = make_shared<ui::ToggleButton>(dx, dy, dw, 50, "Installed");
         iTog->toggled = options->Installed;
         iTog->style.justify = ui::Style::JUSTIFY::LEFT;
@@ -97,7 +99,7 @@ namespace widgets{
         dy += padding + groupTog->h;
         if (!options->Repos.empty()) {
             //TODO: set height of the list based on number of entries
-            _repoList = make_shared<ListBox>(dx, dy, dw, 200, 25, s, RoundCornerStyle());
+            _repoList = make_shared<ListBox>(dx, dy, dw, 200, 25, RoundCornerStyle());
             for (auto &[r, set]: options->Repos) {
                 auto item = _repoList->add(r);
                 if (set) {
@@ -120,7 +122,7 @@ namespace widgets{
             dy += padding + _repoList->h;
         }
         if (!options->Licenses.empty()) {
-            _licenseList = make_shared<ListBox>(dx, dy, dw, 200, 25, scene, RoundCornerStyle());
+            _licenseList = make_shared<ListBox>(dx, dy, dw, 200, 25, RoundCornerStyle());
             for (auto &[l, set]: options->Licenses) {
                 auto item = _licenseList->add(l);
                 if (set) {

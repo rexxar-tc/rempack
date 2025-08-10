@@ -16,11 +16,15 @@ namespace widgets {
         void clearImage();
         void setAspectWidth(int imageX, int imageY);
         void setImage(icons::Icon icon);
-        void setImage(ui::CachedIcon icon);
+        void setImage(const ui::CachedIcon& icon);
         void setImage(icons::Icon icon, int w, int h);
         void setImage(ui::CachedIcon icon, int w, int h);
+        int getWidthForAspect(int i_w, int i_h);
+        void debugRender() override;
+        string debugName() const override {return "BorderedPixmap";}
     private:
         shared_ptr<ui::Pixmap> image;
+        void center_image();
     };
 
 } // widgets

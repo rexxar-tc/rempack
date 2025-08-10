@@ -56,6 +56,15 @@ namespace widgets {
     }
 
     bool ListBox::select(const string &label) {
+        if(label.empty()){
+            std::cout << "clearing selection\n";
+            for(const auto &s: selectedItems){
+                events.deselected(s);
+            }
+            selectedItems.clear();
+            mark_redraw();
+            return false;
+        }
         std::cout<<"selecting: "<<label<<std::endl;
         int i = 0;
         shared_ptr<ListItem> item = nullptr;
@@ -190,17 +199,20 @@ namespace widgets {
 //check the Y position relative to top of widget, divide by itemHeight
     void ListBox::on_mouse_click(input::SynMotionEvent &ev) {
 //ev.stop_propagation();
-        if (!selectable)
-            return;
-        auto hgt = itemHeight + padding;
-        auto sy = ev.y - this->y;
-        auto shgt = sy / hgt;
-        int idx = floor(shgt);
+        if (selectable) {
+            auto hgt = itemHeight + padding;
+            auto sy = ev.y - this->y;
+            auto shgt = sy / hgt;
+            int idx = floor(shgt);
 //printf("Click at %d,%d: computed offset %d: displayed %d\n", ev.x, ev.y, idx, displayed_items());
-        if (idx >= (int) _currentView.size())
-            return;
-        selectIndex(idx);
-        mark_redraw();
+            if (idx < (int) _currentView.size()) {
+                selectIndex(idx);
+                mark_redraw();
+                ev.stop_propagation();
+                return;
+            }
+        }
+        RecursiveInputWidget::on_mouse_click(ev);
     }
 
     void ListBox::updateControlStates() {
@@ -381,7 +393,8 @@ namespace widgets {
         }
     }
 
-    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const shared_ptr<ui::InnerScene> &s, RoundCornerStyle buttonStyle) : RoundCornerWidget(x, y, w, h, RoundCornerStyle()) {
+    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, RoundCornerStyle buttonStyle) : ui::Widget(x,y,w,h), RecursiveInputWidget(x,y,w,h), RoundCornerWidget(x, y, w, h, RoundCornerStyle()),
+                                                                                                 DebuggableWidget(x,y,w,h) {
         this->itemHeight = itemHeight;
         _pageLabel = make_shared<ui::Text>(0,0,w,itemHeight,"");
 
@@ -403,11 +416,6 @@ namespace widgets {
         children.push_back(_navR);
         children.push_back(_navRR);
         children.push_back(_pageLabel);
-        s->add(_navLL);
-        s->add(_navL);
-        s->add(_navR);
-        s->add(_navRR);
-        s->add(_pageLabel);
 
         _navLL->events.clicked += PLS_DELEGATE(LL_CLICK);
         _navL->events.clicked += PLS_DELEGATE(L_CLICK);
@@ -416,7 +424,7 @@ namespace widgets {
         layout_buttons();
     }
 
-    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const vector<string> &items, ui::Scene &scene, RoundCornerStyle buttonStyle) : ListBox(x,y,w,h,itemHeight,scene,buttonStyle) {
+    ListBox::ListBox(int x, int y, int w, int h, int itemHeight, const vector<string> &items, RoundCornerStyle buttonStyle) : ListBox(x,y,w,h,itemHeight,buttonStyle) {
         for(const auto &s: items){
             this->add(s);
         }

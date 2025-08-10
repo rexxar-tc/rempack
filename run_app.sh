@@ -17,7 +17,7 @@ function kill_remote_app() {
 function cleanup() {
   kill_remote_app
   #ssh ${RM_USER}@${REMARKABLE_HOST} rm ${BASE_DIR}/${APP}
-  ssh ${RM_USER}@${REMARKABLE_HOST} -p${RM_PORT} "source ~/.bashrc; launcherctl start-launcher"
+  #ssh ${RM_USER}@${REMARKABLE_HOST} -p${RM_PORT} "source ~/.bashrc; launcherctl start-launcher"
   rsync -e "ssh -p ${RM_PORT}" -azP ${RM_USER}@${REMARKABLE_HOST}:~/.cache/${APP}/screens ~/git/${APP}/screens
   echo "FINISHED"
   trap - EXIT
@@ -80,7 +80,7 @@ done
 kill_remote_app
 #this is probably brittle, I'm sure it's fine
 ssh ${RM_USER}@${REMARKABLE_HOST} -p${RM_PORT} "mkdir -p ${BASE_DIR}"
-rsync -rz --port ${RM_PORT} ${APP_PATH} ${RM_USER}@${REMARKABLE_HOST}:${BASE_DIR}/${APP}
+rsync -rzP --port ${RM_PORT} ${APP_PATH} ${RM_USER}@${REMARKABLE_HOST}:${BASE_DIR}/${APP}
 echo "RUNNING ${APP}"
 #remove rm2fb-client if you're running on a RM1
 ssh -p${RM_PORT}  ${RM_USER}@${REMARKABLE_HOST} "source ~/.bashrc; killall gdbserver; launcherctl stop-launcher"

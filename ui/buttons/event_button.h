@@ -31,6 +31,8 @@ namespace widgets {
 
         void enable();
 
+        bool is_enabled();
+
         void render() override;
 
         void render_border() override;

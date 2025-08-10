@@ -16,6 +16,7 @@
 #include "ListFilter.h"
 #include "ScreenCatcher.h"
 #include <filesystem>
+#include "debugging.h"
 namespace fs = filesystem;
 using ListItem = widgets::ListBox::ListItem;
 
@@ -37,6 +38,18 @@ shared_ptr<widgets::FilterOptions> filterOpts;
 
 int sPipe;
 
+#ifdef DEV
+// run this constructor as early as possible to preempt calls to framebuffer::get()
+// and inject a custom framebuffer instead of the default file-backed RM2 size buffer
+__attribute__((constructor(1000)))
+static void my_fb_initializer() {
+    std::cout << "init fb: " << (framebuffer::_FB == nullptr) << std::endl;
+    //set memory-backed framebuffer of any dimension
+    framebuffer::_FB = make_shared<framebuffer::VirtualFB>(1404,1872);
+    //framebuffer::_FB = make_shared<framebuffer::VirtualFB>(1872,1404);
+}
+#endif
+
 void Rempack::startApp(int pipe){
     sPipe = pipe;
     startApp();
@@ -57,6 +70,15 @@ void setupStyle(){
             .border_right = false
     };
 }
+
+void initScreen(bool clear = true){
+    fb->update_mode = UPDATE_MODE_FULL;
+    fb->waveform_mode = WAVEFORM_MODE_INIT;
+    fb->redraw_screen(true);
+    if(clear)
+        fb->clear_screen();
+}
+
 static string get_cached_path(const string& basename = "rempack"){
     const char* xdg_cache_home = std::getenv("XDG_CACHE_HOME");
     string base = xdg_cache_home ? xdg_cache_home : std::getenv("HOME") + std::string("/.cache");
@@ -67,14 +89,56 @@ static string get_cached_path(const string& basename = "rempack"){
 }
 
 int scount = 0;
+volatile bool sigExit = false;
 
-[[noreturn]]
+void onExit(int signal){
+    if(sigExit || sPipe <= 0){
+        return;
+    }
+    //close the screencap process if it's running
+    close(sPipe);
+    sPipe = -1;
+    //std::cerr << v << "SIGNAL: " << signal << std::endl;
+    //attempt to wake main thread and let it clean up
+    sigExit = true;
+    ui::TaskQueue::wakeup();
+    ui::IdleQueue::wakeup();
+}
+
+string spath;
+
+string screenPath(int idx){
+    if(spath.empty()) {
+        std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm tm{};
+        localtime_r(&t, &tm);
+        std::ostringstream oss;
+        oss << "rempack/screens/" << std::put_time(&tm, "%Y-%m-%d_%H-%M") << "/";
+        spath = get_cached_path(oss.str());
+        if (!fs::exists(spath))
+            fs::create_directories(spath);
+    }
+    stringstream sss;
+    sss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
+
+    return sss.str();
+}
+
+void capture_screen(int idx){
+#ifdef CAPTURE_SCREEN
+    ScreenCatcher::WriteScreen(screenPath(idx), fb->fbmem, fb->width, fb->height, sPipe);
+#endif
+}
+
+void capture_layers(int idx){
+#ifdef CAPTURE_LAYERS
+    debugging::render_debug_layers(ui::MainLoop::scene, fb->width, fb->height, fs::path(screenPath(idx)).replace_extension(), sPipe);
+#endif
+}
+
 void Rempack::startApp() {
+    ui::MainLoop::exit += onExit;
     setupStyle();
-
-    std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::tm tm{};
-    localtime_r(&t, &tm);
 
     fb = framebuffer::get();
     auto scene = buildHomeScene(fb->width, fb->height);
@@ -85,37 +149,57 @@ void Rempack::startApp() {
     ui::MainLoop::refresh();
     //ui::MainLoop::redraw();
 
+#ifdef DEV
+    capture_screen(scount);
+    capture_layers(scount);
+    scount++;
+#endif
     setupDebug();
-
-    std::ostringstream oss;
-    oss << "rempack/screens/" << std::put_time(&tm, "%Y-%m-%d_%H-%M") << "/";
-    string spath = oss.str();
-
-    spath = get_cached_path(spath);
-
-    std::cout << "Screenshot path: " << spath << std::endl;
-
-    if(!fs::exists(spath))
-        fs::create_directories(spath);
+#ifdef DEV
+    capture_screen(scount);
+    capture_layers(scount);
+    scount++;
+    auto *lastframe = new uint8_t[fb->byte_size];
+#endif
 
     filterMgr->updateLists(filterOpts, "");
-    while(true){
+    while(true) {
         auto mstart = chrono::steady_clock::now();
         ui::MainLoop::main();
-        auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
-        std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
-        ui::MainLoop::redraw();
-            stringstream lss;
-            lss << spath << std::setfill('0') << std::setw(3) << scount << ".png";
-            ScreenCatcher::WriteScreen(lss.str(), fb->fbmem, fb->width, fb->height, sPipe);
+        auto dirty = fb->dirty;
+#ifdef DEV
+        //I really don't know why this is necessary sometimes.
+        dirty = memcmp(lastframe, fb->fbmem, fb->byte_size) != 0;
+#endif
+        if (dirty) {
+#ifndef NDEBUG
+            auto dmt = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - mstart);
+            std::cout << "main loop time: " << dmt.count() << "ms" << std::endl;
+#endif
+            capture_screen(scount);
+            capture_layers(scount);
             scount++;
-        fb->waveform_mode = WAVEFORM_MODE_GC16;
-        //fb->update_mode = UPDATE_MODE_PARTIAL;
+            if (scount % 40 == 0) {
+                initScreen(false);
+            }
+#ifdef DEV
+            memcpy(lastframe, fb->fbmem, fb->byte_size);
+            fb->reset_dirty(fb->dirty_area);
+            fb->dirty = 0;
+#endif
+        }
+
+        ui::MainLoop::redraw();
+        //fb->waveform_mode = WAVEFORM_MODE_GC16;
         ui::MainLoop::read_input();
+
+        if(sigExit){
+            std::cerr << "BRK\n";
+            break;
+        }
     }
-
+    std::cerr << "MAIN LOOP EXIT" << std::endl;
 }
-
 void searchQueryOpen(string s){
     if(selected != nullptr){
         selected = nullptr;
@@ -150,6 +234,7 @@ void onPackageDeselect([[maybe_unused]] shared_ptr<ListItem> item) {
     selected = nullptr;
     displayBox->display_package(nullptr);
 }
+
 void onFiltersChanged(widgets::FilterOptions &options){
     //_filterOpts = options;
     if(options.groupSplash)
@@ -158,7 +243,6 @@ void onFiltersChanged(widgets::FilterOptions &options){
         packagePanel->sortPredicate = nullptr;
     filterMgr->updateLists(filterOpts, currentQuery);
 }
-
 void onInstallClick(void*){
     auto m = new widgets::InstallDialog(500,500,600,800,vector<shared_ptr<package>>{selected});
 
@@ -186,30 +270,56 @@ void onUninstallClick(void*){
     m->setCallback([](bool b){displayBox->display_package(selected);});
     m->show();
 }
+
 void onPreviewClick(void*){
     displayBox->set_image(selected);
 }
 
-void initScreen(){
-    fb->draw_rect(0,0,fb->width, fb->height, BLACK);
-    //fb->update_mode = UPDATE_MODE_FULL;
-    //fb->waveform_mode = WAVEFORM_MODE_A2;
-    fb->dirty = true;
-    fb->redraw_screen();
-    fb->clear_screen();
-    //fb->redraw_screen();
-    //fb->update_mode = UPDATE_MODE_PARTIAL;
-    //fb->waveform_mode = WAVEFORM_MODE_GC16;
-}
-
-void setupDebug(){
-#ifndef NDEBUG
+    std::deque<std::function<void(void)>> debug_steps;
+void setupDebug() {
+//#ifndef NDEBUG
     //std::raise(SIGINT);   //firing a sigint here helps synchronize remote gdbserver
     //sleep(10);
 
     //std::filesystem::remove_all("/home/root/.cache/rempack");
-    //packagePanel->select("splashscreen-batteryempty-starr");
-    //displayBox->get_preview();
+
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 1\n";
+        packagePanel->select("splashscreen-batteryempty-starr");
+        displayBox->get_preview();
+    });
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 2\n";
+        packagePanel->select("");
+    });
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 3\n";
+        packagePanel->select("dotnet-host");
+    });
+    debug_steps.emplace_back([&]() {
+        std::cout << "STEP 4\n";
+        packagePanel->select("splashscreen-batteryempty-chaotic_ribbon");
+        displayBox->get_preview();
+    });
+    debug_steps.emplace_back([=]() {
+        sigExit = true;
+        ui::TaskQueue::wakeup();
+    });
+
+    auto tptr = ui::TimerList::get()->set_interval([&]() {
+        if (!debug_steps.empty()) {
+            ui::IdleQueue::add_task([&](){
+                    std::cout << "STEP" << std::endl;
+                    auto &step = debug_steps.front();
+                    debug_steps.pop_front();
+                    step();
+                });
+        } else {
+            std::cout << "EXIT" << std::endl;
+            sigExit = true;
+            ui::TaskQueue::wakeup();
+        }
+    }, 500);
     //auto ev = input::SynMotionEvent();
     //    ev.x = searchBox->x;
     //    ev.y = searchBox->y;
@@ -232,7 +342,7 @@ void setupDebug(){
 //    }
 //    scene->pinned = true;
 //    ui::MainLoop::show_overlay(scene);
-#endif
+//#endif
 }
 
 //1404x1872 - 157x209mm -- 226dpi
@@ -277,7 +387,7 @@ ui::Scene buildHomeScene(int width, int height) {
     /* Applications */
     //full-width horizontal stack underneath the search pane. give it half the remaining height
     auto applicationPane = new ui::HorizontalReflow(0, 0, layout->w, (layout->h - searchPane->h - padding)/2, scene);
-    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, scene, widgets::LightButtonStyle());
+    filterPanel = new widgets::ListBox(0, 0, 300, applicationPane->h, 45, widgets::LightButtonStyle());
     std::vector<std::string> sections;
     pkg.LoadSections(&sections);
     for (const auto &s: sections)
@@ -286,7 +396,7 @@ ui::Scene buildHomeScene(int width, int height) {
     filterPanel->events.selected += PLS_DELEGATE(onFilterAdded);
     filterPanel->events.deselected += PLS_DELEGATE(onFilterRemoved);
 
-    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 45, scene, widgets::LightButtonStyle());
+    packagePanel = new widgets::ListBox(padding, 0, layout->w - filterPanel->w - padding, applicationPane->h, 45, widgets::LightButtonStyle());
     packagePanel->multiSelect = false;
     packagePanel->events.selected += PLS_DELEGATE(onPackageSelect);
     packagePanel->events.deselected += PLS_DELEGATE(onPackageDeselect);
@@ -294,7 +404,7 @@ ui::Scene buildHomeScene(int width, int height) {
     filterMgr = new ListFilter(filterPanel, packagePanel);
     filterMgr->updateLists(filterOpts, "");
 
-    displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle(), scene);
+    displayBox = new widgets::PackageInfoPanel(0,0,applicationPane->w,applicationPane->h, widgets::RoundCornerStyle());
 
     displayBox->events.install += PLS_DELEGATE(onInstallClick);
     displayBox->events.uninstall += PLS_DELEGATE(onUninstallClick);

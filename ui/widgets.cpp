@@ -7,11 +7,11 @@
 
 #include "rempack/rempack_widgets.h"
 #include "buttons/buttons.h"
-namespace widgets{
+namespace widgets {
     void drawRoundedCorners(int x0, int y0, int ox, int oy, int radius, framebuffer::FB *fb,
-                                   float grayfColor, uint stroke, bool gradient,
-                                   float grayfendColor,
-                                   float expA, float coefB, float alphaMask) {
+                            float grayfColor, uint stroke, bool gradient,
+                            float grayfendColor,
+                            float expA, float coefB, float alphaMask) {
         int x = 0;
         int y = radius;
         int d = -(radius >> 1);
@@ -51,21 +51,22 @@ namespace widgets{
             auto dc = abs(grayfendColor - grayfColor) / (float) stroke;
             for (uint si = 0; si <= stroke; si++) {
                 auto fc = utils::sigmoid(grayfColor + dc * si, expA, coefB);
-                if(fc < alphaMask)
+                if (fc < alphaMask)
                     drawRoundedCorners(x0, y0, ox, oy, radius + si, fb, fc);
             }
         }
     }
+
     void drawRoundedBox(int x0, int y0, int w, int h, int radius, framebuffer::FB *fb,
-                               int stroke, float grayfColor, int shrink, bool gradient,
-                               float grayfendColor,
-                               float expA, float coefB, float alphaThreshold) {
+                        int stroke, float grayfColor, int shrink, bool gradient,
+                        float grayfendColor,
+                        float expA, float coefB, float alphaThreshold) {
         int sx = x0 + shrink;
         int sy = y0 + shrink;
         int dx = w - (2 * shrink);
         int dy = h - (2 * shrink);
         if (!gradient) {
-            auto color = color::gray32((int)std::floor(31.0*grayfColor));
+            auto color = color::gray32((int) std::floor(31.0 * grayfColor));
             drawRoundedCorners(sx, sy, dx, dy, radius, fb, grayfColor, stroke);
             fb->_draw_rect_fast(sx - stroke - radius, sy, stroke, dy, color);
             fb->_draw_rect_fast(sx + dx + radius, sy, stroke, dy, color);
@@ -76,9 +77,9 @@ namespace widgets{
             float dc = abs(grayfendColor - grayfColor) / (float) stroke;
             for (int i = 0; i <= stroke; i++) {
                 auto fc = utils::sigmoid(grayfColor + (dc * i), expA, coefB);
-                if(fc>=alphaThreshold)
+                if (fc >= alphaThreshold)
                     continue;   //don't break, the curve may change later in the stroke
-                auto color = color::gray32((int)std::floor(31.0*fc));
+                auto color = color::gray32((int) std::floor(31.0 * fc));
                 //left
                 fb->_draw_rect_fast(sx - i - radius - 1, sy, 1, dy, color);
                 //right
@@ -93,65 +94,43 @@ namespace widgets{
 
     RoundCornerStyle LightButtonStyle() {
         auto res = RoundCornerStyle();
-        res.expA  = -15;
+        res.expA = -15;
         res.expB = 3;
         res.cornerRadius = 3;
         res.inset = 3;
         res.gradient = true;
         res.borderThickness = 5;
-        res.startColor = 2.0/31.0f;
+        res.startColor = 2.0 / 31.0f;
         return res;
 
     }
 
-
-    //TODO: this still isn't quite right
-        void RoundCornerWidget::undraw() {
-            ui::Widget::undraw();
-            return;
-            //top
-            fb->draw_rect(x + style.inset - style.cornerRadius - style.borderThickness,
-                          y + style.inset - style.cornerRadius - style.borderThickness,
-                          w - style.inset + style.cornerRadius + style.borderThickness,
-                          style.borderThickness,
-                          undraw_color, true);
-            //bottom
-            fb->draw_rect(x + style.inset - style.cornerRadius - style.borderThickness,
-                          y + h - style.inset + style.cornerRadius,
-                          w - style.inset + style.cornerRadius + style.borderThickness,
-                          style.borderThickness,
-                          undraw_color, true);
-            //left
-            fb->draw_rect(x + style.inset - style.cornerRadius - style.borderThickness,
-                          y + style.inset - style.cornerRadius - style.borderThickness,
-                          style.borderThickness,
-                          h - style.inset + style.cornerRadius + style.borderThickness,
-                          undraw_color, true);
-            //right
-            fb->draw_rect(x + w - style.inset + style.cornerRadius,
-                          y + style.inset - style.cornerRadius - style.borderThickness,
-                          style.borderThickness,
-                          h - style.inset + style.cornerRadius + style.borderThickness,
-                          undraw_color, true);
-        }
-
-        void RoundCornerWidget::render_border() {
+    void RoundCornerWidget::undraw() {
         fb->waveform_mode = WAVEFORM_MODE_GC16;
-            drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.borderThickness,
-                           style.startColor, style.inset, style.gradient, style.endColor,
-                           style.expA, style.expB,1.f);
-        }
+        drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.borderThickness,
+                       1.f, style.inset, false, 1.f,
+                       style.expA, style.expB, 1.f);
+        render_inside_fill();
+        return;
+    }
 
-        void RoundCornerWidget::render_inside_fill(float gray){
-            //draw a rounded box to fill the awkward space between the border and inner content
-            drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.cornerRadius,
-                           gray, style.inset + (style.cornerRadius), false,1,1,1,2.f); //extra junk here because C++ doesn't
-            //support named parameters and I need to change the alpha
-            //draw a rectangle to cover the rest of the inner area
-            fb->draw_rect(x + style.inset, y + style.inset,
-                          w - style.inset - style.inset, h - style.inset - style.inset,
-                          color::from_float(gray), true);
-        }
+    void RoundCornerWidget::render_border() {
+        fb->waveform_mode = WAVEFORM_MODE_GC16;
+        drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.borderThickness,
+                       style.startColor, style.inset, style.gradient, style.endColor,
+                       style.expA, style.expB, 1.f);
+    }
+
+    void RoundCornerWidget::render_inside_fill(float gray) {
+        //draw a rounded box to fill the awkward space between the border and inner content
+        drawRoundedBox(x, y, w, h, style.cornerRadius, fb, style.cornerRadius,
+                       gray, style.inset + (style.cornerRadius), false, 1, 1, 1, 2.f); //extra junk here because C++ doesn't
+        //support named parameters and I need to change the alpha
+        //draw a rectangle to cover the rest of the inner area
+        fb->draw_rect(x + style.inset, y + style.inset,
+                      w - style.inset - style.inset, h - style.inset - style.inset,
+                      color::from_float(gray), true);
+    }
 
 
     void DebuggableWidget::render() {
@@ -162,6 +141,118 @@ namespace widgets{
     }
 
     void DebuggableWidget::debugRender() {
-        fb->draw_rect(this->x, this->y, this->w, this->h, toRColor(255,0,0), false);
+        fb->draw_text(this->x, this->y, debugName(), 18);
+        fb->draw_rect(this->x, this->y, this->w, this->h, toRColor(255, 0, 0), false);
+    }
+
+    // TODO: this doesn't properly handle state like mouse_inside, _enter, _leave
+    void RecursiveInputWidget::on_mouse_enter(input::SynMotionEvent &ev) {
+        for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
+            c->on_mouse_enter(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_mouse_enter(ev);
+    }
+
+    void RecursiveInputWidget::on_mouse_leave(input::SynMotionEvent &ev) {
+        for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
+            c->on_mouse_leave(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_mouse_leave(ev);
+    }
+
+    void RecursiveInputWidget::on_mouse_click(input::SynMotionEvent &ev) {
+        for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
+            c->on_mouse_click(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_mouse_click(ev);
+    }
+
+    void RecursiveInputWidget::on_mouse_down(input::SynMotionEvent &ev) {
+        for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
+            c->on_mouse_down(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_mouse_down(ev);
+    }
+
+    void RecursiveInputWidget::on_mouse_up(input::SynMotionEvent &ev) {
+        for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
+            c->on_mouse_up(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_mouse_up(ev);
+    }
+
+    void RecursiveInputWidget::on_mouse_move(input::SynMotionEvent &ev) {
+        for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
+            c->on_mouse_move(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_mouse_move(ev);
+    }
+
+    void RecursiveInputWidget::on_mouse_hover(input::SynMotionEvent &ev) {
+        for (const auto &c: children) {
+            if (c->ignore_event(ev) || !c->visible)
+                continue;
+            if(!c->is_hit(ev.x, ev.y))
+                continue;
+            c->on_mouse_hover(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_mouse_hover(ev);
+    }
+
+    void RecursiveInputWidget::on_key_pressed(input::SynKeyEvent &ev) {
+        for (const auto &c: children) {
+            if (!c->visible)
+                continue;
+            c->on_key_pressed(ev);
+            if (ev._stop_propagation)
+                return;
+        }
+        Widget::on_key_pressed(ev);
+    }
+
+    void RecursiveInputWidget::on_reflow() {
+        for(const auto &c : children){
+            if(c->visible)
+                c->on_reflow();
+        }
+        Rect::on_reflow();
     }
 }
