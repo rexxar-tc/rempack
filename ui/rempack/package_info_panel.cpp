@@ -11,6 +11,7 @@ namespace widgets {
     int padding = 15;
     int controlHeight = 40;
     int controlWidth = 200;
+    shared_ptr<package> selectedPackage = nullptr;
     shared_ptr<ui::MultiText> _text;
     shared_ptr<EventButton> _installBtn, _removeBtn, _previewBtn;
     shared_ptr<BorderedPixmap> _image;
@@ -35,13 +36,14 @@ namespace widgets {
             _image->setImage(syncIcon, 100, 100);
             layout_controls();
             ui::TaskQueue::add_task([=]() {
-                vector<uint8_t> data;
-                data = opkg::getCachedSplashscreen(package);
+                auto data = opkg::getCachedSplashscreen(package);
                 int ix, iy, comp;
                 bool decoded = stbi_info_from_memory(data.data(), data.size(), &ix, &iy, &comp);
-                auto ic = images.emplace(package->Package,
-                                         ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->getWidthForAspect(ix, iy), _image->h));
-                ui::IdleQueue::add_task([=]() {
+                auto icon = ui::CachedIcon(data.data(), data.size(), package->Package.c_str(), _image->getWidthForAspect(ix, iy), _image->h);
+                ui::IdleQueue::add_task([&]() {
+                    auto ic = images.emplace(package->Package, icon);
+                    if(package != selectedPackage)
+                        return;
                     _image->undraw();
                     if(decoded)
                         _image->setAspectWidth(ix, iy);
@@ -61,6 +63,7 @@ namespace widgets {
     }
 
     void PackageInfoPanel::display_package(const shared_ptr<package> &package) {
+        selectedPackage = package;
         if(package == nullptr){
             set_states(false);
             _image->hide();

@@ -314,10 +314,6 @@ void setupDebug() {
                     debug_steps.pop_front();
                     step();
                 });
-        } else {
-            std::cout << "EXIT" << std::endl;
-            sigExit = true;
-            ui::TaskQueue::wakeup();
         }
     }, 500);
     //auto ev = input::SynMotionEvent();
